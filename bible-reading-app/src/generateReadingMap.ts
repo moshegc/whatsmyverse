@@ -21,6 +21,19 @@ export interface ReadingMapEntry {
     pointer: ReadingPointer;
 }
 
+function ComputeNextPeriod(currentDate:HDate, period:number) : HDate
+{
+    const currentYear = currentDate.getFullYear();
+    const currentYearStart = new HDate(1, 1, currentYear);
+    const currentDays = currentDate.deltaDays(currentYearStart);
+    const currentPeriod = currentDays / HDate.daysInYear(currentYear);
+    const nextYear = currentYear + currentPeriod + period;
+    const nextYearInt = Math.trunc(nextYear);
+    const days = (nextYear - nextYearInt) * HDate.daysInYear(nextYearInt);
+    const nextDate = new HDate(1, 1, nextYearInt);
+    return nextDate.add(days);
+}
+
 export async function generateReadingMap() {
     const readingMap: Record<string, ReadingMapEntry[]> = {};
 
@@ -37,11 +50,11 @@ export async function generateReadingMap() {
             ? [...new Map(allVerses.map(v => [`${v.book}-${v.chapter}`, v])).values()]
             : allVerses;
 
-        const totalReadings = readings.length;                
+        const totalReadings = readings.length;                        
         
 
         for (let i = 0; i < totalReadings; i++) {
-            const reading = readings[i % totalReadings];
+            const reading = readings[i];
             const pointer: ReadingPointer = {
                 filePath: schedule.csvFiles.find(f => allVerses.find(v => v.book === reading.book && v.chapter === reading.chapter && v.verse === reading.verse)!.text === reading.text)!,
                 book: reading.book,
@@ -52,11 +65,11 @@ export async function generateReadingMap() {
             }
 
             readingMap[schedule.id].push({
-                startDate: currentDate.greg().toISOString().split('T')[0],
+                startDate: currentDate.toString(),
                 pointer,
             });
 
-            currentDate = currentDate.add(Math.round(daysPerReading));
+            currentDate = ComputeNextPeriod(currentDate, schedule.periodInYears);
         }
     }
 
