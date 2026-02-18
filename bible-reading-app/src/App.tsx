@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { schedules, type ReadingSchedule } from './config';
-import { getReadingForDate, type BibleVerse } from './readingLogic';
+import { type BibleVerse } from './csvUtils';
+import { getReadingForDate } from './readingLogic';
 
 function App() {
   // State for the selected date, schedule, verses, and loading status
@@ -17,7 +18,7 @@ function App() {
       setIsLoading(true);
       try {
         const verses = await getReadingForDate(activeSchedule, selectedDate);
-        setCurrentReading(verses);
+        setCurrentReading(verses || []);
       } catch (error) {
         console.error("Failed to fetch reading:", error);
         setCurrentReading([]); // Optionally clear verses on error

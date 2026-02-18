@@ -1,9 +1,9 @@
 // src/readingLogic.ts
 
 import { type ReadingSchedule } from './config';
-import { type ReadingMapEntry } from './generateReadingMap';
-import { findLast } from 'lodash';
-import { getCsvData, type BibleVerse } from './csvUtils';
+import { type BibleVerse } from './csvUtils';
+import { HDate } from '@hebcal/core';
+import { generateReadingMap, type ReadingMapEntry } from './generateReadingMap';
 
 type ReadingMap = Record<string, ReadingMapEntry[]>;
 
@@ -15,12 +15,44 @@ let readingMapCache: ReadingMap | null = null;
 async function getReadingMap(): Promise<ReadingMap> {
   if (readingMapCache) {
     return readingMapCache;
-  }
-  const response = await fetch('/data/reading-map.json');
-  const map = await response.json();
-  readingMapCache = map;
-  return map;
+  }  
+  readingMapCache = await generateReadingMap();
+  return readingMapCache;
 }
+
+function HDateFromString(dateString: string) {
+    const parts = dateString.split(' ');
+    return new HDate(parseInt(parts[0]), parts[1], parseInt(parts[2]));
+}
+
+async function getCurrentReadingEntry(schedule: ReadingSchedule, targetHDate: HDate) {
+    const scheduleStartHDate = HDateFromString(schedule.startDate);
+    if (targetHDate.deltaDays(scheduleStartHDate) < 0) {
+        return null; // No reading before the schedule starts
+    }
+
+    let map = await getReadingMap();
+
+    if (Math.floor(schedule.periodInYears) === (schedule.periodInYears)) {
+        let yearsElapsed = targetHDate.getFullYear() - scheduleStartHDate.getFullYear();
+        const targetYearDate = new HDate(scheduleStartHDate.getDate(), scheduleStartHDate.getMonth(), targetHDate.getFullYear());
+        if (targetHDate.deltaDays(targetYearDate) < 0) {
+            yearsElapsed -= 1; // If we haven't reached the anniversary date yet, subtract one year
+        }
+        const periodsElapsed = Math.floor(yearsElapsed / schedule.periodInYears);
+        return map[schedule.id][periodsElapsed];                
+    }
+    else {
+        const yearsElapsed = targetHDate.getFullYear() - scheduleStartHDate.getFullYear();
+        const targetRoshHashanahDate = new HDate(targetHDate.getFullYear(), 1, 1); // 1 Nissan
+        const daysElapsed = targetHDate.deltaDays(targetRoshHashanahDate);
+        const targetYearFraction = daysElapsed / HDate.daysInYear(targetHDate.getFullYear());
+        const totalYears = yearsElapsed + targetYearFraction;
+        const periodsElapsed = Math.floor(totalYears / schedule.periodInYears);
+        return map[schedule.id][periodsElapsed];        
+    }
+  }
+
 
 /**
  * The main logic engine to get the reading for a given date and schedule.
@@ -28,31 +60,14 @@ async function getReadingMap(): Promise<ReadingMap> {
  * @param targetDate The date for which to find the reading.
  * @returns The verses for the calculated reading period, or null if not found.
  */
-export async function getReadingForDate(schedule: ReadingSchedule, targetDate: Date): Promise<BibleVerse[] | null> {
-  const readingMap = await getReadingMap();
-  const scheduleReadings = readingMap[schedule.id];
-
-  if (!scheduleReadings) {
-    return null;
-  }
-
-  const targetDateString = targetDate.toISOString().split('T')[0];
-
-  const currentReadingEntry = findLast(scheduleReadings, entry => entry.startDate <= targetDateString);
+export async function getReadingForDate(schedule: ReadingSchedule, targetDate: Date): Promise<BibleVerse[] | null> {  
+ 
+  const targetHDate = new HDate(targetDate);
+  const currentReadingEntry = await getCurrentReadingEntry(schedule, targetHDate);
 
   if (!currentReadingEntry) {
     return null;
   }
 
-  const { pointer } = currentReadingEntry;
-  const allVerses = await getCsvData(pointer.filePath);
-
-  if (schedule.displayMode === 'chapter') {
-    return allVerses.filter(
-      v => v.book === pointer.book && v.chapter === pointer.chapter
-    );
-  } else { // 'verse' mode, pointer.verse should be defined
-    const verse = allVerses.find(v => v.book === pointer.book && v.chapter === pointer.chapter && v.verse === pointer.verse);
-    return verse ? [verse] : null;
-  }
+  return currentReadingEntry.verses;
 }

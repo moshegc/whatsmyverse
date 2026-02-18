@@ -1,40 +1,13 @@
 // src/generateReadingMap.ts
-
-import { HDate } from '@hebcal/core';
 import { schedules } from './config';
 import { getCsvData, type BibleVerse } from './csvUtils';
 
-function HDateFromString(dateString: string) {
-    const parts = dateString.split(' ');
-    return new HDate(parseInt(parts[0]), parts[1], parseInt(parts[2]));
-}
-
-export interface ReadingPointer {
-    filePath: string;
-    book: string;
-    chapter: number;
-    verse?: number;
-}
 
 export interface ReadingMapEntry {
-    startDate: string; // ISO date string
-    pointer: ReadingPointer;
+    verses: BibleVerse[];
 }
 
-function ComputeNextPeriod(currentDate:HDate, period:number) : HDate
-{
-    const currentYear = currentDate.getFullYear();
-    const currentYearStart = new HDate(1, 1, currentYear);
-    const currentDays = currentDate.deltaDays(currentYearStart);
-    const currentPeriod = currentDays / HDate.daysInYear(currentYear);
-    const nextYear = currentYear + currentPeriod + period;
-    const nextYearInt = Math.trunc(nextYear);
-    const days = (nextYear - nextYearInt) * HDate.daysInYear(nextYearInt);
-    const nextDate = new HDate(1, 1, nextYearInt);
-    return nextDate.add(days);
-}
-
-export async function generateReadingMap() {
+export async function generateReadingMap() : Promise<Record<string, ReadingMapEntry[]>> {
     const readingMap: Record<string, ReadingMapEntry[]> = {};
 
     for (const schedule of schedules) {
@@ -44,44 +17,16 @@ export async function generateReadingMap() {
             const verses = await getCsvData(filePath);
             allVerses.push(...verses);
         }
-
-        let currentDate = HDateFromString(schedule.startDate);
+        
         const readings = schedule.displayMode === 'chapter'
             ? [...new Map(allVerses.map(v => [`${v.book}-${v.chapter}`, v])).values()]
             : allVerses;
 
-        const totalReadings = readings.length;                        
+        readingMap[schedule.id] = readings.map(verse => ({
+            verses: [verse],
+        }));        
         
+    }  
 
-        for (let i = 0; i < totalReadings; i++) {
-            const reading = readings[i];
-            const pointer: ReadingPointer = {
-                filePath: schedule.csvFiles.find(f => allVerses.find(v => v.book === reading.book && v.chapter === reading.chapter && v.verse === reading.verse)!.text === reading.text)!,
-                book: reading.book,
-                chapter: reading.chapter,
-            };
-            if (schedule.displayMode === 'verse') {
-                pointer.verse = reading.verse;
-            }
-
-            readingMap[schedule.id].push({
-                startDate: currentDate.toString(),
-                pointer,
-            });
-
-            currentDate = ComputeNextPeriod(currentDate, schedule.periodInYears);
-        }
-    }
-
-    const json = JSON.stringify(readingMap, null, 2);
-    const blob = new Blob([json], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'reading-map.json';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    console.log('Generated reading-map.json', readingMap);
+    return readingMap;
 }

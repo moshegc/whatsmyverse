@@ -25,7 +25,7 @@ export const schedules: ReadingSchedule[] = [
   {
     id: 'daily-psalm',
     name: 'Daily Psalm Reading',
-    csvFiles: ['/data/psalms.csv'],
+    csvFiles: ['/data/Psalms.csv'],
     displayMode: 'chapter',
     startDate: '5 Iyar 5708', // Corresponds to Rosh Hashanah 5785
     periodInYears: 1
@@ -33,8 +33,8 @@ export const schedules: ReadingSchedule[] = [
   {
     id: 'weekly-torah',
     name: 'Weekly Torah Portion',
-    csvFiles: ['/data/genesis.csv', '/data/exodus.csv'],
-    displayMode: 'chapter',
+    csvFiles: ['/data/Genesis.csv', '/data/Exodus.csv', '/data/Leviticus.csv', '/data/Numbers.csv', '/data/Deuteronomy.csv'],
+    displayMode: 'verse',
     startDate: '1 Tishrei 1', // Corresponds to the first Shabbat after Simchat Torah 5785
     periodInYears: 1
   },
