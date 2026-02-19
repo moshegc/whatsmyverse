@@ -12,11 +12,11 @@ let readingMapCache: ReadingMap | null = null;
 /**
  * Fetches and caches the reading map.
  */
-async function getReadingMap(): Promise<ReadingMap> {
+function getReadingMap(): ReadingMap {
   if (readingMapCache) {
     return readingMapCache;
   }  
-  readingMapCache = await generateReadingMap();
+  readingMapCache = generateReadingMap();
   return readingMapCache;
 }
 
@@ -25,13 +25,13 @@ function HDateFromString(dateString: string) {
     return new HDate(parseInt(parts[0]), parts[1], parseInt(parts[2]));
 }
 
-async function getCurrentReadingEntry(schedule: ReadingSchedule, targetHDate: HDate) {
+function getCurrentReadingEntry(schedule: ReadingSchedule, targetHDate: HDate) {
     const scheduleStartHDate = HDateFromString(schedule.startDate);
     if (targetHDate.deltaDays(scheduleStartHDate) < 0) {
         return null; // No reading before the schedule starts
     }
 
-    let map = await getReadingMap();
+    let map = getReadingMap();
 
     if (Math.floor(schedule.periodInYears) === (schedule.periodInYears)) {
         let yearsElapsed = targetHDate.getFullYear() - scheduleStartHDate.getFullYear();
@@ -40,16 +40,16 @@ async function getCurrentReadingEntry(schedule: ReadingSchedule, targetHDate: HD
             yearsElapsed -= 1; // If we haven't reached the anniversary date yet, subtract one year
         }
         const periodsElapsed = Math.floor(yearsElapsed / schedule.periodInYears);
-        return map[schedule.id][periodsElapsed];                
+        return map[schedule.id][periodsElapsed - 1];                
     }
     else {
         const yearsElapsed = targetHDate.getFullYear() - scheduleStartHDate.getFullYear();
-        const targetRoshHashanahDate = new HDate(targetHDate.getFullYear(), 1, 1); // 1 Nissan
+        const targetRoshHashanahDate = new HDate(1, 7, targetHDate.getFullYear()); // 1 Tishrei of the target year
         const daysElapsed = targetHDate.deltaDays(targetRoshHashanahDate);
         const targetYearFraction = daysElapsed / HDate.daysInYear(targetHDate.getFullYear());
         const totalYears = yearsElapsed + targetYearFraction;
-        const periodsElapsed = Math.floor(totalYears / schedule.periodInYears);
-        return map[schedule.id][periodsElapsed];        
+        const periodsElapsed = totalYears / schedule.periodInYears;
+        return map[schedule.id][Math.floor(periodsElapsed) - 1];        
     }
   }
 
@@ -60,10 +60,10 @@ async function getCurrentReadingEntry(schedule: ReadingSchedule, targetHDate: HD
  * @param targetDate The date for which to find the reading.
  * @returns The verses for the calculated reading period, or null if not found.
  */
-export async function getReadingForDate(schedule: ReadingSchedule, targetDate: Date): Promise<BibleVerse[] | null> {  
+export function getReadingForDate(schedule: ReadingSchedule, targetDate: Date): BibleVerse[] | null {  
  
   const targetHDate = new HDate(targetDate);
-  const currentReadingEntry = await getCurrentReadingEntry(schedule, targetHDate);
+  const currentReadingEntry = getCurrentReadingEntry(schedule, targetHDate);
 
   if (!currentReadingEntry) {
     return null;

@@ -1,4 +1,5 @@
 // src/generateReadingMap.ts
+//import { resolve } from 'path';
 import { schedules } from './config';
 import { getCsvData, type BibleVerse } from './csvUtils';
 
@@ -7,24 +8,34 @@ export interface ReadingMapEntry {
     verses: BibleVerse[];
 }
 
-export async function generateReadingMap() : Promise<Record<string, ReadingMapEntry[]>> {
+export function generateReadingMap() : Record<string, ReadingMapEntry[]> {
     const readingMap: Record<string, ReadingMapEntry[]> = {};
 
     for (const schedule of schedules) {
         readingMap[schedule.id] = [];
         const allVerses: BibleVerse[] = [];
         for (const filePath of schedule.csvFiles) {
-            const verses = await getCsvData(filePath);
+            const verses = getCsvData(filePath);            
             allVerses.push(...verses);
         }
         
-        const readings = schedule.displayMode === 'chapter'
-            ? [...new Map(allVerses.map(v => [`${v.book}-${v.chapter}`, v])).values()]
-            : allVerses;
-
-        readingMap[schedule.id] = readings.map(verse => ({
-            verses: [verse],
-        }));        
+        if (schedule.displayMode === 'chapter') {
+            const chaptersMap = new Map<string, BibleVerse[]>();
+            for (const v of allVerses) {
+                const key = `${v.book}-${v.chapter}`;
+                if (!chaptersMap.has(key)) {
+                    chaptersMap.set(key, []);
+                }
+                chaptersMap.get(key)!.push(v);
+            }
+            readingMap[schedule.id] = Array.from(chaptersMap.values()).map(verses => ({
+                verses,
+            }));
+        } else {
+            readingMap[schedule.id] = allVerses.map(verse => ({
+                verses: [verse],
+            }));
+        }
         
     }  
 

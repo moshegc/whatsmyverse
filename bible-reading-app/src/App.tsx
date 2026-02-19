@@ -14,10 +14,10 @@ function App() {
 
   // Effect to fetch the reading whenever the date or schedule changes
   useEffect(() => {
-    const fetchReading = async () => {
+    const fetchReading = () => {
       setIsLoading(true);
       try {
-        const verses = await getReadingForDate(activeSchedule, selectedDate);
+        const verses = getReadingForDate(activeSchedule, selectedDate);
         setCurrentReading(verses || []);
       } catch (error) {
         console.error("Failed to fetch reading:", error);
