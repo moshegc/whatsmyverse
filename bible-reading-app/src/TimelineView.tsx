@@ -3,7 +3,7 @@
 import { useEffect, useRef } from 'react';
 import { Timeline, type TimelineTimeAxisScaleType } from 'vis-timeline/peer';
 import { DataSet } from 'vis-data/peer';
-import { HDate, months, type MonthName } from '@hebcal/core';
+import { HDate } from '@hebcal/core';
 import { generateTimelineData, type TimelineItem } from './generateTimelineData';
 import { schedules } from './config';
 import { generateColorFromString } from './colorUtils';
@@ -15,14 +15,15 @@ const getHebrewDateFormatter = (scale: TimelineTimeAxisScaleType) => {
     return (date: Date) => {
         const hdate = new HDate(date);
         const year = hdate.getFullYear();
+        const monthName = hdate.getMonthName();
 
         switch (scale) {
             case 'year':
                 return `${year}`;
             case 'month':
-                return `${months[(hdate.getMonth()) -1]} ${year}`;
+                return `${monthName} ${year}`;
             case 'day':
-                return `${hdate.getDate()} ${months[hdate.getMonth() -1]} ${year}`;
+                return `${hdate.getDate()} ${monthName} ${year}`;
             default:
                 return hdate.toString();
         }
@@ -48,6 +49,8 @@ const TimelineView = () => {
             height: '100%',
             zoomMin: ONE_DAY_MS,
             zoomMax: ONE_YEAR_MS * 6000,
+            min: new HDate(1, 1, 1).greg().getTime() - ONE_YEAR_MS, // Start a bit before the first possible date
+            max: new HDate(1, 1, 6000).greg().getTime() + ONE_YEAR_MS, // End a bit after the last possible date
             timeAxis: {
                 scale: 'year' as TimelineTimeAxisScaleType,
                 format: {
