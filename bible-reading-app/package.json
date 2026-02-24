@@ -15,7 +15,8 @@
     "lodash": "^4.17.23",
     "papaparse": "^5.5.3",
     "react": "^19.2.0",
-    "react-dom": "^19.2.0"
+    "react-dom": "^19.2.0",
+    "vis-timeline": "^8.5.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",
