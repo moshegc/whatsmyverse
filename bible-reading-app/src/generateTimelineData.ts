@@ -37,8 +37,8 @@ function calculateStartDateForPeriod(schedule: ReadingSchedule, periodIndex: num
         const daysInTargetYear = HDate.daysInYear(targetYear);
         const daysToAdd = Math.floor(yearFraction * daysInTargetYear);
 
-        if (periodIndex == 1 && scheduleStartHDate.getFullYear() === 1) {
-            targetYear -= 1; // Move to the next year for the next period
+        if (periodIndex >= 1 && scheduleStartHDate.getFullYear() === 1) {
+            targetYear -= 1; // Handle missing year 0 in the Hebrew calendar
         }
        
         const roshHashanahOfTargetYear = new HDate(1, 7, targetYear);
