@@ -33,10 +33,14 @@ function calculateStartDateForPeriod(schedule: ReadingSchedule, periodIndex: num
         const yearsElapsed = Math.floor(totalYears);
         const yearFraction = totalYears - yearsElapsed;
 
-        const targetYear = scheduleStartHDate.getFullYear() + yearsElapsed;
+        let targetYear = scheduleStartHDate.getFullYear() + yearsElapsed;
         const daysInTargetYear = HDate.daysInYear(targetYear);
         const daysToAdd = Math.floor(yearFraction * daysInTargetYear);
 
+        if (periodIndex == 1 && scheduleStartHDate.getFullYear() === 1) {
+            targetYear -= 1; // Move to the next year for the next period
+        }
+       
         const roshHashanahOfTargetYear = new HDate(1, 7, targetYear);
         return roshHashanahOfTargetYear.add(daysToAdd);
     }
@@ -60,13 +64,19 @@ export function generateTimelineData(): TimelineItem[] {
             const verses = entry.verses;
             const book = verses[0]?.book || 'Unknown';
             const chapter = verses[0]?.chapter || 'N/A';
-            const verse = verses[0]?.verse || 'N/A';
+            const verse_num = verses[0]?.verse || 'N/A';
+            const verse = verses[0]?.text || '';
+
+            let content = `${book} ${chapter}:${verse_num} - ${verse}`;
+            if (schedule.displayMode === 'chapter') {
+                content = `${book} ${chapter} - ${verse}`;
+            }
 
             timelineItems.push({
                 id: `${schedule.id}-${i}`,
                 start: startDate.greg(),
                 end: endDate.greg(),
-                content: `${book} ${chapter}:${verse}`,
+                content: content,
                 group: schedule.id,
                 verses: entry.verses,
                 scheduleId: schedule.id,

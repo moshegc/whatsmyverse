@@ -37,7 +37,7 @@ export const schedules: ReadingSchedule[] = [
     id: 'Yearly-Torah-Verse',
     name: 'Torah verse since creation',
     description: 'Single verse of Torah per year since creation',
-    csvFiles: ['/data/Genesis.csv', '/data/Exodus.csv', '/data/Leviticus.csv', '/data/Numbers.csv', '/data/Deuteronomy.csv'],
+    csvFiles: ['/data/Genesis.csv', '/data/Exodus.csv', '/data/Leviticus.csv', '/data/Numbers.csv', '/data/Deuteronomy.csv', '/data/Joshua.csv'],
     displayMode: 'verse',
     startDate: '1 Tishrei 1', // Corresponds to the first Shabbat after Simchat Torah 5785
     periodInYears: 1
@@ -50,6 +50,15 @@ export const schedules: ReadingSchedule[] = [
     displayMode: 'verse',
     startDate: '1 Tishrei 5500',
     periodInYears: 500/12
+  },
+  {
+    id: 'Eons',
+    name: 'Eons since creation',
+    description: '28 Eons since creation. Each Eon is 6000/28 years',
+    csvFiles: ['/data/Eons.csv'],
+    displayMode: 'verse',
+    startDate: '1 Tishrei 1',
+    periodInYears: 6000/28
   }
   // Add other configurations here
 ];
