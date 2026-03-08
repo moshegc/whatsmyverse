@@ -59,7 +59,7 @@ export function generateTimelineData(): TimelineItem[] {
             
             const startDate = calculateStartDateForPeriod(schedule, i);
             const nextStartDate = calculateStartDateForPeriod(schedule, i + 1);
-            const endDate = nextStartDate.prev();
+            const endDate = nextStartDate;
 
             const verses = entry.verses;
             const book = verses[0]?.book || 'Unknown';
