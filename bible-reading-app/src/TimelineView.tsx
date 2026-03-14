@@ -7,6 +7,8 @@ import { HDate } from '@hebcal/core';
 import { generateTimelineData, type TimelineItem } from './generateTimelineData';
 import { schedules } from './config';
 import { generateColorFromString } from './colorUtils';
+import { generateHistoricalTimelineData, type HistoricalTimelineItem } from './generateHistoricalTimelineData';
+import { historicalEventCategories } from './historicalEvents';
 
 const ONE_DAY_MS = 1000 * 60 * 60 * 24;
 const ONE_YEAR_MS = ONE_DAY_MS * 365;
@@ -19,19 +21,47 @@ function getTextColorForBackground(rgbColor: string): 'black' | 'white' {
     return luminance > 186 ? 'black' : 'white';
 }
 
+type SelectedItem =
+    | { kind: 'reading'; data: TimelineItem }
+    | { kind: 'historical'; data: HistoricalTimelineItem };
+
 const TimelineView = () => {
     const timelineRef = useRef(null);
-    const [selectedItem, setSelectedItem] = useState<TimelineItem | null>(null);
+    const [selectedItem, setSelectedItem] = useState<SelectedItem | null>(null);
 
     useEffect(() => {
-        const timelineItems = generateTimelineData();
-        const items = new DataSet<TimelineItem>(timelineItems);
+        // ── Reading-schedule items ──────────────────────────────────────
+        const readingItems = generateTimelineData();
 
-        const groups = new DataSet(schedules.map(s => ({
+        // ── Historical-event items ─────────────────────────────────────
+        const historicalItems = generateHistoricalTimelineData();
+
+        // Merge both sets into a single DataSet
+        const items = new DataSet<TimelineItem | HistoricalTimelineItem>([
+            ...readingItems,
+            ...historicalItems,
+        ]);
+
+        // ── Groups ─────────────────────────────────────────────────────
+        // Historical categories first (order < 100), then reading schedules.
+        // Categories with stacked:true get per-group stack override.
+        const historicalGroups = historicalEventCategories.map(cat => ({
+            id: cat.id,
+            content: cat.name,
+            order: cat.order,
+            style: `color: ${cat.color};`,
+            className: 'hist-group',
+            ...(cat.stacked ? { stack: true } : {}),
+        }));
+
+        const readingGroups = schedules.map((s, idx) => ({
             id: s.id,
             content: s.name,
-            style: `color: ${generateColorFromString(s.id)};`
-        })));
+            order: 100 + idx,
+            style: `color: ${generateColorFromString(s.id)};`,
+        }));
+
+        const groups = new DataSet([...historicalGroups, ...readingGroups]);
 
         const options = {
             stack: false,
@@ -52,8 +82,12 @@ const TimelineView = () => {
             timeline.on('select', (properties) => {
                 const { items: selectedItems } = properties;
                 if (selectedItems.length > 0) {
-                    const item = items.get(selectedItems[0]) as TimelineItem;
-                    setSelectedItem(item);
+                    const raw: any = items.get(selectedItems[0]);
+                    if (raw && typeof raw._event !== 'undefined') {
+                        setSelectedItem({ kind: 'historical', data: raw as HistoricalTimelineItem });
+                    } else if (raw) {
+                        setSelectedItem({ kind: 'reading', data: raw as TimelineItem });
+                    }
                 } else {
                     setSelectedItem(null);
                 }
@@ -74,7 +108,11 @@ const TimelineView = () => {
         };
     }, []);
 
-    const popupBackgroundColor = selectedItem ? generateColorFromString(selectedItem.scheduleId) : 'white';
+    const popupBackgroundColor = selectedItem
+        ? selectedItem.kind === 'reading'
+            ? generateColorFromString(selectedItem.data.scheduleId)
+            : historicalEventCategories.find(c => c.id === selectedItem.data._event.categoryId)?.color || '#666'
+        : 'white';
     const popupTextColor = getTextColorForBackground(popupBackgroundColor);
 
     return (
@@ -114,21 +152,51 @@ const TimelineView = () => {
                     >
                         &times;
                     </button>
-                    <h3 style={{ marginTop: 0, marginBottom: '5px', borderBottom: `1px solid ${popupTextColor === 'black' ? '#eee' : '#444'}`, paddingBottom: '5px' }}>
-                        {selectedItem.verses[0].book}{' '}
-                        {selectedItem.verses[0].chapter}
-                        {schedules.find(s => s.id === selectedItem.scheduleId)?.displayMode === 'verse' && `:${selectedItem.verses[0].verse}`}
-                    </h3>
-                    <h4 style={{ marginTop: 0, marginBottom: '10px', fontStyle: 'italic' }}>
-                        {new HDate(selectedItem.start).render()} - {new HDate(selectedItem.end).render()}
-                    </h4>
-                    <div style={{ maxHeight: '200px', overflowY: 'auto' }}>
-                        {selectedItem.verses.map((v, index) => (
-                            <div key={index} style={{ marginBottom: '8px' }}>
-                                <sup style={{ fontWeight: 'bold' }}>{v.verse}</sup> {v.text}
-                            </div>
-                        ))}
-                    </div>
+
+                    {/* ── Reading-schedule popup ─────────────────── */}
+                    {selectedItem.kind === 'reading' && (() => {
+                        const item = selectedItem.data;
+                        return (
+                            <>
+                                <h3 style={{ marginTop: 0, marginBottom: '5px', borderBottom: `1px solid ${popupTextColor === 'black' ? '#eee' : '#444'}`, paddingBottom: '5px' }}>
+                                    {item.verses[0].book}{' '}
+                                    {item.verses[0].chapter}
+                                    {schedules.find(s => s.id === item.scheduleId)?.displayMode === 'verse' && `:${item.verses[0].verse}`}
+                                </h3>
+                                <h4 style={{ marginTop: 0, marginBottom: '10px', fontStyle: 'italic' }}>
+                                    {new HDate(item.start).render()} - {new HDate(item.end).render()}
+                                </h4>
+                                <div style={{ maxHeight: '200px', overflowY: 'auto' }}>
+                                    {item.verses.map((v, index) => (
+                                        <div key={index} style={{ marginBottom: '8px' }}>
+                                            <sup style={{ fontWeight: 'bold' }}>{v.verse}</sup> {v.text}
+                                        </div>
+                                    ))}
+                                </div>
+                            </>
+                        );
+                    })()}
+
+                    {/* ── Historical-event popup ─────────────────── */}
+                    {selectedItem.kind === 'historical' && (() => {
+                        const ev = selectedItem.data._event;
+                        const startHDate = new HDate(selectedItem.data.start);
+                        const endHDate = selectedItem.data.end ? new HDate(selectedItem.data.end) : null;
+                        return (
+                            <>
+                                <h3 style={{ marginTop: 0, marginBottom: '5px', borderBottom: `1px solid ${popupTextColor === 'black' ? '#eee' : '#444'}`, paddingBottom: '5px' }}>
+                                    {ev.name}
+                                </h3>
+                                <h4 style={{ marginTop: 0, marginBottom: '10px', fontStyle: 'italic' }}>
+                                    {startHDate.render()}
+                                    {endHDate ? ` — ${endHDate.render()}` : ''}
+                                </h4>
+                                {ev.description && (
+                                    <p style={{ margin: 0 }}>{ev.description}</p>
+                                )}
+                            </>
+                        );
+                    })()}
                 </div>
             )}
         </div>

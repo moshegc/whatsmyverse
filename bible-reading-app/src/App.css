@@ -40,3 +40,31 @@
 .read-the-docs {
   color: #888;
 }
+
+/* ─── Historical-event timeline styles ───────────────────────────── */
+
+/* Slightly different font for historical groups to distinguish them */
+/* Slightly different font for historical groups to distinguish them */
+.hist-group .vis-inner {
+  font-style: italic;
+  font-weight: 600;
+}
+
+/* Point-event markers: a filled circle */
+.hist-item.vis-point .vis-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+
+/* Range items: slightly transparent so overlapping periods are visible */
+.hist-item.vis-range {
+  opacity: 0.85;
+  border-radius: 3px;
+}
+.hist-item.vis-range .vis-item-content {
+  font-size: 0.85em;
+  font-weight: 500;
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+}
