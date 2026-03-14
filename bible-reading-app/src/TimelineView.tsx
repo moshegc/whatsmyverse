@@ -9,6 +9,8 @@ import { schedules } from './config';
 import { generateColorFromString } from './colorUtils';
 import { generateHistoricalTimelineData, type HistoricalTimelineItem } from './generateHistoricalTimelineData';
 import { historicalEventCategories } from './historicalEvents';
+import { useLocale } from './LocaleContext';
+import { localize, getBookName, renderHDate, t } from './i18n';
 
 const ONE_DAY_MS = 1000 * 60 * 60 * 24;
 const ONE_YEAR_MS = ONE_DAY_MS * 365;
@@ -28,13 +30,14 @@ type SelectedItem =
 const TimelineView = () => {
     const timelineRef = useRef(null);
     const [selectedItem, setSelectedItem] = useState<SelectedItem | null>(null);
+    const { locale, toggleLocale } = useLocale();
 
     useEffect(() => {
         // ── Reading-schedule items ──────────────────────────────────────
-        const readingItems = generateTimelineData();
+        const readingItems = generateTimelineData(locale);
 
         // ── Historical-event items ─────────────────────────────────────
-        const historicalItems = generateHistoricalTimelineData();
+        const historicalItems = generateHistoricalTimelineData(locale);
 
         // Merge both sets into a single DataSet
         const items = new DataSet<TimelineItem | HistoricalTimelineItem>([
@@ -47,7 +50,7 @@ const TimelineView = () => {
         // Categories with stacked:true get per-group stack override.
         const historicalGroups = historicalEventCategories.map(cat => ({
             id: cat.id,
-            content: cat.name,
+            content: localize(cat.name, cat.nameHe, locale),
             order: cat.order,
             style: `color: ${cat.color};`,
             className: 'hist-group',
@@ -56,7 +59,7 @@ const TimelineView = () => {
 
         const readingGroups = schedules.map((s, idx) => ({
             id: s.id,
-            content: s.name,
+            content: localize(s.name, s.nameHe, locale),
             order: 100 + idx,
             style: `color: ${generateColorFromString(s.id)};`,
         }));
@@ -71,7 +74,8 @@ const TimelineView = () => {
             zoomMax: ONE_YEAR_MS * 6000,
             min: new HDate(1, 1, 1).greg().getTime() - ONE_YEAR_MS, // Start a bit before the first possible date
             max: new HDate(1, 1, 6000).greg().getTime() + ONE_YEAR_MS, // End a bit after the last possible date 
-            calendar: 'hebrew'
+            calendar: 'hebrew',
+            rtl: locale === 'he',
         };
 
         let timeline: Timeline | null = null;
@@ -106,7 +110,7 @@ const TimelineView = () => {
                 setSelectedItem(null);
             }
         };
-    }, []);
+    }, [locale]);
 
     const popupBackgroundColor = selectedItem
         ? selectedItem.kind === 'reading'
@@ -116,7 +120,27 @@ const TimelineView = () => {
     const popupTextColor = getTextColorForBackground(popupBackgroundColor);
 
     return (
-        <div style={{ position: 'relative', height: '50vh', width: '60vh' }}>
+        <div style={{ position: 'relative', height: '50vh', width: '60vh' }} dir={locale === 'he' ? 'rtl' : 'ltr'}>
+            {/* Locale toggle button */}
+            <button
+                onClick={toggleLocale}
+                style={{
+                    position: 'absolute',
+                    top: '8px',
+                    right: locale === 'he' ? undefined : '8px',
+                    left: locale === 'he' ? '8px' : undefined,
+                    zIndex: 1001,
+                    padding: '4px 12px',
+                    borderRadius: '4px',
+                    border: '1px solid #ccc',
+                    background: '#fff',
+                    cursor: 'pointer',
+                    fontWeight: 'bold',
+                    fontSize: '14px',
+                }}
+            >
+                {t('localeToggle', locale)}
+            </button>
             <div ref={timelineRef} style={{ height: '100%', width: '100%' }} />
             {selectedItem && (
                 <div
@@ -141,7 +165,8 @@ const TimelineView = () => {
                         style={{
                             position: 'absolute',
                             top: '8px',
-                            right: '8px',
+                            right: locale === 'he' ? undefined : '8px',
+                            left: locale === 'he' ? '8px' : undefined,
                             border: 'none',
                             background: 'transparent',
                             cursor: 'pointer',
@@ -156,15 +181,16 @@ const TimelineView = () => {
                     {/* ── Reading-schedule popup ─────────────────── */}
                     {selectedItem.kind === 'reading' && (() => {
                         const item = selectedItem.data;
+                        const bookName = getBookName(item.verses[0].book, locale);
                         return (
                             <>
                                 <h3 style={{ marginTop: 0, marginBottom: '5px', borderBottom: `1px solid ${popupTextColor === 'black' ? '#eee' : '#444'}`, paddingBottom: '5px' }}>
-                                    {item.verses[0].book}{' '}
+                                    {bookName}{' '}
                                     {item.verses[0].chapter}
                                     {schedules.find(s => s.id === item.scheduleId)?.displayMode === 'verse' && `:${item.verses[0].verse}`}
                                 </h3>
                                 <h4 style={{ marginTop: 0, marginBottom: '10px', fontStyle: 'italic' }}>
-                                    {new HDate(item.start).render()} - {new HDate(item.end).render()}
+                                    {renderHDate(item.start, locale)} - {renderHDate(item.end, locale)}
                                 </h4>
                                 <div style={{ maxHeight: '200px', overflowY: 'auto' }}>
                                     {item.verses.map((v, index) => (
@@ -180,19 +206,17 @@ const TimelineView = () => {
                     {/* ── Historical-event popup ─────────────────── */}
                     {selectedItem.kind === 'historical' && (() => {
                         const ev = selectedItem.data._event;
-                        const startHDate = new HDate(selectedItem.data.start);
-                        const endHDate = selectedItem.data.end ? new HDate(selectedItem.data.end) : null;
                         return (
                             <>
                                 <h3 style={{ marginTop: 0, marginBottom: '5px', borderBottom: `1px solid ${popupTextColor === 'black' ? '#eee' : '#444'}`, paddingBottom: '5px' }}>
-                                    {ev.name}
+                                    {localize(ev.name, ev.nameHe, locale)}
                                 </h3>
                                 <h4 style={{ marginTop: 0, marginBottom: '10px', fontStyle: 'italic' }}>
-                                    {startHDate.render()}
-                                    {endHDate ? ` — ${endHDate.render()}` : ''}
+                                    {renderHDate(selectedItem.data.start, locale)}
+                                    {selectedItem.data.end ? ` — ${renderHDate(selectedItem.data.end, locale)}` : ''}
                                 </h4>
-                                {ev.description && (
-                                    <p style={{ margin: 0 }}>{ev.description}</p>
+                                {(ev.description || ev.descriptionHe) && (
+                                    <p style={{ margin: 0 }}>{localize(ev.description || '', ev.descriptionHe, locale)}</p>
                                 )}
                             </>
                         );

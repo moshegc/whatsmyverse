@@ -15,6 +15,8 @@ export interface HistoricalEventCategory {
   id: string;
   /** Display name shown in the timeline sidebar */
   name: string;
+  /** Hebrew display name */
+  nameHe?: string;
   /** Fixed colour for every item in this category (CSS color string) */
   color: string;
   /**
@@ -48,6 +50,8 @@ export interface HistoricalEvent {
   categoryId: string;
   /** Short label shown on the timeline item */
   name: string;
+  /** Hebrew name */
+  nameHe?: string;
   /**
    * Hebrew-date string in the format "day MonthName year",
    * e.g. "1 Tishrei 2048" or "15 Nisan 2448".
@@ -60,6 +64,8 @@ export interface HistoricalEvent {
   endDate?: string;
   /** Optional longer description shown in the popup */
   description?: string;
+  /** Hebrew description */
+  descriptionHe?: string;
 }
 
 // ─── Helper ─────────────────────────────────────────────────────────────────
@@ -76,6 +82,7 @@ export const historicalEventCategories: HistoricalEventCategory[] = [
   {
     id: 'biblical-figures',
     name: 'Biblical Figures',
+    nameHe: 'דמויות מקראיות',
     color: '#4a90d9',
     order: 10,
     csvFile: '/data/biblical-figures.csv',
@@ -84,6 +91,7 @@ export const historicalEventCategories: HistoricalEventCategory[] = [
   {
     id: 'major-events',
     name: 'Major Events',
+    nameHe: 'אירועים מרכזיים',
     color: '#d94a4a',
     order: 20,
     csvFile: '/data/major-events.csv',
@@ -91,6 +99,7 @@ export const historicalEventCategories: HistoricalEventCategory[] = [
   {
     id: 'bible-books',
     name: 'Bible Book Periods',
+    nameHe: 'תקופות ספרי התנ״ך',
     color: '#50b87a',
     order: 30,
     csvFile: '/data/bible-books.csv',
@@ -104,9 +113,11 @@ export const historicalEventCategories: HistoricalEventCategory[] = [
 interface CsvEventRow {
   id: string;
   name: string;
+  nameHe: string;
   startDate: string;
   endDate: string;
   description: string;
+  descriptionHe: string;
 }
 
 function fetchCsvSync(filePath: string): string {
@@ -130,9 +141,11 @@ function loadEventsFromCsv(category: HistoricalEventCategory): HistoricalEvent[]
     id: row.id.trim(),
     categoryId: category.id,
     name: row.name.trim(),
+    nameHe: row.nameHe?.trim() || undefined,
     startDate: row.startDate.trim(),
     endDate: row.endDate?.trim() || undefined,
     description: row.description?.trim() || undefined,
+    descriptionHe: row.descriptionHe?.trim() || undefined,
   }));
 }
 

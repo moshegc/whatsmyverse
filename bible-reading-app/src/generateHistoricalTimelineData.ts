@@ -7,6 +7,7 @@ import {
   type HistoricalEvent,
   type HistoricalEventCategory,
 } from './historicalEvents';
+import { localize, type Locale } from './i18n';
 
 // ─── Timeline-item type for historical events ─────────────────────────────
 
@@ -39,7 +40,7 @@ function buildCategoryMap(): Map<string, HistoricalEventCategory> {
  * Convert every entry in `historicalEvents` into a vis-timeline item.
  * Items with an `endDate` become "range" bars; those without become "point" markers.
  */
-export function generateHistoricalTimelineData(): HistoricalTimelineItem[] {
+export function generateHistoricalTimelineData(locale: Locale = 'en'): HistoricalTimelineItem[] {
   const categoryMap = buildCategoryMap();
   const items: HistoricalTimelineItem[] = [];
 
@@ -54,14 +55,20 @@ export function generateHistoricalTimelineData(): HistoricalTimelineItem[] {
 
     const startHDate = parseHebrewDate(event.startDate);
     const isRange = !!event.endDate;
+    const displayName = localize(event.name, event.nameHe, locale);
+    const displayDesc = localize(
+      event.description || event.name,
+      event.descriptionHe || event.nameHe,
+      locale,
+    );
 
     const item: HistoricalTimelineItem = {
       id: `hist-${event.id}`,
       start: startHDate.greg(),
-      content: event.name,
+      content: displayName,
       group: event.categoryId,
       type: isRange ? 'range' : 'point',
-      title: event.description || event.name,
+      title: displayDesc,
       className: `hist-item hist-${event.categoryId}`,
       style: isRange
         ? `background-color: ${category.color}; border-color: ${category.color};`

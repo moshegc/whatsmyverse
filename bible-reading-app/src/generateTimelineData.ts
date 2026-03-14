@@ -5,6 +5,7 @@ import { generateReadingMap } from './generateReadingMap';
 import { HDate } from '@hebcal/core';
 import { generateColorFromString } from './colorUtils';
 import type { BibleVerse } from './csvUtils';
+import { getBookName, type Locale } from './i18n';
 
 export interface TimelineItem {
     id: string;
@@ -47,7 +48,7 @@ function calculateStartDateForPeriod(schedule: ReadingSchedule, periodIndex: num
 }
 
 
-export function generateTimelineData(): TimelineItem[] {
+export function generateTimelineData(locale: Locale = 'en'): TimelineItem[] {
     const readingMap = generateReadingMap();
     const timelineItems: TimelineItem[] = [];
 
@@ -62,7 +63,7 @@ export function generateTimelineData(): TimelineItem[] {
             const endDate = nextStartDate;
 
             const verses = entry.verses;
-            const book = verses[0]?.book || 'Unknown';
+            const book = getBookName(verses[0]?.book || 'Unknown', locale);
             const chapter = verses[0]?.chapter || 'N/A';
             const verse_num = verses[0]?.verse || 'N/A';
             const verse = verses[0]?.text || '';

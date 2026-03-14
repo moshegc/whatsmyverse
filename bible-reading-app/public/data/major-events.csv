@@ -1,15 +1,15 @@
-id,name,startDate,endDate,description
-event-flood,The Flood,17 Cheshvan 1656,27 Cheshvan 1657,The Great Flood in the days of Noah (Genesis 7:11)
-event-babel,Tower of Babel,1 Tishrei 1996,,Dispersion after the Tower of Babel (Genesis 11:9)
-event-covenant,Covenant of the Parts,15 Nisan 2018,,Brit Bein HaBetarim – God's covenant with Abraham (Genesis 15)
-event-binding-isaac,Binding of Isaac,1 Tishrei 2085,,The Akeidah – binding of Isaac on Mount Moriah (Genesis 22)
-event-slavery-egypt,Slavery in Egypt,1 Tishrei 2332,15 Nisan 2448,Israelite bondage in Egypt
-event-exodus,The Exodus,15 Nisan 2448,,The Exodus from Egypt (Exodus 12:41)
-event-torah,Giving of the Torah,6 Sivan 2448,,The Torah was given at Mount Sinai (Exodus 19-20)
-event-golden-calf,Golden Calf,17 Tammuz 2448,,The sin of the Golden Calf (Exodus 32)
-event-spies,Sin of the Spies,9 Av 2449,,The spies returned with an evil report (Numbers 13-14)
-event-enter-land,Entering the Land,10 Nisan 2488,,Israel crossed the Jordan into the Land (Joshua 3-4)
-event-first-temple,First Temple Period,1 Tishrei 2928,9 Av 3338,Solomon's Temple completed (1 Kings 6:38) through destruction by Babylon (2 Kings 25)
-event-second-temple,Second Temple Period,1 Tishrei 3408,9 Av 3828,Second Temple completed (Ezra 6:15) through destruction by Rome
-event-purim,Purim,14 Adar 3405,,The miracle of Purim (Esther 9:21)
-event-chanukah,Chanukah,25 Kislev 3622,,Rededication of the Temple by the Maccabees
+id,name,nameHe,startDate,endDate,description,descriptionHe
+event-flood,The Flood,המבול,17 Cheshvan 1656,27 Cheshvan 1657,The Great Flood in the days of Noah (Genesis 7:11),המבול הגדול בימי נח (בראשית ז:יא)
+event-babel,Tower of Babel,מגדל בבל,1 Tishrei 1996,,Dispersion after the Tower of Babel (Genesis 11:9),הפלגה לאחר מגדל בבל (בראשית יא:ט)
+event-covenant,Covenant of the Parts,ברית בין הבתרים,15 Nisan 2018,,Brit Bein HaBetarim – God's covenant with Abraham (Genesis 15),ברית בין הבתרים – ברית ה' עם אברהם (בראשית טו)
+event-binding-isaac,Binding of Isaac,עקידת יצחק,1 Tishrei 2085,,The Akeidah – binding of Isaac on Mount Moriah (Genesis 22),העקידה – עקידת יצחק על הר המוריה (בראשית כב)
+event-slavery-egypt,Slavery in Egypt,שעבוד מצרים,1 Tishrei 2332,15 Nisan 2448,Israelite bondage in Egypt,שעבוד בני ישראל במצרים
+event-exodus,The Exodus,יציאת מצרים,15 Nisan 2448,,The Exodus from Egypt (Exodus 12:41),יציאת מצרים (שמות יב:מא)
+event-torah,Giving of the Torah,מתן תורה,6 Sivan 2448,,The Torah was given at Mount Sinai (Exodus 19-20),מתן תורה בהר סיני (שמות יט-כ)
+event-golden-calf,Golden Calf,חטא העגל,17 Tammuz 2448,,The sin of the Golden Calf (Exodus 32),חטא עגל הזהב (שמות לב)
+event-spies,Sin of the Spies,חטא המרגלים,9 Av 2449,,The spies returned with an evil report (Numbers 13-14),המרגלים חזרו עם דיבה רעה (במדבר יג-יד)
+event-enter-land,Entering the Land,כניסה לארץ,10 Nisan 2488,,Israel crossed the Jordan into the Land (Joshua 3-4),ישראל חצו את הירדן אל הארץ (יהושע ג-ד)
+event-first-temple,First Temple Period,תקופת בית ראשון,1 Tishrei 2928,9 Av 3338,Solomon's Temple completed (1 Kings 6:38) through destruction by Babylon (2 Kings 25),בית המקדש הראשון של שלמה (מלכים א ו:לח) עד החורבן על ידי בבל (מלכים ב כה)
+event-second-temple,Second Temple Period,תקופת בית שני,1 Tishrei 3408,9 Av 3828,Second Temple completed (Ezra 6:15) through destruction by Rome,בית המקדש השני (עזרא ו:טו) עד החורבן על ידי רומי
+event-purim,Purim,פורים,14 Adar 3405,,The miracle of Purim (Esther 9:21),נס פורים (אסתר ט:כא)
+event-chanukah,Chanukah,חנוכה,25 Kislev 3622,,Rededication of the Temple by the Maccabees,חנוכת בית המקדש מחדש על ידי המכבים

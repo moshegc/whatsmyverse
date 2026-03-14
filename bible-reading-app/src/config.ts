@@ -8,8 +8,12 @@ export interface ReadingSchedule {
   id: string;
   // A user-friendly name, e.g., "Annual Torah Portion"
   name: string;
+  // Hebrew name for the schedule (used when locale is 'he')
+  nameHe?: string;
   // A brief description of the schedule
   description: string;
+  // Hebrew description (used when locale is 'he')
+  descriptionHe?: string;
   // An array of paths to the CSV files, in the desired reading order
     csvFiles: string[];
   // Determines whether to display a single verse or a whole chapter
@@ -27,7 +31,9 @@ export const schedules: ReadingSchedule[] = [
   {
     id: 'Psalms-Since-5708',    
     name: 'Yearly Psalms since 5708',
+    nameHe: 'תהלים שנתיים מ-5708',
     description: 'Yearly Psalms since the establishment of the State of Israel in 5708',
+    descriptionHe: 'תהלים שנתיים מאז הקמת מדינת ישראל בשנת 5708',
     csvFiles: ['/data/Psalms.csv'],
     displayMode: 'chapter',
     startDate: '5 Iyar 5708', // Corresponds to Rosh Hashanah 5785
@@ -36,7 +42,9 @@ export const schedules: ReadingSchedule[] = [
   {
     id: 'Yearly-Torah-Verse',
     name: 'Torah verse since creation',
+    nameHe: 'פסוק תורה מבריאת העולם',
     description: 'Single verse of Torah per year since creation',
+    descriptionHe: 'פסוק אחד מהתורה לכל שנה מבריאת העולם',
     csvFiles: ['/data/Genesis.csv', '/data/Exodus.csv', '/data/Leviticus.csv', '/data/Numbers.csv', '/data/Deuteronomy.csv', '/data/Joshua.csv'],
     displayMode: 'verse',
     startDate: '1 Tishrei 1', // Corresponds to the first Shabbat after Simchat Torah 5785
@@ -45,7 +53,9 @@ export const schedules: ReadingSchedule[] = [
   {
     id: 'Hours-of-Adam',
     name: 'Hours of Adams creation',
+    nameHe: 'שעות בריאת אדם הראשון',
     description: 'Hours of Adams creation based on the Midrash Pirkei deRabbi Eliezer, starting from the second half of the fifth millennium since creation',
+    descriptionHe: 'שעות בריאת אדם הראשון על פי מדרש פרקי דרבי אליעזר, החל מהמחצית השניה של האלף החמישי לבריאת העולם',
     csvFiles: ['/data/Adam.csv'],
     displayMode: 'verse',
     startDate: '1 Tishrei 5500',
@@ -54,7 +64,9 @@ export const schedules: ReadingSchedule[] = [
   {
     id: 'Eons',
     name: 'Eons since creation',
+    nameHe: 'עתים (עידנים) מבריאת העולם',
     description: '28 Eons since creation. Each Eon is 6000/28 years',
+    descriptionHe: '28 עתים (עידנים) מבריאת העולם. כל עת הוא 6000/28 שנים',
     csvFiles: ['/data/Eons.csv'],
     displayMode: 'verse',
     startDate: '1 Tishrei 1',
