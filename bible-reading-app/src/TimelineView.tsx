@@ -31,6 +31,8 @@ const TimelineView = () => {
     const timelineRef = useRef(null);
     const [selectedItem, setSelectedItem] = useState<SelectedItem | null>(null);
     const { locale, toggleLocale } = useLocale();
+    const savedWindowRef = useRef<{ start: Date; end: Date } | null>(null);
+    const timelineInstanceRef = useRef<Timeline | null>(null);
 
     useEffect(() => {
         // ── Reading-schedule items ──────────────────────────────────────
@@ -82,7 +84,14 @@ const TimelineView = () => {
         let timeline: Timeline | null = null;
         if (timelineRef.current) {
             timeline = new Timeline(timelineRef.current, items, groups, options);
-            timeline.fit();
+            timelineInstanceRef.current = timeline;
+
+            // Restore previous window or fit to all items
+            if (savedWindowRef.current) {
+                timeline.setWindow(savedWindowRef.current.start, savedWindowRef.current.end, { animation: false });
+            } else {
+                timeline.fit();
+            }
 
             timeline.on('select', (properties) => {
                 const { items: selectedItems } = properties;
@@ -109,6 +118,13 @@ const TimelineView = () => {
             if (timeline) {
                 timeline.destroy();
                 setSelectedItem(null);
+            }
+            // Clean up RTL artifacts that vis-timeline's destroy() doesn't remove
+            if (timelineRef.current) {
+                const el = timelineRef.current as HTMLElement;
+                el.style.direction = '';
+                el.classList.remove('vis-rtl');
+                el.innerHTML = '';
             }
         };
     }, [locale]);
