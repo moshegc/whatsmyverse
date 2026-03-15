@@ -76,6 +76,7 @@ const TimelineView = () => {
             max: new HDate(1, 1, 6000).greg().getTime() + ONE_YEAR_MS, // End a bit after the last possible date 
             calendar: 'hebrew',
             rtl: locale === 'he',
+            locale: locale
         };
 
         let timeline: Timeline | null = null;
