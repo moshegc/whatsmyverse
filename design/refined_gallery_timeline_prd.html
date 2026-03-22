@@ -1,0 +1,228 @@
+# Refined Gallery Timeline
+
+## Product Overview
+
+**The Pitch:** An elegant, gallery-inspired interactive timeline of biblical history, designed to present complex chronological data with absolute clarity and academic dignity.
+
+**For:** Scholars, theology students, and history enthusiasts who need to visualize overlapping biblical eras, reigns, and events without visual clutter.
+
+**Device:** desktop, mobile
+
+**Design Direction:** A crisp, museum-like aesthetic using a warm off-white canvas, hairline borders, and elegant serif typography, accented by a calming deep navy blue.
+
+**Inspired by:** The Met Museum online collection, Notion (for collapsible minimalism)
+
+---
+
+## Screens
+
+- **Main Timeline (English):** Full horizontal chronological view with expanded era groups
+- **Main Timeline (Hebrew RTL):** Fully mirrored RTL layout with appropriate Hebrew typography
+- **Mobile Timeline View:** Optimized portrait layout with hidden sidebars and bottom sheet details
+- **Collapsed Overview:** High-level macroscopic view with all groups and sidebars minimized
+- **Hover / Tap Detail State:** Active state showing the frosted glass metadata card over a specific event (or bottom sheet on mobile)
+
+---
+
+## Key Flows
+
+**Explore Event Details:** Reveal biblical context for a specific era.
+1. User is on Main Timeline -> sees colored horizontal event blocks
+2. User hovers (or taps on mobile) over `King David Reign` block -> frosted glass card fades in (or bottom sheet slides up)
+3. Card displays exact dates, description, and linked verses (e.g., 2 Samuel 5:4)
+
+**Toggle Era Density:** Simplify the timeline to view only high-level epochs.
+1. User is on Main Timeline -> sees multiple vertical groups (Prophets, Kings)
+2. User clicks the `Kings` group header name area -> the track collapses into a thin density line
+3. The vertical space reclaims, bringing other tracks closer together
+
+---
+
+<details>
+<summary>Design System</summary>
+
+## Color Palette
+
+- **Primary:** `#1A365D` - Buttons, active states, timeline scrubber line
+- **Background:** `#FDFBF7` - Main application canvas
+- **Surface:** `#FFFFFF` - Modal cards, frosted glass base (with opacity)
+- **Text:** `#2B2D42` - Primary headings and body copy
+- **Muted:** `#E5E7EB` - Hairline borders, grid lines, collapsed states
+- **Accent (Kings):** `#D1FAE5` - Background for monarchy events (border: `#059669`)
+- **Accent (Prophets):** `#EDE9FE` - Background for prophetic events (border: `#7C3AED`)
+- **Accent (Exile/Return):** `#FEF3C7` - Background for exile events (border: `#D97706`)
+
+## Typography
+
+Fonts selected for academic rigor and historical elegance.
+
+- **Headings (EN):** `Cormorant Garamond`, 600, 24px-32px
+- **Body (EN):** `Inter`, 400, 14px
+- **Headings (HE):** `Frank Ruhl Libre`, 600, 24px-32px
+- **Body (HE):** `Assistant`, 400, 14px
+- **Timeline Labels:** `Inter`, 500, 12px, uppercase, letter-spacing `0.05em`
+- **Verses:** `Cormorant Garamond`, 400, 16px, italic
+
+**Style notes:** Extremely sharp `1px` borders, zero box-shadow on main elements to keep the canvas flat, heavy blur (`backdrop-blur-md`) exclusively reserved for the hover cards and bottom sheets to create depth without clutter.
+
+## Design Tokens
+
+```css
+:root {
+  --color-primary: #1A365D;
+  --color-background: #FDFBF7;
+  --color-surface: rgba(255, 255, 255, 0.85);
+  --color-text: #2B2D42;
+  --color-border: #E5E7EB;
+  --font-serif-en: 'Cormorant Garamond', serif;
+  --font-sans-en: 'Inter', sans-serif;
+  --font-serif-he: 'Frank Ruhl Libre', serif;
+  --font-sans-he: 'Assistant', sans-serif;
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --spacing-4: 16px;
+  --border-thin: 1px solid var(--color-border);
+}
+```
+
+</details>
+
+---
+
+<details>
+<summary>Screen Specifications</summary>
+
+### Main Timeline (English)
+
+**Purpose:** Primary interface for exploring biblical chronology in LTR format.
+
+**Layout:** Full-viewport. Top navigation bar (48px), left sidebar for group labels (240px), main right area for `vis-timeline` canvas.
+
+**Key Elements:**
+- **Header Bar:** 48px height, `#FDFBF7` background, bottom border `1px solid #E5E7EB`. Contains title left, EN/HE language toggle right.
+- **Group Sidebar:** 240px width, sticky left. Contains vertically stacked group labels (e.g., "Kings of Judah").
+- **Sidebar Collapse Button:** 24px icon button (`<`), situated at the top right of the sidebar, to collapse the entire column to 40px width.
+- **Timeline Canvas:** Light grid background (`#E5E7EB` lines every 100 years). Series events rendered as rounded rectangles (`4px` radius).
+
+**States:**
+- **Empty:** "No eras selected" centered in `Cormorant Garamond`, 24px, `#6B7280`.
+- **Loading:** Subtle pulsing opacity on the grid canvas, 1.5s ease-in-out.
+- **Error:** Red toast notification `#FEE2E2` bottom center.
+
+**Components:**
+- **Event Block:** Height 28px, `4px` border-radius, `1px` solid border, pastel background. Text: 12px `Inter`, vertically centered, 8px left padding.
+- **Language Toggle:** `48px` x `24px` pill, `#E5E7EB` background, `#1A365D` text for active state.
+
+**Interactions:**
+- **Click Sidebar Collapse:** Sidebar transitions width from 240px to 40px, labels rotate -90deg.
+- **Scroll/Drag:** Pans the timeline left/right instantly.
+
+**Responsive:**
+- **Desktop:** Full layout as described.
+- **Tablet:** Sidebar defaults to collapsed (40px) to maximize timeline canvas width.
+- **Mobile:** Transitions to the Mobile Timeline View.
+
+### Main Timeline (Hebrew RTL)
+
+**Purpose:** Mirrored chronologic experience for native Hebrew readers.
+
+**Layout:** Exact mirror of Main Timeline. Sidebar on the right, timeline progressing Right-to-Left (older dates on the right, newer on the left).
+
+**Key Elements:**
+- **Header Bar:** Title right, toggle left.
+- **Group Sidebar:** 240px width, sticky right.
+- **RTL Canvas:** `vis-timeline` configured for `rtl: true`.
+
+**States:**
+- **Empty:** "לא נבחרו תקופות" centered.
+
+**Components:**
+- **Hebrew Typography Map:** Uses `Frank Ruhl Libre` for display and `Assistant` for UI labels.
+
+**Interactions:**
+- **Pan Right:** Moves back in time (towards Genesis).
+
+### Mobile Timeline View
+
+**Purpose:** Optimized mobile interface for exploring biblical chronology on small screens.
+
+**Layout:** Portrait-first viewport. Top navigation bar (56px for expanded touch targets), full-width timeline canvas. Left/right sidebars replaced by an off-canvas menu.
+
+**Key Elements:**
+- **Header Bar:** 56px height, contains a hamburger menu icon on the left (or right for RTL), title center, and a simplified EN/HE toggle.
+- **Off-Canvas Sidebar:** Hidden by default. Slides in overlaying the canvas to allow group toggling.
+- **Timeline Canvas:** Fills the remaining vertical space. Touch-optimized scrolling and scaling.
+
+**States:**
+- **Sidebar Open:** Dimmed overlay (`rgba(0,0,0,0.5)`) behind the sidebar menu to trap focus.
+
+**Components:**
+- **Mobile Event Block:** Height increased to `32px` to ensure reliable touch targets.
+
+**Interactions:**
+- **Pan/Zoom:** Swipe horizontally to pan. Pinch-to-zoom to expand or compress the timeline scale.
+- **Tap Event:** Triggers the Tap Detail State (bottom sheet).
+
+**Responsive:**
+- **Mobile:** Defaults to this view for screens under 768px.
+
+### Collapsed Overview
+
+**Purpose:** Bird's-eye view of all eras without granular event details.
+
+**Layout:** Same as Main Timeline, but vertical heights are compressed.
+
+**Key Elements:**
+- **Collapsed Group Row:** Height reduced from `120px` to `32px`.
+- **Density Ribbon:** Event blocks merge into a continuous 4px height colored ribbon indicating presence without text.
+
+**States:**
+- **Hover on Ribbon:** Shows tooltip with era name even when collapsed.
+
+**Components:**
+- **Group Header:** Background `#F9FAFB`, contains title. Hover `#F3F4F6`.
+
+**Interactions:**
+- **Click Group Header:** Expands row back to `120px`, revealing individual event blocks. Clicking again toggles collapse.
+
+### Hover / Tap Detail State
+
+**Purpose:** Display rich metadata and scripture without losing canvas context.
+
+**Layout:** Desktop: Absolute positioned card overlaying the timeline canvas relative to the mouse cursor. Mobile: Bottom sheet fixed to the bottom edge of the screen.
+
+**Key Elements:**
+- **Frosted Card (Desktop):** `320px` width, dynamic height. Background `rgba(255, 255, 255, 0.85)`, `backdrop-blur-md`, border `1px solid rgba(255, 255, 255, 0.4)`, shadow `0 10px 25px rgba(0, 0, 0, 0.05)`.
+- **Bottom Sheet (Mobile):** 100% width, fixed to bottom, rounded top corners (`16px`), heavy drop shadow, `backdrop-blur-md`. Includes a visual drag handle at the top center.
+- **Event Title:** 18px `Cormorant Garamond`, 600, `#1A365D`.
+- **Date Range:** 12px `Inter`, 500, `#6B7280`.
+- **Verse Block:** Left border `2px solid #1A365D`, padding left `12px`, 14px `Cormorant Garamond` italic.
+
+**States:**
+- **Loading Scripture:** Shimmer skeleton for verse text if fetching from API.
+
+**Components:**
+- **Pill Tag:** Category indicator top right of card (e.g., "Prophecy"). `24px` height, `10px` font, matching series color.
+
+**Interactions:**
+- **Hover Event Block (Desktop):** Delay 150ms -> Card fades in (`opacity: 0` to `1`, translate Y `4px` to `0`).
+- **Tap Event Block (Mobile):** Bottom sheet slides up smoothly from the bottom of the screen.
+- **Mouse Leave / Tap Outside:** Instant fade out (or slide down) to avoid ghosting or trapping the user.
+
+</details>
+
+---
+
+<details>
+<summary>Build Guide</summary>
+
+**Stack:** HTML + Tailwind CSS v3 + vis-timeline
+
+**Build Order:**
+1. **Core Layout & Typography:** Scaffold the CSS variables, LTR/RTL toggle logic, responsive breakpoints, and basic structural grid.
+2. **Timeline Initialization:** Implement `vis-timeline` basic wrapper with dummy data to establish the rendering pipeline and configure touch gestures.
+3. **Sidebar & Group Controls:** Utilize `vis-timeline`'s native nested groups and `groupTemplate` feature to handle the column headers instead of building a separately controlled HTML column, ensuring perfect vertical scroll synchronization. Implement the off-canvas hamburger menu for mobile.
+4. **Custom Styling:** Apply the "Refined Gallery" CSS overrides to the `vis-timeline` DOM elements (removing default shadows, applying hairline borders, adjusting touch target heights).
+5. **Hover / Tap Card Logic:** Implement the absolute positioning desktop hover cards and the mobile bottom sheet modal triggered by `vis-timeline` selection events.
+
+</details>

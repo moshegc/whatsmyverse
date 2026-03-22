@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Refined Gallery Timeline - Main Timeline (English)</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&amp;family=Inter:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#1351ae",
+                        "background-light": "#FDFBF7",
+                        "background-dark": "#111721",
+                        "surface": "#FFFFFF",
+                        "text-main": "#2B2D42",
+                        "border-muted": "#E5E7EB",
+                        "accent-kings-bg": "#D1FAE5",
+                        "accent-kings-border": "#059669",
+                        "accent-prophets-bg": "#EDE9FE",
+                        "accent-prophets-border": "#7C3AED",
+                        "accent-exile-bg": "#FEF3C7",
+                        "accent-exile-border": "#D97706"
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"],
+                        "serif-en": ["Cormorant Garamond", "serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #FDFBF7;
+            color: #2B2D42;
+            margin: 0;
+            overflow: hidden; /* Prevent body scroll, let timeline handle it */
+        }
+        .heading-serif {
+            font-family: 'Cormorant Garamond', serif;
+        }
+        
+        /* Custom scrollbar for timeline area */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #E5E7EB; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #D1D5DB; 
+        }
+
+        /* Timeline Grid Lines */
+        .timeline-grid-bg {
+            background-image: linear-gradient(to right, #E5E7EB 1px, transparent 1px);
+            background-size: 200px 100%; /* Represents 100 years approx */
+        }
+    </style>
+</head>
+<body class="flex flex-col h-screen text-text-main bg-background-light dark:bg-background-dark">
+<!-- Top Navigation Bar -->
+<header class="flex-none h-12 flex items-center justify-between px-6 bg-background-light dark:bg-background-dark border-b border-border-muted z-20">
+<div class="flex items-center gap-3">
+<h1 class="heading-serif font-semibold text-xl tracking-wide text-text-main dark:text-slate-100">Biblical Chronology</h1>
+</div>
+<!-- Language Toggle -->
+<div class="flex h-8 items-center bg-border-muted rounded p-1">
+<label class="flex cursor-pointer h-full items-center justify-center rounded px-3 has-[:checked]:bg-surface has-[:checked]:text-primary has-[:checked]:shadow-sm text-gray-500 text-xs font-medium uppercase tracking-wider transition-all">
+<span>EN</span>
+<input checked="" class="hidden" name="lang-toggle" type="radio" value="EN"/>
+</label>
+<label class="flex cursor-pointer h-full items-center justify-center rounded px-3 has-[:checked]:bg-surface has-[:checked]:text-primary has-[:checked]:shadow-sm text-gray-500 text-xs font-medium uppercase tracking-wider transition-all">
+<span>HE</span>
+<input class="hidden" name="lang-toggle" type="radio" value="HE"/>
+</label>
+</div>
+</header>
+<!-- Main Content Area -->
+<div class="flex flex-1 overflow-hidden relative">
+<!-- Collapsible Group Sidebar -->
+<!-- Note: Showing expanded state as default per instructions, width 240px -->
+<aside class="flex-none w-[240px] bg-surface dark:bg-slate-800 border-r border-border-muted flex flex-col z-10 transition-all duration-300 ease-in-out relative group">
+<!-- Collapse Button -->
+<button class="absolute -right-3 top-4 w-6 h-6 bg-surface border border-border-muted rounded-full flex items-center justify-center text-gray-500 hover:text-primary hover:border-primary shadow-sm z-20 transition-colors">
+<span class="material-symbols-outlined" data-icon="chevron_left" style="font-size: 16px;">chevron_left</span>
+</button>
+<div class="p-4 border-b border-border-muted h-[60px] flex items-center justify-between">
+<h2 class="text-sm font-medium uppercase tracking-[0.05em] text-gray-500">Eras</h2>
+</div>
+<!-- Group Labels Container -->
+<div class="flex-1 overflow-y-auto py-2 flex flex-col">
+<!-- Group: Prophets -->
+<div class="h-[120px] px-4 py-2 border-b border-border-muted flex items-start gap-3 hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors cursor-pointer">
+<span class="material-symbols-outlined text-gray-400 mt-0.5" data-icon="record_voice_over" style="font-size: 20px;">record_voice_over</span>
+<div>
+<h3 class="text-sm font-medium text-text-main dark:text-slate-200">Prophets</h3>
+<p class="text-xs text-gray-400 mt-1">1050 BCE - 400 BCE</p>
+</div>
+</div>
+<!-- Group: Kings of Judah -->
+<div class="h-[120px] px-4 py-2 border-b border-border-muted flex items-start gap-3 hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors cursor-pointer bg-gray-50/50">
+<span class="material-symbols-outlined text-gray-400 mt-0.5" data-icon="crown" style="font-size: 20px;">crown</span>
+<div>
+<h3 class="text-sm font-medium text-text-main dark:text-slate-200">Kings of Judah</h3>
+<p class="text-xs text-gray-400 mt-1">1050 BCE - 586 BCE</p>
+</div>
+</div>
+<!-- Group: Kings of Israel -->
+<div class="h-[120px] px-4 py-2 border-b border-border-muted flex items-start gap-3 hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors cursor-pointer">
+<span class="material-symbols-outlined text-gray-400 mt-0.5" data-icon="crown" style="font-size: 20px;">crown</span>
+<div>
+<h3 class="text-sm font-medium text-text-main dark:text-slate-200">Kings of Israel</h3>
+<p class="text-xs text-gray-400 mt-1">930 BCE - 722 BCE</p>
+</div>
+</div>
+<!-- Group: Exile & Return -->
+<div class="h-[120px] px-4 py-2 border-b border-border-muted flex items-start gap-3 hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors cursor-pointer">
+<span class="material-symbols-outlined text-gray-400 mt-0.5" data-icon="map_pin" style="font-size: 20px;">location_pin</span>
+<div>
+<h3 class="text-sm font-medium text-text-main dark:text-slate-200">Exile &amp; Return</h3>
+<p class="text-xs text-gray-400 mt-1">586 BCE - 400 BCE</p>
+</div>
+</div>
+</div>
+</aside>
+<!-- Timeline Canvas Area -->
+<main class="flex-1 relative overflow-hidden bg-background-light dark:bg-slate-900 cursor-grab active:cursor-grabbing flex flex-col">
+<!-- Timeline Axis (Top) -->
+<div class="h-[60px] border-b border-border-muted bg-surface/80 dark:bg-slate-800/80 backdrop-blur-sm sticky top-0 z-10 flex items-end">
+<div class="w-[2000px] h-full relative timeline-grid-bg">
+<!-- Axis Markers -->
+<div class="absolute bottom-2 left-[200px] -translate-x-1/2 text-[11px] font-medium text-gray-400 tracking-wider">1000 BCE</div>
+<div class="absolute bottom-2 left-[400px] -translate-x-1/2 text-[11px] font-medium text-gray-400 tracking-wider">900 BCE</div>
+<div class="absolute bottom-2 left-[600px] -translate-x-1/2 text-[11px] font-medium text-gray-400 tracking-wider">800 BCE</div>
+<div class="absolute bottom-2 left-[800px] -translate-x-1/2 text-[11px] font-medium text-gray-400 tracking-wider">700 BCE</div>
+<div class="absolute bottom-2 left-[1000px] -translate-x-1/2 text-[11px] font-medium text-gray-400 tracking-wider">600 BCE</div>
+<div class="absolute bottom-2 left-[1200px] -translate-x-1/2 text-[11px] font-medium text-gray-400 tracking-wider">500 BCE</div>
+<div class="absolute bottom-2 left-[1400px] -translate-x-1/2 text-[11px] font-medium text-gray-400 tracking-wider">400 BCE</div>
+</div>
+</div>
+<!-- Events Grid Area -->
+<div class="flex-1 overflow-x-auto overflow-y-auto relative timeline-grid-bg">
+<div class="w-[2000px] min-h-full relative py-2">
+<!-- Track: Prophets (Height correlates with sidebar groups: ~120px each) -->
+<div class="relative h-[120px] border-b border-border-muted/50 w-full group/track">
+<!-- Event Block: Samuel -->
+<div class="absolute top-4 left-[100px] w-[80px] h-[28px] bg-accent-prophets-bg border border-accent-prophets-border rounded flex items-center px-2 shadow-sm hover:shadow-md transition-shadow cursor-pointer z-10">
+<span class="text-xs font-medium text-text-main truncate">Samuel</span>
+</div>
+<!-- Event Block: Elijah -->
+<div class="absolute top-12 left-[300px] w-[60px] h-[28px] bg-accent-prophets-bg border border-accent-prophets-border rounded flex items-center px-2 shadow-sm hover:shadow-md transition-shadow cursor-pointer z-10">
+<span class="text-xs font-medium text-text-main truncate">Elijah</span>
+</div>
+<!-- Event Block: Isaiah -->
+<div class="absolute top-4 left-[650px] w-[120px] h-[28px] bg-accent-prophets-bg border border-accent-prophets-border rounded flex items-center px-2 shadow-sm hover:shadow-md transition-shadow cursor-pointer z-10">
+<span class="text-xs font-medium text-text-main truncate">Isaiah</span>
+</div>
+<!-- Event Block: Jeremiah -->
+<div class="absolute top-12 left-[850px] w-[140px] h-[28px] bg-accent-prophets-bg border border-accent-prophets-border rounded flex items-center px-2 shadow-sm hover:shadow-md transition-shadow cursor-pointer z-10">
+<span class="text-xs font-medium text-text-main truncate">Jeremiah</span>
+</div>
+</div>
+<!-- Track: Kings of Judah -->
+<div class="relative h-[120px] border-b border-border-muted/50 w-full bg-gray-50/30 group/track">
+<!-- Event Block: David -->
+<div class="absolute top-4 left-[180px] w-[80px] h-[28px] bg-accent-kings-bg border border-accent-kings-border rounded flex items-center px-2 shadow-sm hover:shadow-md transition-shadow cursor-pointer z-10">
+<span class="text-xs font-medium text-text-main truncate">David</span>
+</div>
+<!-- Event Block: Solomon -->
+<div class="absolute top-12 left-[260px] w-[80px] h-[28px] bg-accent-kings-bg border border-accent-kings-border rounded flex items-center px-2 shadow-sm hover:shadow-md transition-shadow cursor-pointer z-10">
+<span class="text-xs font-medium text-text-main truncate">Solomon</span>
+</div>
+<!-- Event Block: Hezekiah -->
+<div class="absolute top-4 left-[680px] w-[58px] h-[28px] bg-accent-kings-bg border border-accent-kings-border rounded flex items-center px-2 shadow-sm hover:shadow-md transition-shadow cursor-pointer z-10">
+<span class="text-xs font-medium text-text-main truncate">Hezekiah</span>
+</div>
+<!-- Event Block: Josiah -->
+<div class="absolute top-12 left-[820px] w-[62px] h-[28px] bg-accent-kings-bg border border-accent-kings-border rounded flex items-center px-2 shadow-sm hover:shadow-md transition-shadow cursor-pointer z-10">
+<span class="text-xs font-medium text-text-main truncate">Josiah</span>
+</div>
+</div>
+<!-- Track: Kings of Israel -->
+<div class="relative h-[120px] border-b border-border-muted/50 w-full group/track">
+<!-- Event Block: Jeroboam I -->
+<div class="absolute top-4 left-[340px] w-[44px] h-[28px] bg-accent-kings-bg border border-accent-kings-border rounded flex items-center px-2 shadow-sm hover:shadow-md transition-shadow cursor-pointer z-10 opacity-80">
+<span class="text-xs font-medium text-text-main truncate">Jeroboam</span>
+</div>
+<!-- Event Block: Ahab -->
+<div class="absolute top-12 left-[440px] w-[44px] h-[28px] bg-accent-kings-bg border border-accent-kings-border rounded flex items-center px-2 shadow-sm hover:shadow-md transition-shadow cursor-pointer z-10 opacity-80">
+<span class="text-xs font-medium text-text-main truncate">Ahab</span>
+</div>
+<!-- Event Block: Fall of Samaria -->
+<div class="absolute top-4 left-[756px] w-[4px] h-[80px] bg-red-500/50 rounded flex items-center justify-center cursor-pointer z-0 pointer-events-none">
+<div class="absolute -top-6 text-[10px] text-red-600 font-medium whitespace-nowrap">Fall of Israel (722)</div>
+</div>
+</div>
+<!-- Track: Exile & Return -->
+<div class="relative h-[120px] w-full group/track">
+<!-- Event Block: Babylonian Exile -->
+<div class="absolute top-4 left-[1028px] w-[140px] h-[28px] bg-accent-exile-bg border border-accent-exile-border rounded flex items-center px-2 shadow-sm hover:shadow-md transition-shadow cursor-pointer z-10">
+<span class="text-xs font-medium text-text-main truncate">Babylonian Exile</span>
+</div>
+<!-- Event Block: Return under Zerubbabel -->
+<div class="absolute top-12 left-[1168px] w-[100px] h-[28px] bg-accent-exile-bg border border-accent-exile-border rounded flex items-center px-2 shadow-sm hover:shadow-md transition-shadow cursor-pointer z-10">
+<span class="text-xs font-medium text-text-main truncate">First Return</span>
+</div>
+<!-- Event Block: Temple Rebuilt -->
+<div class="absolute top-4 left-[1230px] w-[4px] h-[80px] bg-blue-500/30 rounded flex items-center justify-center cursor-pointer z-0 pointer-events-none">
+<div class="absolute -top-6 text-[10px] text-blue-600 font-medium whitespace-nowrap">Temple Rebuilt (516)</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>
