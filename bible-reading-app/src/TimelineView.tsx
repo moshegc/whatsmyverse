@@ -1,6 +1,6 @@
 // src/TimelineView.tsx
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { Timeline } from 'vis-timeline';
 import { DataSet } from 'vis-data';
 import { HDate } from '@hebcal/core';
@@ -10,238 +10,179 @@ import { generateColorFromString } from './colorUtils';
 import { generateHistoricalTimelineData, type HistoricalTimelineItem } from './generateHistoricalTimelineData';
 import { historicalEventCategories } from './historicalEvents';
 import { useLocale } from './LocaleContext';
-import { localize, getBookName, renderHDate, t } from './i18n';
+import { localize } from './i18n';
+import DetailCard, { type SelectedItem } from './DetailCard';
 
 const ONE_DAY_MS = 1000 * 60 * 60 * 24;
 const ONE_YEAR_MS = ONE_DAY_MS * 365;
 
-function getTextColorForBackground(rgbColor: string): 'black' | 'white' {
-    const rgb = rgbColor.match(/\d+/g);
-    if (!rgb) return 'black'; // default to black
-    const [r, g, b] = rgb.map(Number);
-    const luminance = 0.299 * r + 0.587 * g + 0.114 * b;
-    return luminance > 186 ? 'black' : 'white';
+interface TimelineViewProps {
+  collapsedGroups: Set<string>;
 }
 
-type SelectedItem =
-    | { kind: 'reading'; data: TimelineItem }
-    | { kind: 'historical'; data: HistoricalTimelineItem };
+const TimelineView = ({ collapsedGroups }: TimelineViewProps) => {
+  const timelineRef = useRef<HTMLDivElement>(null);
+  const timelineInstanceRef = useRef<Timeline | null>(null);
+  const savedWindowRef = useRef<{ start: Date; end: Date } | null>(null);
+  const [selectedItem, setSelectedItem] = useState<SelectedItem | null>(null);
+  const [cardPosition, setCardPosition] = useState<{ x: number; y: number } | undefined>();
+  const { locale } = useLocale();
+  const itemsRef = useRef<DataSet<TimelineItem | HistoricalTimelineItem> | null>(null);
 
-const TimelineView = () => {
-    const timelineRef = useRef(null);
-    const [selectedItem, setSelectedItem] = useState<SelectedItem | null>(null);
-    const { locale, toggleLocale } = useLocale();
-    const savedWindowRef = useRef<{ start: Date; end: Date } | null>(null);
-    const timelineInstanceRef = useRef<Timeline | null>(null);
+  // ── Build timeline ──────────────────────────────────────────────────────
+  useEffect(() => {
+    const readingItems = generateTimelineData(locale);
+    const historicalItems = generateHistoricalTimelineData(locale);
 
-    useEffect(() => {
-        // ── Reading-schedule items ──────────────────────────────────────
-        const readingItems = generateTimelineData(locale);
+    const items = new DataSet<TimelineItem | HistoricalTimelineItem>([
+      ...readingItems,
+      ...historicalItems,
+    ]);
+    itemsRef.current = items;
 
-        // ── Historical-event items ─────────────────────────────────────
-        const historicalItems = generateHistoricalTimelineData(locale);
+    // ── Groups ─────────────────────────────────────────────────────
+    const historicalGroups = historicalEventCategories.map((cat) => ({
+      id: cat.id,
+      content: localize(cat.name, cat.nameHe, locale),
+      order: cat.order,
+      style: `color: ${cat.color};`,
+      className: 'hist-group',
+      visible: !collapsedGroups.has(cat.id),
+      ...(cat.stacked ? { stack: true } : {}),
+    }));
 
-        // Merge both sets into a single DataSet
-        const items = new DataSet<TimelineItem | HistoricalTimelineItem>([
-            ...readingItems,
-            ...historicalItems,
-        ]);
+    const readingGroups = schedules.map((s, idx) => ({
+      id: s.id,
+      content: localize(s.name, s.nameHe, locale),
+      order: 100 + idx,
+      style: `color: ${generateColorFromString(s.id)};`,
+      visible: !collapsedGroups.has(s.id),
+    }));
 
-        // ── Groups ─────────────────────────────────────────────────────
-        // Historical categories first (order < 100), then reading schedules.
-        // Categories with stacked:true get per-group stack override.
-        const historicalGroups = historicalEventCategories.map(cat => ({
-            id: cat.id,
-            content: localize(cat.name, cat.nameHe, locale),
-            order: cat.order,
-            style: `color: ${cat.color};`,
-            className: 'hist-group',
-            ...(cat.stacked ? { stack: true } : {}),
-        }));
+    const groups = new DataSet([...historicalGroups, ...readingGroups]);
 
-        const readingGroups = schedules.map((s, idx) => ({
-            id: s.id,
-            content: localize(s.name, s.nameHe, locale),
-            order: 100 + idx,
-            style: `color: ${generateColorFromString(s.id)};`,
-        }));
+    const options = {
+      stack: false,
+      width: '100%',
+      height: '100%',
+      zoomMin: ONE_DAY_MS,
+      zoomMax: ONE_YEAR_MS * 6000,
+      min: new HDate(1, 1, 1).greg().getTime() - ONE_YEAR_MS,
+      max: new HDate(1, 1, 6000).greg().getTime() + ONE_YEAR_MS,
+      calendar: 'hebrew',
+      rtl: locale === 'he',
+      locale: locale,
+      showCurrentTime: false,
+      orientation: { axis: 'top' },
+      margin: { item: { horizontal: 2, vertical: 4 } },
+    };
 
-        const groups = new DataSet([...historicalGroups, ...readingGroups]);
+    let timeline: Timeline | null = null;
+    if (timelineRef.current) {
+      timeline = new Timeline(timelineRef.current, items, groups, options);
+      timelineInstanceRef.current = timeline;
 
-        const options = {
-            stack: false,
-            width: '100%',
-            height: '100%',
-            zoomMin: ONE_DAY_MS,
-            zoomMax: ONE_YEAR_MS * 6000,
-            min: new HDate(1, 1, 1).greg().getTime() - ONE_YEAR_MS, // Start a bit before the first possible date
-            max: new HDate(1, 1, 6000).greg().getTime() + ONE_YEAR_MS, // End a bit after the last possible date 
-            calendar: 'hebrew',
-            rtl: locale === 'he',
-            locale: locale
-        };
+      if (savedWindowRef.current) {
+        timeline.setWindow(savedWindowRef.current.start, savedWindowRef.current.end, { animation: false });
+      } else {
+        timeline.fit();
+      }
 
-        let timeline: Timeline | null = null;
-        if (timelineRef.current) {
-            timeline = new Timeline(timelineRef.current, items, groups, options);
-            timelineInstanceRef.current = timeline;
-
-            // Restore previous window or fit to all items
-            if (savedWindowRef.current) {
-                timeline.setWindow(savedWindowRef.current.start, savedWindowRef.current.end, { animation: false });
-            } else {
-                timeline.fit();
-            }
-
-            timeline.on('select', (properties) => {
-                const { items: selectedItems } = properties;
-                if (selectedItems.length > 0) {
-                    const raw: any = items.get(selectedItems[0]);
-                    if (raw && typeof raw._event !== 'undefined') {
-                        setSelectedItem({ kind: 'historical', data: raw as HistoricalTimelineItem });
-                    } else if (raw) {
-                        setSelectedItem({ kind: 'reading', data: raw as TimelineItem });
-                    }
-                } else {
-                    setSelectedItem(null);
-                }
+      // Selection handler
+      timeline.on('select', (properties: { items: string[]; event: MouseEvent }) => {
+        const { items: selectedItems, event } = properties;
+        if (selectedItems.length > 0) {
+          const raw: any = items.get(selectedItems[0]);
+          if (raw && typeof raw._event !== 'undefined') {
+            setSelectedItem({ kind: 'historical', data: raw as HistoricalTimelineItem });
+          } else if (raw) {
+            setSelectedItem({ kind: 'reading', data: raw as TimelineItem });
+          }
+          // Set position for desktop card
+          if (event && timelineRef.current) {
+            const rect = timelineRef.current.getBoundingClientRect();
+            setCardPosition({
+              x: event.clientX - rect.left,
+              y: event.clientY - rect.top,
             });
-
-            timeline.on('click', (properties) => {
-                if (!properties.item) {
-                    setSelectedItem(null);
-                }
-            });
+          }
+        } else {
+          setSelectedItem(null);
         }
+      });
 
-        return () => {
-            if (timeline) {
-                timeline.destroy();
-                setSelectedItem(null);
-            }
-            // Clean up RTL artifacts that vis-timeline's destroy() doesn't remove
-            if (timelineRef.current) {
-                const el = timelineRef.current as HTMLElement;
-                el.style.direction = '';
-                el.classList.remove('vis-rtl');
-                el.innerHTML = '';
-            }
-        };
-    }, [locale]);
+      timeline.on('click', (properties: { item: string | null }) => {
+        if (!properties.item) {
+          setSelectedItem(null);
+        }
+      });
+    }
 
-    const popupBackgroundColor = selectedItem
-        ? selectedItem.kind === 'reading'
-            ? generateColorFromString(selectedItem.data.scheduleId)
-            : historicalEventCategories.find(c => c.id === selectedItem.data._event.categoryId)?.color || '#666'
-        : 'white';
-    const popupTextColor = getTextColorForBackground(popupBackgroundColor);
+    return () => {
+      if (timeline) {
+        // Save window before destroy
+        const window = timeline.getWindow();
+        savedWindowRef.current = { start: window.start, end: window.end };
+        timeline.destroy();
+        setSelectedItem(null);
+      }
+      if (timelineRef.current) {
+        const el = timelineRef.current as HTMLElement;
+        el.style.direction = '';
+        el.classList.remove('vis-rtl');
+        el.innerHTML = '';
+      }
+    };
+  }, [locale]);
 
-    return (
-        <div style={{ position: 'relative', height: '50vh', width: '60vh' }} dir={locale === 'he' ? 'rtl' : 'ltr'}>
-            {/* Locale toggle button */}
-            <button
-                onClick={toggleLocale}
-                style={{
-                    position: 'absolute',
-                    top: '8px',
-                    right: locale === 'he' ? undefined : '8px',
-                    left: locale === 'he' ? '8px' : undefined,
-                    zIndex: 1001,
-                    padding: '4px 12px',
-                    borderRadius: '4px',
-                    border: '1px solid #ccc',
-                    background: '#fff',
-                    cursor: 'pointer',
-                    fontWeight: 'bold',
-                    fontSize: '14px',
-                }}
-            >
-                {t('localeToggle', locale)}
-            </button>
-            <div ref={timelineRef} style={{ height: '100%', width: '100%' }} />
-            {selectedItem && (
-                <div
-                    style={{
-                        position: 'absolute',
-                        top: '50%',
-                        left: '50%',
-                        transform: 'translate(-50%, -50%)',
-                        backgroundColor: popupBackgroundColor,
-                        color: popupTextColor,
-                        border: '1px solid #ccc',
-                        borderRadius: '8px',
-                        padding: '15px',
-                        zIndex: 1000,
-                        width: '350px',
-                        boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-                        fontFamily: 'sans-serif'
-                    }}
-                >
-                    <button
-                        onClick={() => setSelectedItem(null)}
-                        style={{
-                            position: 'absolute',
-                            top: '8px',
-                            right: locale === 'he' ? undefined : '8px',
-                            left: locale === 'he' ? '8px' : undefined,
-                            border: 'none',
-                            background: 'transparent',
-                            cursor: 'pointer',
-                            fontSize: '20px',
-                            fontWeight: 'bold',
-                            color: popupTextColor
-                        }}
-                    >
-                        &times;
-                    </button>
+  // ── Update group visibility when collapsedGroups change ─────────────────
+  useEffect(() => {
+    const timeline = timelineInstanceRef.current;
+    if (!timeline) return;
 
-                    {/* ── Reading-schedule popup ─────────────────── */}
-                    {selectedItem.kind === 'reading' && (() => {
-                        const item = selectedItem.data;
-                        const bookName = getBookName(item.verses[0].book, locale);
-                        return (
-                            <>
-                                <h3 style={{ marginTop: 0, marginBottom: '5px', borderBottom: `1px solid ${popupTextColor === 'black' ? '#eee' : '#444'}`, paddingBottom: '5px' }}>
-                                    {bookName}{' '}
-                                    {item.verses[0].chapter}
-                                    {schedules.find(s => s.id === item.scheduleId)?.displayMode === 'verse' && `:${item.verses[0].verse}`}
-                                </h3>
-                                <h4 style={{ marginTop: 0, marginBottom: '10px', fontStyle: 'italic' }}>
-                                    {renderHDate(item.start, locale)} - {renderHDate(item.end, locale)}
-                                </h4>
-                                <div style={{ maxHeight: '200px', overflowY: 'auto' }}>
-                                    {item.verses.map((v, index) => (
-                                        <div key={index} style={{ marginBottom: '8px' }}>
-                                            <sup style={{ fontWeight: 'bold' }}>{v.verse}</sup> {v.text}
-                                        </div>
-                                    ))}
-                                </div>
-                            </>
-                        );
-                    })()}
+    // Get all group IDs
+    const allGroupIds = [
+      ...historicalEventCategories.map((c) => c.id),
+      ...schedules.map((s) => s.id),
+    ];
 
-                    {/* ── Historical-event popup ─────────────────── */}
-                    {selectedItem.kind === 'historical' && (() => {
-                        const ev = selectedItem.data._event;
-                        return (
-                            <>
-                                <h3 style={{ marginTop: 0, marginBottom: '5px', borderBottom: `1px solid ${popupTextColor === 'black' ? '#eee' : '#444'}`, paddingBottom: '5px' }}>
-                                    {localize(ev.name, ev.nameHe, locale)}
-                                </h3>
-                                <h4 style={{ marginTop: 0, marginBottom: '10px', fontStyle: 'italic' }}>
-                                    {renderHDate(selectedItem.data.start, locale)}
-                                    {selectedItem.data.end ? ` — ${renderHDate(selectedItem.data.end, locale)}` : ''}
-                                </h4>
-                                {(ev.description || ev.descriptionHe) && (
-                                    <p style={{ margin: 0 }}>{localize(ev.description || '', ev.descriptionHe, locale)}</p>
-                                )}
-                            </>
-                        );
-                    })()}
-                </div>
-            )}
-        </div>
-    );
+    // Update visibility for each group
+    const groupUpdates = allGroupIds.map((id) => ({
+      id,
+      visible: !collapsedGroups.has(id),
+    }));
+
+    try {
+      const groups = (timeline as any).groupsData;
+      if (groups) {
+        groups.update(groupUpdates);
+      }
+    } catch {
+      // Fallback: ignore if groups data not accessible
+    }
+  }, [collapsedGroups]);
+
+  const handleCloseDetail = useCallback(() => {
+    setSelectedItem(null);
+    // Deselect in timeline
+    timelineInstanceRef.current?.setSelection([]);
+  }, []);
+
+  return (
+    <div className="timeline-canvas" dir={locale === 'he' ? 'rtl' : 'ltr'}>
+      <div
+        ref={timelineRef}
+        style={{ height: '100%', width: '100%' }}
+      />
+      {selectedItem && (
+        <DetailCard
+          item={selectedItem}
+          onClose={handleCloseDetail}
+          position={cardPosition}
+        />
+      )}
+    </div>
+  );
 };
 
 export default TimelineView;

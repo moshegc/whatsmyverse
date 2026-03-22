@@ -66,8 +66,11 @@ export function renderHDate(date: Date, locale: Locale): string {
 // ─── UI strings ─────────────────────────────────────────────────────────────
 
 const uiStrings: Record<string, Record<Locale, string>> = {
-  appTitle: { en: 'What\'s my Verse?', he: 'פסוקו של יום' },
+  appTitle: { en: 'Biblical Chronology', he: 'כרונולוגיה מקראית' },
   localeToggle: { en: 'עב', he: 'EN' },
+  eras: { en: 'Eras', he: 'תקופות' },
+  noErasSelected: { en: 'No eras selected', he: 'לא נבחרו תקופות' },
+  close: { en: 'Close', he: 'סגור' },
 };
 
 /**
