@@ -25,7 +25,6 @@ const TimelineView = ({ collapsedGroups }: TimelineViewProps) => {
   const timelineInstanceRef = useRef<Timeline | null>(null);
   const savedWindowRef = useRef<{ start: Date; end: Date } | null>(null);
   const [selectedItem, setSelectedItem] = useState<SelectedItem | null>(null);
-  const [cardPosition, setCardPosition] = useState<{ x: number; y: number } | undefined>();
   const { locale } = useLocale();
   const itemsRef = useRef<DataSet<TimelineItem | HistoricalTimelineItem> | null>(null);
 
@@ -89,8 +88,8 @@ const TimelineView = ({ collapsedGroups }: TimelineViewProps) => {
       }
 
       // Selection handler
-      timeline.on('select', (properties: { items: string[]; event: MouseEvent }) => {
-        const { items: selectedItems, event } = properties;
+      timeline.on('select', (properties: { items: string[] }) => {
+        const { items: selectedItems } = properties;
         if (selectedItems.length > 0) {
           const raw: any = items.get(selectedItems[0]);
           if (raw && typeof raw._event !== 'undefined') {
@@ -98,14 +97,7 @@ const TimelineView = ({ collapsedGroups }: TimelineViewProps) => {
           } else if (raw) {
             setSelectedItem({ kind: 'reading', data: raw as TimelineItem });
           }
-          // Set position for desktop card
-          if (event && timelineRef.current) {
-            const rect = timelineRef.current.getBoundingClientRect();
-            setCardPosition({
-              x: event.clientX - rect.left,
-              y: event.clientY - rect.top,
-            });
-          }
+
         } else {
           setSelectedItem(null);
         }
@@ -178,7 +170,6 @@ const TimelineView = ({ collapsedGroups }: TimelineViewProps) => {
         <DetailCard
           item={selectedItem}
           onClose={handleCloseDetail}
-          position={cardPosition}
         />
       )}
     </div>

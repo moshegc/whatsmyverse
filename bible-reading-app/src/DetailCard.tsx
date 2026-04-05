@@ -14,27 +14,13 @@ export type SelectedItem =
 interface DetailCardProps {
   item: SelectedItem;
   onClose: () => void;
-  /** Position for desktop frosted card (relative to timeline canvas) */
-  position?: { x: number; y: number };
 }
 
-const DetailCard = ({ item, onClose, position }: DetailCardProps) => {
+const DetailCard = ({ item, onClose }: DetailCardProps) => {
   const { locale } = useLocale();
 
-  // Compute the card position style (desktop only; mobile CSS overrides)
-  const posStyle: React.CSSProperties = position
-    ? {
-        top: Math.max(16, position.y - 20),
-        left: Math.max(16, position.x + 16),
-      }
-    : {
-        top: '50%',
-        left: '50%',
-        transform: 'translate(-50%, -50%)',
-      };
-
   return (
-    <div className="detail-card" style={posStyle} onClick={(e) => e.stopPropagation()}>
+    <div className="detail-card" onClick={(e) => e.stopPropagation()}>
       {/* Mobile drag handle */}
       <div className="bottom-sheet-handle" />
 
