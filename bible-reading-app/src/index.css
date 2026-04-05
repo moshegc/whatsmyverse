@@ -221,19 +221,23 @@ body {
 /* ── Sidebar ─────────────────────────────────────────────────────────────── */
 .sidebar {
   width: var(--sidebar-width);
-  flex-shrink: 0;
   background: var(--color-surface-solid);
   border-right: var(--border-thin);
   display: flex;
   flex-direction: column;
   z-index: 10;
   transition: width 0.3s ease, transform 0.3s ease;
-  position: relative;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
   overflow: hidden;
 }
 [dir="rtl"] .sidebar {
   border-right: none;
   border-left: var(--border-thin);
+  left: auto;
+  right: 0;
 }
 
 .sidebar.collapsed {
@@ -316,6 +320,10 @@ body {
 }
 .group-row.active {
   background: rgba(26, 54, 93, 0.04);
+}
+.group-row.disabled {
+  opacity: 0.45;
+  filter: grayscale(0.8);
 }
 
 .group-row-icon {

@@ -27,6 +27,7 @@ const TimelineView = ({ collapsedGroups }: TimelineViewProps) => {
   const [selectedItem, setSelectedItem] = useState<SelectedItem | null>(null);
   const { locale } = useLocale();
   const itemsRef = useRef<DataSet<TimelineItem | HistoricalTimelineItem> | null>(null);
+  const groupsRef = useRef<DataSet<any> | null>(null);
 
   // ── Build timeline ──────────────────────────────────────────────────────
   useEffect(() => {
@@ -59,6 +60,7 @@ const TimelineView = ({ collapsedGroups }: TimelineViewProps) => {
     }));
 
     const groups = new DataSet([...historicalGroups, ...readingGroups]);
+    groupsRef.current = groups;
 
     const options = {
       stack: false,
@@ -129,8 +131,8 @@ const TimelineView = ({ collapsedGroups }: TimelineViewProps) => {
 
   // ── Update group visibility when collapsedGroups change ─────────────────
   useEffect(() => {
-    const timeline = timelineInstanceRef.current;
-    if (!timeline) return;
+    const groups = groupsRef.current;
+    if (!groups) return;
 
     // Get all group IDs
     const allGroupIds = [
@@ -138,20 +140,13 @@ const TimelineView = ({ collapsedGroups }: TimelineViewProps) => {
       ...schedules.map((s) => s.id),
     ];
 
-    // Update visibility for each group
+    // Update visibility on the original DataSet; the DataView will re-filter
     const groupUpdates = allGroupIds.map((id) => ({
       id,
       visible: !collapsedGroups.has(id),
     }));
 
-    try {
-      const groups = (timeline as any).groupsData;
-      if (groups) {
-        groups.update(groupUpdates);
-      }
-    } catch {
-      // Fallback: ignore if groups data not accessible
-    }
+    groups.update(groupUpdates);
   }, [collapsedGroups]);
 
   const handleCloseDetail = useCallback(() => {

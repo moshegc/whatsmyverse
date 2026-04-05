@@ -40,9 +40,13 @@ const Sidebar = ({
 }: SidebarProps) => {
   const { locale } = useLocale();
 
+  // On mobile, always show expanded content regardless of desktop collapsed state
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+  const effectiveCollapsed = isMobile ? false : collapsed;
+
   const sidebarClass = [
     'sidebar',
-    collapsed ? 'collapsed' : '',
+    effectiveCollapsed ? 'collapsed' : '',
     mobileOpen ? 'mobile-open' : '',
   ]
     .filter(Boolean)
@@ -77,7 +81,7 @@ const Sidebar = ({
             return (
               <div
                 key={cat.id}
-                className={`group-row ${isCollapsed ? '' : 'active'}`}
+                className={`group-row ${isCollapsed ? 'disabled' : 'active'}`}
                 onClick={() => onToggleGroup(cat.id)}
                 title={localize(cat.name, cat.nameHe, locale)}
               >
@@ -85,7 +89,7 @@ const Sidebar = ({
                   className="group-color-dot"
                   style={{ backgroundColor: cat.color }}
                 />
-                {!collapsed && (
+                {!effectiveCollapsed && (
                   <span
                     className="material-symbols-outlined group-row-icon"
                     style={{ color: cat.color }}
@@ -109,7 +113,7 @@ const Sidebar = ({
             return (
               <div
                 key={s.id}
-                className={`group-row ${isCollapsed ? '' : 'active'}`}
+                className={`group-row ${isCollapsed ? 'disabled' : 'active'}`}
                 onClick={() => onToggleGroup(s.id)}
                 title={localize(s.name, s.nameHe, locale)}
               >
@@ -117,7 +121,7 @@ const Sidebar = ({
                   className="group-color-dot"
                   style={{ backgroundColor: color }}
                 />
-                {!collapsed && (
+                {!effectiveCollapsed && (
                   <span
                     className="material-symbols-outlined group-row-icon"
                     style={{ color }}
