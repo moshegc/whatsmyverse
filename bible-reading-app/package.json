@@ -5,7 +5,10 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build:vis": "cd ../timeline/vis-timeline && npm run build",
+    "build:app": "tsc -b && vite build",
+    "build": "npm run build:vis && npm run build:app",
+    "lint-fix": "eslint --fix .",
     "lint": "eslint .",
     "preview": "vite preview"
   },
