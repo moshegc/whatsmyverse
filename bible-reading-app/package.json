@@ -5,9 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build:vis": "cd ../timeline/vis-timeline && npm install && npm run build",
-    "build:app": "tsc -b && vite build",
-    "build": "npm run build:vis && npm run build:app",
+    "build": "tsc -b && vite build",
     "lint-fix": "eslint --fix .",
     "lint": "eslint .",
     "preview": "vite preview"
@@ -20,7 +18,7 @@
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "vis-data": "^8.0.3",
-    "vis-timeline": "file:../timeline/vis-timeline"
+    "vis-timeline": "github:moshegc/vis-timeline-heb"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",
