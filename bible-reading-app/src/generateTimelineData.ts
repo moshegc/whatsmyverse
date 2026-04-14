@@ -2,7 +2,7 @@
 
 import { schedules, type ReadingSchedule } from './config';
 import { generateReadingMap } from './generateReadingMap';
-import { HDate } from '@hebcal/core';
+import { HDate, gematriya } from '@hebcal/core';
 import { generateColorFromString } from './colorUtils';
 import type { BibleVerse } from './csvUtils';
 import { getBookName, type Locale } from './i18n';
@@ -47,6 +47,12 @@ function calculateStartDateForPeriod(schedule: ReadingSchedule, periodIndex: num
     }
 }
 
+function getNumber(num: number, locale: Locale): string {
+    if (locale === 'he') {
+        return gematriya(num);
+    }
+    return num.toString();
+}
 
 export function generateTimelineData(locale: Locale = 'en'): TimelineItem[] {
     const readingMap = generateReadingMap();
@@ -64,11 +70,11 @@ export function generateTimelineData(locale: Locale = 'en'): TimelineItem[] {
 
             const verses = entry.verses;
             const book = getBookName(verses[0]?.book || 'Unknown', locale);
-            const chapter = verses[0]?.chapter || 'N/A';
-            const verse_num = verses[0]?.verse || 'N/A';
+            const chapter = getNumber(verses[0]?.chapter || 0, locale);
+            const verse_num = getNumber(verses[0]?.verse || 0, locale);
             const verse = verses[0]?.text || '';
 
-            let content = `${book} ${chapter}:${verse_num} - ${verse}`;
+            let content = `${book} ${chapter},${verse_num} - ${verse}`;
             if (schedule.displayMode === 'chapter') {
                 content = `${book} ${chapter} - ${verse}`;
             }

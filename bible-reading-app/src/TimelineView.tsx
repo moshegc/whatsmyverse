@@ -68,7 +68,7 @@ const TimelineView = ({ collapsedGroups }: TimelineViewProps) => {
       width: '100%',
       height: '100%',
       zoomMin: ONE_DAY_MS,
-      zoomMax: ONE_YEAR_MS * 6000,
+      zoomMax: window.innerWidth <= 768 ? ONE_YEAR_MS * 1500 : ONE_YEAR_MS * 6000,
       min: new HDate(1, 1, 1).greg().getTime() - ONE_YEAR_MS,
       max: new HDate(1, 1, 6000).greg().getTime() + ONE_YEAR_MS,
       calendar: 'hebrew',
@@ -86,6 +86,9 @@ const TimelineView = ({ collapsedGroups }: TimelineViewProps) => {
 
       if (savedWindowRef.current) {
         timeline.setWindow(savedWindowRef.current.start, savedWindowRef.current.end, { animation: false });
+      } else if (window.innerWidth <= 768) {
+        // On mobile, start with ~1000-year view instead of full 6000        
+        timeline.setWindow(-1500, -500, { animation: false });
       } else {
         timeline.fit();
       }
