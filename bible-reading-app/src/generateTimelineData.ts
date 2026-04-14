@@ -54,8 +54,8 @@ export function generateTimelineData(locale: Locale = 'en'): TimelineItem[] {
 
     for (const schedule of schedules) {
         const readingEntries = readingMap[schedule.id];
-
-        for (let i = 0; i < readingEntries.length; i++) {
+        const maxEntries = Math.min(6000, readingEntries.length);
+        for (let i = 0; i < maxEntries; i++) {
             const entry = readingEntries[i];
             
             const startDate = calculateStartDateForPeriod(schedule, i);
@@ -83,6 +83,8 @@ export function generateTimelineData(locale: Locale = 'en'): TimelineItem[] {
                 scheduleId: schedule.id,
                 style: `background-color: ${generateColorFromString(schedule.id)};`
             });
+
+           
         }
     }
 

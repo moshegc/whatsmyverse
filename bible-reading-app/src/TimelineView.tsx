@@ -57,7 +57,8 @@ const TimelineView = ({ collapsedGroups }: TimelineViewProps) => {
       order: 100 + idx,
       style: `color: ${generateColorFromString(s.id)};`,
       visible: !collapsedGroups.has(s.id),
-    }));
+      uniformItems: true,  
+    })); 
 
     const groups = new DataSet([...historicalGroups, ...readingGroups]);
     groupsRef.current = groups;
@@ -75,7 +76,7 @@ const TimelineView = ({ collapsedGroups }: TimelineViewProps) => {
       locale: locale,
       showCurrentTime: false,
       orientation: { axis: 'top' },
-      margin: { item: { horizontal: 2, vertical: 4 } },
+      margin: { item: { horizontal: 2, vertical: 4 } },        
     };
 
     let timeline: Timeline | null = null;
