@@ -6,6 +6,7 @@ import { historicalEventCategories } from './historicalEvents';
 import { schedules } from './config';
 import { useLocale } from './LocaleContext';
 import { localize, getBookName, renderHDate } from './i18n';
+import { gematriya } from '@hebcal/hdate';
 
 export type SelectedItem =
   | { kind: 'reading'; data: TimelineItem }
@@ -37,15 +38,23 @@ const DetailCard = ({ item, onClose }: DetailCardProps) => {
 
 // ── Reading schedule detail ─────────────────────────────────────────────────
 
+function getNumber(num: number, locale: 'en' | 'he'): string {
+  if (locale === 'he') {
+    return gematriya(num);
+  }
+  return num.toString();
+}
+
+
 function ReadingDetail({ item, locale }: { item: TimelineItem; locale: 'en' | 'he' }) {
   const bookName = getBookName(item.verses[0]?.book || '', locale);
   const schedule = schedules.find((s) => s.id === item.scheduleId);
-  const chapter = item.verses[0]?.chapter;
-  const verse = item.verses[0]?.verse;
+  const chapter = getNumber(item.verses[0]?.chapter || 0, locale);
+  const verse = getNumber(item.verses[0]?.verse || 0, locale);
 
   const titleText =
     schedule?.displayMode === 'verse'
-      ? `${bookName} ${chapter}:${verse}`
+      ? `${bookName} ${chapter} ${verse}`
       : `${bookName} ${chapter}`;
 
   return (
@@ -54,7 +63,7 @@ function ReadingDetail({ item, locale }: { item: TimelineItem; locale: 'en' | 'h
         <div>
           <h3 className="detail-card-title">{titleText}</h3>
           <div className="detail-card-dates">
-            {renderHDate(item.start, locale)} — {renderHDate(item.end, locale)}
+            {renderHDate(item.start, locale)} <br /> {renderHDate(item.end, locale)}
           </div>
         </div>
         {schedule && (
@@ -66,17 +75,25 @@ function ReadingDetail({ item, locale }: { item: TimelineItem; locale: 'en' | 'h
 
       {/* Verses */}
       <div style={{ maxHeight: 200, overflowY: 'auto' }}>
-        {item.verses.map((v, i) => (
-          <div className="detail-card-verse" key={i} style={{ marginBottom: 8 }}>
-            <p className="detail-card-verse-text">
-              <sup style={{ fontWeight: 600, fontStyle: 'normal', marginRight: 2 }}>{v.verse}</sup>
-              {v.text}
-            </p>
-            <div className="detail-card-verse-ref">
-              {getBookName(v.book, locale)} {v.chapter}:{v.verse}
-            </div>
-          </div>
-        ))}
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <tbody>
+            {item.verses.map((v, i) => (
+              <tr key={i} className="detail-card-verse" >
+            {locale === 'he' ? (
+            <>
+              <td className="detail-card-verse-text" style={{ textAlign: 'left', paddingRight: 8, whiteSpace: 'nowrap', verticalAlign: 'top', paddingBottom: 8 }}>{getNumber(v.verse, locale)}</td>
+              <td className="detail-card-verse-text" style={{ textAlign: 'right', paddingRight: 8, paddingBottom: 8 }}>{v.text}</td>
+            </>
+            ) : (
+            <>
+              <td className="detail-card-verse-text" style={{ textAlign: 'right', paddingRight: 8, paddingBottom: 8 }}>{v.text}</td>
+              <td className="detail-card-verse-text" style={{ textAlign: 'left', whiteSpace: 'nowrap', verticalAlign: 'top', paddingBottom: 8 }}>{getNumber(v.verse, locale)}</td>
+            </>
+            )}
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     </>
   );

@@ -365,6 +365,10 @@ body {
 
 /* ── Mobile Sidebar Overlay ──────────────────────────────────────────────── */
 @media (max-width: 767px) {
+  .timeline-canvas {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
   .sidebar {
     position: fixed;
     top: 0;
@@ -413,6 +417,12 @@ body {
   position: relative;
   overflow: hidden;
   background: var(--color-background);
+  margin-left: var(--sidebar-collapsed);
+  transition: margin 0.3s ease;
+}
+[dir="rtl"] .timeline-canvas {
+  margin-left: 0;
+  margin-right: var(--sidebar-collapsed);
 }
 
 /* ── vis-timeline Overrides (Refined Gallery Theme) ──────────────────────── */
@@ -467,10 +477,6 @@ body {
   font-family: var(--font-sans-he) !important;
 }
 
-/* Hide default vis-timeline left panel - we use our own sidebar */
-.vis-panel.vis-left {
-  display: none !important;
-}
 
 /* Range items */
 .vis-item.vis-range {
@@ -552,7 +558,7 @@ body {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 340px;
+  width: 500px;
   max-height: 400px;
   overflow-y: auto;
   background: rgba(255, 255, 255, 0.92);
@@ -668,6 +674,22 @@ body {
   text-transform: uppercase;
   letter-spacing: 0.04em;
   border-radius: var(--radius-sm);
+  margin-right: 30px;
+}
+[dir="rtl"] .detail-card-tag {
+  margin-right: 0;
+  margin-left: 30px;
+}
+@media (max-width: 767px) {
+  .detail-card-tag {
+    margin-right: auto;
+    margin-left: auto;
+    display: flex;
+  }
+  [dir="rtl"] .detail-card-tag {
+    margin-left: auto;
+    margin-right: auto;
+  }
 }
 
 /* ── Mobile Bottom Sheet ─────────────────────────────────────────────────── */
@@ -700,7 +722,7 @@ body {
   }
   .bottom-sheet-handle {
     display: block !important;
-  }
+  }  
 }
 
 .bottom-sheet-handle {
