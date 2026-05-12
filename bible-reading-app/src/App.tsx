@@ -2,9 +2,14 @@
 
 import { useState, useCallback } from 'react';
 import TimelineView from './TimelineView';
+import { CanvasTimeline } from './canvas-timeline';
 import HeaderBar from './HeaderBar';
 import Sidebar from './Sidebar';
 import { useLocale } from './LocaleContext';
+
+// Switch to the new canvas-based timeline by setting this to true.
+// Keep false to retain vis-timeline while the new implementation is validated.
+const USE_CANVAS_TIMELINE = true;
 
 function App() {
   const { locale } = useLocale();
@@ -53,7 +58,10 @@ function App() {
           collapsedGroups={collapsedGroups}
           onToggleGroup={handleToggleGroup}
         />
-        <TimelineView collapsedGroups={collapsedGroups} />
+        {USE_CANVAS_TIMELINE
+          ? <CanvasTimeline collapsedGroups={collapsedGroups} />
+          : <TimelineView collapsedGroups={collapsedGroups} />
+        }
       </div>
     </div>
   );
