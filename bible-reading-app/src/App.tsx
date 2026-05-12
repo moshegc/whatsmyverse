@@ -50,16 +50,18 @@ function App() {
     >
       <HeaderBar onToggleSidebar={handleToggleSidebar} />
       <div className="main-content">
-        <Sidebar
-          collapsed={sidebarCollapsed}
-          mobileOpen={mobileSidebarOpen}
-          onToggleCollapse={handleToggleCollapse}
-          onCloseMobile={handleCloseMobile}
-          collapsedGroups={collapsedGroups}
-          onToggleGroup={handleToggleGroup}
-        />
+        {!USE_CANVAS_TIMELINE && (
+          <Sidebar
+            collapsed={sidebarCollapsed}
+            mobileOpen={mobileSidebarOpen}
+            onToggleCollapse={handleToggleCollapse}
+            onCloseMobile={handleCloseMobile}
+            collapsedGroups={collapsedGroups}
+            onToggleGroup={handleToggleGroup}
+          />
+        )}
         {USE_CANVAS_TIMELINE
-          ? <CanvasTimeline collapsedGroups={collapsedGroups} />
+          ? <CanvasTimeline collapsedGroups={collapsedGroups} onToggleGroup={handleToggleGroup} />
           : <TimelineView collapsedGroups={collapsedGroups} />
         }
       </div>

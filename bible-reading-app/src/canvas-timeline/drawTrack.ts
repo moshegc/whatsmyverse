@@ -68,17 +68,18 @@ function drawRangeItem(
   item: AnyItem,
   rowTop: number,
   rowHeight: number,
-  shellWidth: number,
-  canvasWidth: number,
   isSelected: boolean,
 ): void {
+  const trackLeft = Math.min(scale.pxLeft, scale.pxRight);
+  const trackRight = Math.max(scale.pxLeft, scale.pxRight);
+
   const startMs = item.start.getTime();
   const endMs = item.end ? item.end.getTime() : item.start.getTime();
   let [x1, x2] = scale.timeRangeToPxSpan(startMs, endMs);
 
   // Clamp to track area
-  x1 = Math.max(shellWidth, x1);
-  x2 = Math.min(canvasWidth, x2);
+  x1 = Math.max(trackLeft, x1);
+  x2 = Math.min(trackRight, x2);
 
   const w = x2 - x1;
   if (w < 0.5) return; // too narrow to draw
@@ -130,12 +131,13 @@ function drawPointItem(
   item: AnyItem,
   rowTop: number,
   rowHeight: number,
-  shellWidth: number,
-  canvasWidth: number,
   isSelected: boolean,
 ): void {
+  const trackLeft = Math.min(scale.pxLeft, scale.pxRight);
+  const trackRight = Math.max(scale.pxLeft, scale.pxRight);
+
   const cx = scale.timeToPx(item.start.getTime());
-  if (cx < shellWidth - 12 || cx > canvasWidth + 12) return;
+  if (cx < trackLeft - 12 || cx > trackRight + 12) return;
 
   const cy = rowTop + rowHeight / 2;
   const size = Math.min(rowHeight / 2 - 2, 7);
@@ -146,8 +148,9 @@ function drawPointItem(
   ctx.translate(cx, cy);
   ctx.rotate(Math.PI / 4);
   ctx.fillStyle = fillColor;
-  ctx.strokeStyle = isSelected ? '#1a365d' : color;
-  ctx.lineWidth = isSelected ? 1.5 : 1;
+  // Non-selected: grey-white halo so diamonds show clearly on top of range bars
+  ctx.strokeStyle = isSelected ? '#1a365d' : 'rgba(245, 245, 245, 0.85)';
+  ctx.lineWidth = 1.5;
   ctx.beginPath();
   ctx.rect(-size, -size, size * 2, size * 2);
   ctx.fill();
@@ -161,46 +164,80 @@ export function drawShellLabel(
   ctx: CanvasRenderingContext2D,
   track: TrackLayout,
   shellWidth: number,
+  isRtl: boolean,
+  canvasWidth: number,
+  isShellExpanded: boolean,
 ): void {
-  // Background
-  ctx.fillStyle = '#f5f5f5';
-  ctx.fillRect(0, track.y, shellWidth, track.height);
+  const shellX = isRtl ? canvasWidth - shellWidth : 0;
+  const midY = track.y + track.height / 2;
 
-  // Right border
+  // Background
+  ctx.fillStyle = track.isCollapsed ? '#efefef' : '#f5f5f5';
+  ctx.fillRect(shellX, track.y, shellWidth, track.height);
+
+  // Shell edge border (right in LTR, left in RTL)
+  const borderX = isRtl ? shellX + 0.5 : shellX + shellWidth - 0.5;
   ctx.strokeStyle = '#d0d0d0';
   ctx.lineWidth = 1;
   ctx.beginPath();
-  ctx.moveTo(shellWidth - 0.5, track.y);
-  ctx.lineTo(shellWidth - 0.5, track.y + track.height);
+  ctx.moveTo(borderX, track.y);
+  ctx.lineTo(borderX, track.y + track.height);
   ctx.stroke();
 
-  // Colour dot
-  const dotR = 5;
-  const dotX = 10 + dotR;
-  const dotY = track.y + track.height / 2;
-  ctx.fillStyle = track.color;
-  ctx.beginPath();
-  ctx.arc(dotX, dotY, dotR, 0, Math.PI * 2);
-  ctx.fill();
+  if (!isShellExpanded) {
+    // Narrow strip: show a centred colour dot
+    const dotR = Math.min((shellWidth - 4) / 2, 5);
+    ctx.fillStyle = track.color;
+    ctx.globalAlpha = track.isCollapsed ? 0.35 : 1;
+    ctx.beginPath();
+    ctx.arc(shellX + shellWidth / 2, midY, dotR, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.globalAlpha = 1;
+  } else {
+    // Colour dot
+    const dotR = 5;
+    const dotX = isRtl
+      ? shellX + shellWidth - 10 - dotR   // near right edge in RTL
+      : shellX + 10 + dotR;               // near left edge in LTR
+    ctx.fillStyle = track.color;
+    ctx.globalAlpha = track.isCollapsed ? 0.4 : 1;
+    ctx.beginPath();
+    ctx.arc(dotX, midY, dotR, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.globalAlpha = 1;
 
-  // Label text
-  ctx.save();
-  ctx.beginPath();
-  ctx.rect(dotX + dotR + 4, track.y, shellWidth - dotX - dotR - 8, track.height);
-  ctx.clip();
-  ctx.fillStyle = '#333';
-  ctx.font = '11px -apple-system, Segoe UI, sans-serif';
-  ctx.textAlign = 'left';
-  ctx.textBaseline = 'middle';
-  ctx.fillText(track.label, dotX + dotR + 6, track.y + track.height / 2);
-  ctx.restore();
+    // Label text
+    ctx.save();
+    if (isRtl) {
+      // Clip: from shellX to dotX - dotR - 4
+      ctx.beginPath();
+      ctx.rect(shellX, track.y, dotX - dotR - 4 - shellX, track.height);
+      ctx.clip();
+      ctx.fillStyle = track.isCollapsed ? '#aaa' : '#333';
+      ctx.font = '11px -apple-system, Segoe UI, sans-serif';
+      ctx.textAlign = 'right';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(track.label, dotX - dotR - 6, midY);
+    } else {
+      // Clip: from dotX + dotR + 4 to shellX + shellWidth - 4
+      ctx.beginPath();
+      ctx.rect(dotX + dotR + 4, track.y, shellX + shellWidth - dotX - dotR - 8, track.height);
+      ctx.clip();
+      ctx.fillStyle = track.isCollapsed ? '#aaa' : '#333';
+      ctx.font = '11px -apple-system, Segoe UI, sans-serif';
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(track.label, dotX + dotR + 6, midY);
+    }
+    ctx.restore();
+  }
 
   // Bottom separator
   ctx.strokeStyle = '#e0e0e0';
   ctx.lineWidth = 1;
   ctx.beginPath();
-  ctx.moveTo(0, track.y + track.height - 0.5);
-  ctx.lineTo(shellWidth, track.y + track.height - 0.5);
+  ctx.moveTo(shellX, track.y + track.height - 0.5);
+  ctx.lineTo(shellX + shellWidth, track.y + track.height - 0.5);
   ctx.stroke();
 }
 
@@ -209,18 +246,20 @@ export function drawShellLabel(
 function drawTrackBackground(
   ctx: CanvasRenderingContext2D,
   track: TrackLayout,
-  shellWidth: number,
-  canvasWidth: number,
+  scale: HebrewTimeScale,
 ): void {
+  const trackLeft = Math.min(scale.pxLeft, scale.pxRight);
+  const trackRight = Math.max(scale.pxLeft, scale.pxRight);
+
   ctx.fillStyle = '#fff';
-  ctx.fillRect(shellWidth, track.y, canvasWidth - shellWidth, track.height);
+  ctx.fillRect(trackLeft, track.y, trackRight - trackLeft, track.height);
 
   // Bottom separator line
   ctx.strokeStyle = '#ececec';
   ctx.lineWidth = 1;
   ctx.beginPath();
-  ctx.moveTo(shellWidth, track.y + track.height - 0.5);
-  ctx.lineTo(canvasWidth, track.y + track.height - 0.5);
+  ctx.moveTo(trackLeft, track.y + track.height - 0.5);
+  ctx.lineTo(trackRight, track.y + track.height - 0.5);
   ctx.stroke();
 }
 
@@ -238,9 +277,10 @@ export function drawTrack(
   selectedId: string | null,
   shellWidth: number,
   canvasWidth: number,
+  isShellExpanded: boolean,
 ): void {
-  drawTrackBackground(ctx, track, shellWidth, canvasWidth);
-  drawShellLabel(ctx, track, shellWidth);
+  drawTrackBackground(ctx, track, scale);
+  drawShellLabel(ctx, track, shellWidth, scale.isRtl, canvasWidth, isShellExpanded);
 
   for (const { item, row, rowHeight } of track.renderedItems) {
     const rowTop = track.y + row * rowHeight;
@@ -248,9 +288,9 @@ export function drawTrack(
     const isPoint = !item.end;
 
     if (isPoint) {
-      drawPointItem(ctx, scale, item, rowTop, rowHeight, shellWidth, canvasWidth, isSelected);
+      drawPointItem(ctx, scale, item, rowTop, rowHeight, isSelected);
     } else {
-      drawRangeItem(ctx, scale, item, rowTop, rowHeight, shellWidth, canvasWidth, isSelected);
+      drawRangeItem(ctx, scale, item, rowTop, rowHeight, isSelected);
     }
   }
 }

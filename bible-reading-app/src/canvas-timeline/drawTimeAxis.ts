@@ -2,27 +2,39 @@
 //
 // Draws the horizontal time-axis strip at the top of the canvas.
 // Shows Hebrew year ticks with both Hebrew and Gregorian date labels.
+// At sub-year zoom levels, switches to day/week/month granularity.
 
 import { HDate } from '@hebcal/core';
 import { gematriya } from '@hebcal/hdate';
 import type { HebrewTimeScale } from './HebrewTimeScale';
-import type { Locale } from '../i18n';
+import { type Locale, gematriyaYear } from '../i18n';
 
-interface Tick {
+const ONE_DAY_MS = 1_000 * 60 * 60 * 24;
+const ONE_YEAR_MS = ONE_DAY_MS * 365.25;
+
+// ── Year-mode tick types ─────────────────────────────────────────────────────
+
+interface YearTick {
   ms: number;
   x: number;
   hebrewYear: number;
-  /** Full proleptic Gregorian year (negative = BCE astronomical year) */
   gregorianYear: number;
 }
 
-const ONE_YEAR_MS = 1_000 * 60 * 60 * 24 * 365.25;
+// ── Sub-year tick types ──────────────────────────────────────────────────────
 
-/**
- * Pick a nice tick interval in Hebrew years so there are roughly 8–12 ticks
- * in the visible window.
- */
-function niceTickInterval(visibleYears: number): number {
+interface SubYearTick {
+  ms: number;
+  x: number;
+  /** e.g. "Aug 8" */
+  gregDateLabel: string;
+  /** e.g. "5 Av" (English) or "ה׳ אב" (Hebrew locale) */
+  hebrewDateLabel: string;
+}
+
+// ── Year-mode helpers ────────────────────────────────────────────────────────
+
+function niceYearInterval(visibleYears: number): number {
   const candidates = [1, 2, 5, 10, 25, 50, 100, 250, 500, 1000, 2000, 3000];
   for (const c of candidates) {
     if (visibleYears / c <= 12) return c;
@@ -30,13 +42,10 @@ function niceTickInterval(visibleYears: number): number {
   return 3000;
 }
 
-function computeTicks(
-  scale: HebrewTimeScale,
-): Tick[] {
+function computeYearTicks(scale: HebrewTimeScale): YearTick[] {
   const visibleYears = (scale.visibleEnd - scale.visibleStart) / ONE_YEAR_MS;
-  const interval = niceTickInterval(visibleYears);
+  const interval = niceYearInterval(visibleYears);
 
-  // Find the approximate Hebrew year at the start of the visible window
   let startHYear: number;
   try {
     startHYear = new HDate(new Date(scale.visibleStart)).getFullYear();
@@ -46,8 +55,10 @@ function computeTicks(
 
   const firstTickYear = Math.ceil(startHYear / interval) * interval;
   const lastTickYear = Math.ceil(startHYear + visibleYears + interval);
+  const trackPxLeft = Math.min(scale.pxLeft, scale.pxRight);
+  const trackPxRight = Math.max(scale.pxLeft, scale.pxRight);
 
-  const ticks: Tick[] = [];
+  const ticks: YearTick[] = [];
   for (
     let year = Math.max(1, firstTickYear);
     year <= Math.min(6100, lastTickYear);
@@ -55,58 +66,147 @@ function computeTicks(
   ) {
     let ms: number;
     try {
-      ms = new HDate(1, 7, year).greg().getTime(); // 1 Tishrei of `year`
+      ms = new HDate(1, 7, year).greg().getTime();
     } catch {
       continue;
     }
     if (ms < scale.visibleStart || ms > scale.visibleEnd) continue;
 
     const x = scale.timeToPx(ms);
-    const trackPxLeft = Math.min(scale.pxLeft, scale.pxRight);
-    const trackPxRight = Math.max(scale.pxLeft, scale.pxRight);
     if (x < trackPxLeft - 1 || x > trackPxRight + 1) continue;
 
-    // Gregorian year from the JavaScript Date
     const gregYear = new Date(ms).getFullYear();
-
     ticks.push({ ms, x, hebrewYear: year, gregorianYear: gregYear });
   }
-
-  // Also add a shell/label divider tick at x = shellWidth when RTL is off
   return ticks;
 }
 
-/**
- * Format a Hebrew year as a string.
- * In Hebrew locale: gematriya notation (e.g. "ה׳תשפ״ד").
- * In English locale: plain number (e.g. "5784").
- */
 function formatHebrewYear(year: number, locale: Locale): string {
   if (locale === 'he') {
-    try {
-      return gematriya(year);
-    } catch {
-      return year.toString();
-    }
+    try { return gematriyaYear(year); } catch { return year.toString(); }
   }
   return year.toString();
 }
 
-/**
- * Format a proleptic Gregorian year as a CE/BCE string.
- * Astronomical year 0 = 1 BCE, negative = earlier BCE.
- */
 function formatGregorianYear(astronomicalYear: number): string {
   if (astronomicalYear > 0) return `${astronomicalYear} CE`;
   if (astronomicalYear === 0) return '1 BCE';
   return `${-astronomicalYear + 1} BCE`;
 }
 
+// ── Sub-year helpers ─────────────────────────────────────────────────────────
+
+const SUB_YEAR_INTERVALS_MS = [
+  ONE_DAY_MS,
+  2 * ONE_DAY_MS,
+  7 * ONE_DAY_MS,
+  14 * ONE_DAY_MS,
+  Math.round(30.4375 * ONE_DAY_MS),
+  Math.round(91.3125 * ONE_DAY_MS),
+  Math.round(182.625 * ONE_DAY_MS),
+  Math.round(ONE_YEAR_MS),
+];
+
+function niceSubYearIntervalMs(durationMs: number): number {
+  for (const interval of SUB_YEAR_INTERVALS_MS) {
+    if (durationMs / interval <= 12) return interval;
+  }
+  return Math.round(ONE_YEAR_MS);
+}
+
+const GREG_MONTHS_SHORT = [
+  'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+  'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+];
+
+const HEBREW_MONTHS_EN = [
+  '', 'Nisan', 'Iyar', 'Sivan', 'Tamuz', 'Av', 'Elul',
+  'Tishrei', 'Cheshvan', 'Kislev', 'Tevet', 'Shevat', 'Adar', 'Adar II',
+];
+
+const HEBREW_MONTHS_HE = [
+  '', 'ניסן', 'אייר', 'סיון', 'תמוז', 'אב', 'אלול',
+  'תשרי', 'חשון', 'כסלו', 'טבת', 'שבט', 'אדר', 'אדר ב׳',
+];
+
+function computeSubYearTicks(scale: HebrewTimeScale, locale: Locale): SubYearTick[] {
+  const duration = scale.visibleEnd - scale.visibleStart;
+  const intervalMs = niceSubYearIntervalMs(duration);
+  const startTime = Math.floor(scale.visibleStart / intervalMs) * intervalMs;
+  const trackPxLeft = Math.min(scale.pxLeft, scale.pxRight);
+  const trackPxRight = Math.max(scale.pxLeft, scale.pxRight);
+
+  const ticks: SubYearTick[] = [];
+  for (let t = startTime; t <= scale.visibleEnd + intervalMs; t += intervalMs) {
+    if (t < scale.visibleStart || t > scale.visibleEnd) continue;
+
+    const x = scale.timeToPx(t);
+    if (x < trackPxLeft - 1 || x > trackPxRight + 1) continue;
+
+    const d = new Date(t);
+    const gregDateLabel = `${GREG_MONTHS_SHORT[d.getUTCMonth()]} ${d.getUTCDate()}`;
+
+    let hebrewDateLabel = '';
+    try {
+      const hd = new HDate(d);
+      const monthIdx = hd.getMonth() as number;
+      if (locale === 'he') {
+        const monthName = HEBREW_MONTHS_HE[monthIdx] ?? '';
+        const dayGem = gematriya(hd.getDate());
+        hebrewDateLabel = `${dayGem} ${monthName}`;
+      } else {
+        const monthName = HEBREW_MONTHS_EN[monthIdx] ?? '';
+        hebrewDateLabel = `${hd.getDate()} ${monthName}`;
+      }
+    } catch {
+      hebrewDateLabel = '';
+    }
+
+    ticks.push({ ms: t, x, gregDateLabel, hebrewDateLabel });
+  }
+  return ticks;
+}
+
+// ── Shell drawing helper ─────────────────────────────────────────────────────
+
+function drawAxisShell(
+  ctx: CanvasRenderingContext2D,
+  shellWidth: number,
+  canvasWidth: number,
+  axisHeight: number,
+  isRtl: boolean,
+  isShellExpanded: boolean,
+): void {
+  const shellX = isRtl ? canvasWidth - shellWidth : 0;
+
+  ctx.fillStyle = '#f0f0f0';
+  ctx.fillRect(shellX, 0, shellWidth, axisHeight);
+
+  // Shell edge border (right in LTR, left in RTL)
+  const borderX = isRtl ? shellX + 0.5 : shellX + shellWidth - 0.5;
+  ctx.strokeStyle = '#d0d0d0';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(borderX, 0);
+  ctx.lineTo(borderX, axisHeight);
+  ctx.stroke();
+
+  // Collapse/expand chevron
+  const chevron = isShellExpanded ? (isRtl ? '›' : '‹') : (isRtl ? '‹' : '›');
+  ctx.fillStyle = '#888';
+  ctx.font = 'bold 13px -apple-system, Segoe UI, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(chevron, shellX + shellWidth / 2, axisHeight / 2);
+}
+
+// ── Public entry point ───────────────────────────────────────────────────────
+
 /**
  * Draw the time axis strip onto `ctx`.
  *
- * This function should be called on the axis canvas (fixed height at top).
  * All coordinates are in CSS pixels (caller has already applied DPR scaling).
+ * @param isShellExpanded  Whether the series-label shell column is fully expanded.
  */
 export function drawTimeAxis(
   ctx: CanvasRenderingContext2D,
@@ -115,14 +215,13 @@ export function drawTimeAxis(
   axisHeight: number,
   shellWidth: number,
   locale: Locale,
+  isShellExpanded = true,
 ): void {
+  const isRtl = scale.isRtl;
+
   // ── Background ────────────────────────────────────────────────────────────
   ctx.fillStyle = '#f9f9f9';
   ctx.fillRect(0, 0, canvasWidth, axisHeight);
-
-  // Shell background
-  ctx.fillStyle = '#f0f0f0';
-  ctx.fillRect(0, 0, shellWidth, axisHeight);
 
   // Bottom border
   ctx.strokeStyle = '#d0d0d0';
@@ -132,40 +231,62 @@ export function drawTimeAxis(
   ctx.lineTo(canvasWidth, axisHeight - 0.5);
   ctx.stroke();
 
-  // Shell right border
-  ctx.strokeStyle = '#d0d0d0';
-  ctx.lineWidth = 1;
-  ctx.beginPath();
-  ctx.moveTo(shellWidth - 0.5, 0);
-  ctx.lineTo(shellWidth - 0.5, axisHeight);
-  ctx.stroke();
+  // Shell area (drawn on top of background)
+  drawAxisShell(ctx, shellWidth, canvasWidth, axisHeight, isRtl, isShellExpanded);
 
   // ── Ticks and labels ──────────────────────────────────────────────────────
-  const ticks = computeTicks(scale);
+  const visibleDuration = scale.visibleEnd - scale.visibleStart;
+  const isSubYearMode = visibleDuration < ONE_YEAR_MS * 2;
 
-  for (const tick of ticks) {
-    const x = Math.round(tick.x) + 0.5;
+  if (isSubYearMode) {
+    const ticks = computeSubYearTicks(scale, locale);
+    for (const tick of ticks) {
+      const x = Math.round(tick.x) + 0.5;
 
-    // Tick mark
-    ctx.strokeStyle = '#bbb';
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(x, axisHeight - 10);
-    ctx.lineTo(x, axisHeight);
-    ctx.stroke();
+      ctx.strokeStyle = '#bbb';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(x, axisHeight - 10);
+      ctx.lineTo(x, axisHeight);
+      ctx.stroke();
 
-    // Hebrew year (primary label, upper)
-    const heLabel = formatHebrewYear(tick.hebrewYear, locale);
-    ctx.fillStyle = '#222';
-    ctx.font = 'bold 11px -apple-system, Segoe UI, sans-serif';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'alphabetic';
-    ctx.fillText(heLabel, x, axisHeight - 14);
+      // Hebrew date (primary, bottom)
+      ctx.fillStyle = '#222';
+      ctx.font = 'bold 10px -apple-system, Segoe UI, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'alphabetic';
+      ctx.fillText(tick.hebrewDateLabel, x, axisHeight - 14);
 
-    // Gregorian year (secondary label, lower)
-    const gregLabel = formatGregorianYear(tick.gregorianYear);
-    ctx.fillStyle = '#888';
-    ctx.font = '10px -apple-system, Segoe UI, sans-serif';
-    ctx.fillText(gregLabel, x, axisHeight - 27);
+      // Gregorian date (secondary, top)
+      ctx.fillStyle = '#888';
+      ctx.font = '10px -apple-system, Segoe UI, sans-serif';
+      ctx.fillText(tick.gregDateLabel, x, axisHeight - 27);
+    }
+  } else {
+    const ticks = computeYearTicks(scale);
+    for (const tick of ticks) {
+      const x = Math.round(tick.x) + 0.5;
+
+      ctx.strokeStyle = '#bbb';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(x, axisHeight - 10);
+      ctx.lineTo(x, axisHeight);
+      ctx.stroke();
+
+      // Hebrew year (primary, bottom)
+      const heLabel = formatHebrewYear(tick.hebrewYear, locale);
+      ctx.fillStyle = '#222';
+      ctx.font = 'bold 11px -apple-system, Segoe UI, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'alphabetic';
+      ctx.fillText(heLabel, x, axisHeight - 14);
+
+      // Gregorian year (secondary, top)
+      const gregLabel = formatGregorianYear(tick.gregorianYear);
+      ctx.fillStyle = '#888';
+      ctx.font = '10px -apple-system, Segoe UI, sans-serif';
+      ctx.fillText(gregLabel, x, axisHeight - 27);
+    }
   }
 }

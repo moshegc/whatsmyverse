@@ -10,6 +10,9 @@ const POINT_HIT_RADIUS_PX = 10;
 /**
  * Find the item at canvas coordinates (x, y).
  *
+ * Point items (diamonds) are checked first so they always win over range bars
+ * that occupy the same pixel area.
+ *
  * @param x          X position in CSS pixels relative to the LEFT edge of the
  *                   tracks canvas (i.e. including the shell column).
  * @param y          Y position in CSS pixels relative to the TOP edge of the
@@ -17,6 +20,7 @@ const POINT_HIT_RADIUS_PX = 10;
  * @param tracks     Pre-computed layout array (output of computeTrackLayouts).
  * @param scale      HebrewTimeScale configured for the current viewport.
  * @param shellWidth Width of the group-label column in CSS pixels.
+ * @param canvasWidth Full CSS width of the tracks canvas.
  */
 export function hitTest(
   x: number,
@@ -24,29 +28,35 @@ export function hitTest(
   tracks: TrackLayout[],
   scale: HebrewTimeScale,
   shellWidth: number,
+  canvasWidth: number,
 ): AnyItem | null {
-  // Ignore clicks in the shell (label) column
-  if (x < shellWidth) return null;
+  // Ignore clicks in the shell (label) column – RTL-aware
+  const inShell = scale.isRtl
+    ? x > canvasWidth - shellWidth
+    : x < shellWidth;
+  if (inShell) return null;
 
   for (const track of tracks) {
     if (y < track.y || y >= track.y + track.height) continue;
 
+    // Pass 1: point items (diamonds) have click priority
     for (const { item, row, rowHeight } of track.renderedItems) {
+      if (item.end) continue; // skip range items in this pass
       const rowTop = track.y + row * rowHeight;
-      const rowBottom = rowTop + rowHeight;
-      if (y < rowTop || y >= rowBottom) continue;
+      if (y < rowTop || y >= rowTop + rowHeight) continue;
+      const cx = scale.timeToPx(item.start.getTime());
+      if (Math.abs(x - cx) <= POINT_HIT_RADIUS_PX) return item;
+    }
 
+    // Pass 2: range items
+    for (const { item, row, rowHeight } of track.renderedItems) {
+      if (!item.end) continue; // skip point items in this pass
+      const rowTop = track.y + row * rowHeight;
+      if (y < rowTop || y >= rowTop + rowHeight) continue;
       const startMs = item.start.getTime();
-      const isPoint = !item.end;
-
-      if (isPoint) {
-        const cx = scale.timeToPx(startMs);
-        if (Math.abs(x - cx) <= POINT_HIT_RADIUS_PX) return item;
-      } else {
-        const endMs = item.end!.getTime();
-        const [x1, x2] = scale.timeRangeToPxSpan(startMs, endMs);
-        if (x >= x1 && x <= x2) return item;
-      }
+      const endMs = item.end.getTime();
+      const [x1, x2] = scale.timeRangeToPxSpan(startMs, endMs);
+      if (x >= x1 && x <= x2) return item;
     }
   }
 

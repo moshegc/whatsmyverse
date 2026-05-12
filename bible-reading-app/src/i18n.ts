@@ -1,8 +1,23 @@
 // src/i18n.ts
 
 import { HDate } from '@hebcal/core';
+import { gematriya } from '@hebcal/hdate';
 
 export type Locale = 'en' | 'he';
+
+// ─── Gematriya helpers ──────────────────────────────────────────────────────
+
+/**
+ * Like `gematriya(year)` but re-adds the "ה׳" thousands prefix for years
+ * 5000–5999. The underlying library omits it by convention; we want it back.
+ */
+export function gematriyaYear(year: number): string {
+  const base = gematriya(year);
+  if (year >= 5000 && year < 6000) {
+    return '\u05D4\u05F3' + base; // ה׳ + result
+  }
+  return base;
+}
 
 // ─── Book name mapping ──────────────────────────────────────────────────────
 

@@ -34,11 +34,13 @@ import DetailCard, { type SelectedItem } from '../DetailCard';
 import type { TimelineItem } from '../generateTimelineData';
 
 // ── Layout constants ──────────────────────────────────────────────────────────
-const AXIS_HEIGHT = 52;         // px — fixed axis strip height
-const SHELL_WIDTH = 150;        // px — group-label column width
-const TRACK_ROW_HEIGHT = 26;    // px — default single-row track height
-const STACKED_ROW_HEIGHT = 20;  // px — row height when stacking overlapping items
-const MIN_TRACK_HEIGHT = 26;    // px — floor so tracks are always clickable
+const AXIS_HEIGHT = 52;              // px — fixed axis strip height
+const SHELL_WIDTH = 150;             // px — group-label column width (expanded)
+const COLLAPSED_SHELL_WIDTH = 22;    // px — group-label column width (collapsed)
+const COLLAPSED_TRACK_HEIGHT = 18;   // px — height of a collapsed (hidden) track row
+const TRACK_ROW_HEIGHT = 26;         // px — default single-row track height
+const STACKED_ROW_HEIGHT = 20;       // px — row height when stacking overlapping items
+const MIN_TRACK_HEIGHT = 26;         // px — floor so tracks are always clickable
 
 // ── Track layout computation ──────────────────────────────────────────────────
 
@@ -70,25 +72,30 @@ function computeTrackLayouts(
   const layouts: TrackLayout[] = [];
 
   for (const group of allGroups) {
-    if (collapsedGroups.has(group.id)) continue;
+    const isCollapsed = collapsedGroups.has(group.id);
 
-    const groupItems = allItems.filter((item) => item.group === group.id);
     let renderedItems: RenderedItemEntry[];
     let rowHeight: number;
-    let maxRows: number;
+    let height: number;
 
-    if (group.stacked) {
-      rowHeight = STACKED_ROW_HEIGHT;
-      const { stacked, maxRows: mr } = stackItems(groupItems, rowHeight);
-      maxRows = mr;
-      renderedItems = stacked;
+    if (isCollapsed) {
+      // Keep the group visible in the shell as a compact stub so it can be re-enabled
+      renderedItems = [];
+      rowHeight = COLLAPSED_TRACK_HEIGHT;
+      height = COLLAPSED_TRACK_HEIGHT;
     } else {
-      rowHeight = TRACK_ROW_HEIGHT;
-      maxRows = 1;
-      renderedItems = groupItems.map((item) => ({ item, row: 0, rowHeight }));
+      const groupItems = allItems.filter((item) => item.group === group.id);
+      if (group.stacked) {
+        rowHeight = STACKED_ROW_HEIGHT;
+        const { stacked, maxRows } = stackItems(groupItems, rowHeight);
+        renderedItems = stacked;
+        height = Math.max(MIN_TRACK_HEIGHT, maxRows * rowHeight);
+      } else {
+        rowHeight = TRACK_ROW_HEIGHT;
+        renderedItems = groupItems.map((item) => ({ item, row: 0, rowHeight }));
+        height = Math.max(MIN_TRACK_HEIGHT, rowHeight);
+      }
     }
-
-    const height = Math.max(MIN_TRACK_HEIGHT, maxRows * rowHeight);
 
     layouts.push({
       groupId: group.id,
@@ -98,6 +105,7 @@ function computeTrackLayouts(
       height,
       rowHeight,
       renderedItems,
+      isCollapsed,
     });
 
     y += height;
@@ -127,11 +135,12 @@ function setupCanvas(
 
 interface CanvasTimelineProps {
   collapsedGroups: Set<string>;
+  onToggleGroup?: (groupId: string) => void;
 }
 
 // ── Main component ────────────────────────────────────────────────────────────
 
-const CanvasTimeline = ({ collapsedGroups }: CanvasTimelineProps) => {
+const CanvasTimeline = ({ collapsedGroups, onToggleGroup }: CanvasTimelineProps) => {
   const { locale } = useLocale();
 
   // ── Refs ────────────────────────────────────────────────────────────────────
@@ -148,10 +157,19 @@ const CanvasTimeline = ({ collapsedGroups }: CanvasTimelineProps) => {
   const dragStartXRef = useRef(0);
   const dragStartWindowRef = useRef<VisibleWindow>(INITIAL_WINDOW);
 
-  // ── State ───────────────────────────────────────────────────────────────────
+  // Touch state
+  const touchStartsRef = useRef<{ identifier: number; clientX: number; clientY: number }[]>([]);
+  const touchWindowRef = useRef<VisibleWindow>(INITIAL_WINDOW);
+  const touchDirectionRef = useRef<'horizontal' | 'vertical' | null>(null);
+  const pinchPrevDistRef = useRef(0);
+
+  // ── State ──────────────────────────────────────────────────────────────────
   const [visibleWindow, setVisibleWindowState] = useState<VisibleWindow>(INITIAL_WINDOW);
   const [selectedItem, setSelectedItem] = useState<SelectedItem | null>(null);
   const [canvasWidth, setCanvasWidth] = useState(0);
+  const [isShellExpanded, setIsShellExpanded] = useState(true);
+
+  const effectiveShellWidth = isShellExpanded ? SHELL_WIDTH : COLLAPSED_SHELL_WIDTH;
 
   // Helper: update both state and ref
   const setVisibleWindow = useCallback((win: VisibleWindow) => {
@@ -191,29 +209,29 @@ const CanvasTimeline = ({ collapsedGroups }: CanvasTimelineProps) => {
 
   // ── Drawing effect ───────────────────────────────────────────────────────────
   useEffect(() => {
-    if (canvasWidth <= SHELL_WIDTH + 10) return;
+    if (canvasWidth <= effectiveShellWidth + 10) return;
     const axisCanvas = axisCanvasRef.current;
     const tracksCanvas = tracksCanvasRef.current;
     if (!axisCanvas || !tracksCanvas) return;
 
+    const isRtl = locale === 'he';
     const scale = new HebrewTimeScale(
       visibleWindow.start,
       visibleWindow.end,
-      SHELL_WIDTH,
-      canvasWidth,
-      locale === 'he',
+      isRtl ? 0 : effectiveShellWidth,
+      isRtl ? canvasWidth - effectiveShellWidth : canvasWidth,
+      isRtl,
     );
 
     // Axis canvas
     const axisCtx = setupCanvas(axisCanvas, canvasWidth, AXIS_HEIGHT);
     if (axisCtx) {
-      drawTimeAxis(axisCtx, scale, canvasWidth, AXIS_HEIGHT, SHELL_WIDTH, locale);
+      drawTimeAxis(axisCtx, scale, canvasWidth, AXIS_HEIGHT, effectiveShellWidth, locale, isShellExpanded);
     }
 
     // Tracks canvas
     const tracksCtx = setupCanvas(tracksCanvas, canvasWidth, totalTrackHeight);
     if (tracksCtx) {
-      // Background
       tracksCtx.fillStyle = '#fff';
       tracksCtx.fillRect(0, 0, canvasWidth, totalTrackHeight);
 
@@ -225,10 +243,10 @@ const CanvasTimeline = ({ collapsedGroups }: CanvasTimelineProps) => {
           : null;
 
       for (const track of trackLayouts) {
-        drawTrack(tracksCtx, track, scale, selId, SHELL_WIDTH, canvasWidth);
+        drawTrack(tracksCtx, track, scale, selId, effectiveShellWidth, canvasWidth, isShellExpanded);
       }
     }
-  }, [visibleWindow, selectedItem, trackLayouts, totalTrackHeight, locale, canvasWidth]);
+  }, [visibleWindow, selectedItem, trackLayouts, totalTrackHeight, locale, canvasWidth, isShellExpanded, effectiveShellWidth]);
 
   // ── Wheel handler (non-passive, must use addEventListener) ───────────────────
   useEffect(() => {
@@ -237,16 +255,22 @@ const CanvasTimeline = ({ collapsedGroups }: CanvasTimelineProps) => {
 
     const onWheel = (e: WheelEvent) => {
       const rect = el.getBoundingClientRect();
-      const trackAreaWidth = rect.width - SHELL_WIDTH;
+      const sw = isShellExpanded ? SHELL_WIDTH : COLLAPSED_SHELL_WIDTH;
+      const trackAreaWidth = rect.width - sw;
       if (trackAreaWidth <= 0) return;
 
+      const isRtl = locale === 'he';
       const isZoom = e.ctrlKey || e.metaKey || Math.abs(e.deltaY) > Math.abs(e.deltaX) * 2;
 
       if (isZoom) {
         e.preventDefault();
-        const xInTrack = e.clientX - rect.left - SHELL_WIDTH;
-        const centerRatio = Math.max(0, Math.min(1, xInTrack / trackAreaWidth));
-        // Log-scale zoom: smoother feel across different pointer devices
+        // In RTL the track area starts at the left edge; in LTR it starts after the shell
+        const xInTrack = isRtl
+          ? e.clientX - rect.left
+          : e.clientX - rect.left - sw;
+        const rawRatio = Math.max(0, Math.min(1, xInTrack / trackAreaWidth));
+        // In RTL, left pixel = latest time, so invert the ratio for zoomWindow
+        const centerRatio = isRtl ? 1 - rawRatio : rawRatio;
         const sign = e.deltaY > 0 ? 1 : -1;
         const factor = Math.pow(1.003, sign * Math.abs(e.deltaY));
         setVisibleWindow(zoomWindow(windowRef.current, factor, centerRatio));
@@ -254,7 +278,7 @@ const CanvasTimeline = ({ collapsedGroups }: CanvasTimelineProps) => {
         // Horizontal pan
         e.preventDefault();
         const msPerPx = (windowRef.current.end - windowRef.current.start) / trackAreaWidth;
-        const deltaMs = e.deltaX * msPerPx * (locale === 'he' ? -1 : 1);
+        const deltaMs = e.deltaX * msPerPx * (isRtl ? -1 : 1);
         setVisibleWindow(panWindow(windowRef.current, deltaMs));
       }
       // Pure vertical scroll: let the scroll container handle it naturally
@@ -262,7 +286,107 @@ const CanvasTimeline = ({ collapsedGroups }: CanvasTimelineProps) => {
 
     el.addEventListener('wheel', onWheel, { passive: false });
     return () => el.removeEventListener('wheel', onWheel);
-  }, [locale, setVisibleWindow]);
+  }, [locale, isShellExpanded, setVisibleWindow]);
+
+  // ── Touch event handlers (mobile pan & pinch-zoom) ──────────────────────────
+  useEffect(() => {
+    const el = outerRef.current;
+    if (!el) return;
+
+    const onTouchStart = (e: TouchEvent) => {
+      touchStartsRef.current = Array.from(e.touches).map((t) => ({
+        identifier: t.identifier,
+        clientX: t.clientX,
+        clientY: t.clientY,
+      }));
+      touchWindowRef.current = { ...windowRef.current };
+      touchDirectionRef.current = null;
+      if (e.touches.length === 2) {
+        const dx = e.touches[0].clientX - e.touches[1].clientX;
+        const dy = e.touches[0].clientY - e.touches[1].clientY;
+        pinchPrevDistRef.current = Math.hypot(dx, dy);
+      }
+    };
+
+    const onTouchMove = (e: TouchEvent) => {
+      const outer = outerRef.current;
+      if (!outer) return;
+      const isRtl = locale === 'he';
+      const sw = isShellExpanded ? SHELL_WIDTH : COLLAPSED_SHELL_WIDTH;
+      const trackAreaWidth = outer.clientWidth - sw;
+      if (trackAreaWidth <= 0) return;
+
+      if (e.touches.length === 1) {
+        const touch = e.touches[0];
+        const start = touchStartsRef.current.find(
+          (t) => t.identifier === touch.identifier,
+        );
+        if (!start) return;
+
+        const dx = touch.clientX - start.clientX;
+        const dy = touch.clientY - start.clientY;
+
+        // Determine direction after enough initial movement
+        if (!touchDirectionRef.current) {
+          if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
+            touchDirectionRef.current =
+              Math.abs(dx) > Math.abs(dy) ? 'horizontal' : 'vertical';
+          }
+        }
+
+        if (touchDirectionRef.current === 'horizontal') {
+          e.preventDefault();
+          const msPerPx =
+            (touchWindowRef.current.end - touchWindowRef.current.start) /
+            trackAreaWidth;
+          const sign = isRtl ? 1 : -1;
+          const deltaMs = sign * dx * msPerPx;
+          setVisibleWindow(panWindow(touchWindowRef.current, deltaMs));
+        }
+        // vertical: let the scroll container handle natively
+      } else if (e.touches.length === 2) {
+        e.preventDefault();
+        const t0 = e.touches[0];
+        const t1 = e.touches[1];
+        const dist = Math.hypot(t0.clientX - t1.clientX, t0.clientY - t1.clientY);
+
+        if (pinchPrevDistRef.current > 0) {
+          const factor = pinchPrevDistRef.current / dist;
+          const rect = outer.getBoundingClientRect();
+          const midX = (t0.clientX + t1.clientX) / 2;
+          const xInTrack = isRtl
+            ? midX - rect.left
+            : midX - rect.left - sw;
+          const rawRatio = Math.max(0, Math.min(1, xInTrack / trackAreaWidth));
+          const centerRatio = isRtl ? 1 - rawRatio : rawRatio;
+          setVisibleWindow(zoomWindow(windowRef.current, factor, centerRatio));
+        }
+        pinchPrevDistRef.current = dist;
+      }
+    };
+
+    const onTouchEnd = (e: TouchEvent) => {
+      const remainingIds = new Set(
+        Array.from(e.touches).map((t) => t.identifier),
+      );
+      touchStartsRef.current = touchStartsRef.current.filter((t) =>
+        remainingIds.has(t.identifier),
+      );
+      if (e.touches.length < 2) pinchPrevDistRef.current = 0;
+      if (e.touches.length === 0) touchDirectionRef.current = null;
+    };
+
+    el.addEventListener('touchstart', onTouchStart, { passive: true });
+    el.addEventListener('touchmove', onTouchMove, { passive: false });
+    el.addEventListener('touchend', onTouchEnd, { passive: true });
+    el.addEventListener('touchcancel', onTouchEnd, { passive: true });
+    return () => {
+      el.removeEventListener('touchstart', onTouchStart);
+      el.removeEventListener('touchmove', onTouchMove);
+      el.removeEventListener('touchend', onTouchEnd);
+      el.removeEventListener('touchcancel', onTouchEnd);
+    };
+  }, [locale, isShellExpanded, setVisibleWindow]);
 
   // ── Mouse drag-to-pan ────────────────────────────────────────────────────────
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
@@ -276,7 +400,7 @@ const CanvasTimeline = ({ collapsedGroups }: CanvasTimelineProps) => {
     if (!isDraggingRef.current) return;
     const outer = outerRef.current;
     if (!outer) return;
-    const trackAreaWidth = outer.clientWidth - SHELL_WIDTH;
+    const trackAreaWidth = outer.clientWidth - effectiveShellWidth;
     if (trackAreaWidth <= 0) return;
 
     const dx = e.clientX - dragStartXRef.current;
@@ -286,36 +410,60 @@ const CanvasTimeline = ({ collapsedGroups }: CanvasTimelineProps) => {
     const sign = locale === 'he' ? 1 : -1;
     const deltaMs = sign * dx * msPerPx;
     setVisibleWindow(panWindow(dragStartWindowRef.current, deltaMs));
-  }, [locale, setVisibleWindow]);
+  }, [locale, effectiveShellWidth, setVisibleWindow]);
 
   const handleMouseUp = useCallback(() => {
     isDraggingRef.current = false;
   }, []);
 
-  // ── Click → hit test ─────────────────────────────────────────────────────────
+  // ── Click → hit test + shell toggle ─────────────────────────────────────────
   const handleClick = useCallback((e: React.MouseEvent) => {
     // Ignore if this was a drag
     if (Math.abs(e.clientX - dragStartXRef.current) > 5) return;
 
-    const container = scrollContainerRef.current;
-    if (!container) return;
-
-    const rect = container.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top + container.scrollTop;
-
     const outer = outerRef.current;
-    const trackAreaWidth = (outer?.clientWidth ?? canvasWidth) - SHELL_WIDTH;
+    const container = scrollContainerRef.current;
+    if (!outer || !container) return;
+
+    const outerRect = outer.getBoundingClientRect();
+    const xInOuter = e.clientX - outerRect.left;
+    const yInOuter = e.clientY - outerRect.top;
+
+    const isRtl = locale === 'he';
+    const sw = effectiveShellWidth;
+    const inShell = isRtl
+      ? xInOuter > canvasWidth - sw
+      : xInOuter < sw;
+
+    if (inShell) {
+      if (yInOuter < AXIS_HEIGHT) {
+        // Click on the axis shell header → toggle shell expand/collapse
+        setIsShellExpanded((prev) => !prev);
+      } else if (isShellExpanded) {
+        // Click on a track row's shell label → toggle that group
+        const yInTracks = yInOuter - AXIS_HEIGHT + container.scrollTop;
+        const track = trackLayouts.find(
+          (t) => yInTracks >= t.y && yInTracks < t.y + t.height,
+        );
+        if (track) onToggleGroup?.(track.groupId);
+      }
+      return;
+    }
+
+    // Track area click: hit-test for timeline items
+    const containerRect = container.getBoundingClientRect();
+    const x = e.clientX - containerRect.left;
+    const y = e.clientY - containerRect.top + container.scrollTop;
 
     const scale = new HebrewTimeScale(
       windowRef.current.start,
       windowRef.current.end,
-      SHELL_WIDTH,
-      SHELL_WIDTH + trackAreaWidth,
-      locale === 'he',
+      isRtl ? 0 : sw,
+      isRtl ? canvasWidth - sw : canvasWidth,
+      isRtl,
     );
 
-    const hit = hitTest(x, y, trackLayouts, scale, SHELL_WIDTH);
+    const hit = hitTest(x, y, trackLayouts, scale, sw, canvasWidth);
 
     if (!hit) {
       setSelectedItem(null);
@@ -327,7 +475,7 @@ const CanvasTimeline = ({ collapsedGroups }: CanvasTimelineProps) => {
     } else {
       setSelectedItem({ kind: 'reading', data: hit as TimelineItem });
     }
-  }, [trackLayouts, canvasWidth, locale]);
+  }, [trackLayouts, canvasWidth, effectiveShellWidth, locale, isShellExpanded, onToggleGroup]);
 
   const handleCloseDetail = useCallback(() => {
     setSelectedItem(null);

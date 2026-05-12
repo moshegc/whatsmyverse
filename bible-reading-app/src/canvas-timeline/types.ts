@@ -26,4 +26,6 @@ export interface TrackLayout {
   /** Height of a single row, in CSS pixels */
   rowHeight: number;
   renderedItems: RenderedItemEntry[];
+  /** True when the group's items are hidden (user has toggled it off) */
+  isCollapsed: boolean;
 }

@@ -16,7 +16,7 @@ export const TIMELINE_MIN_MS: number =
 export const TIMELINE_MAX_MS: number =
   new HDate(1, 7, 6000).greg().getTime() + ONE_YEAR_MS;
 
-export const MIN_ZOOM_MS = ONE_DAY_MS;
+export const MIN_ZOOM_MS = 7 * ONE_DAY_MS;
 
 export interface VisibleWindow {
   start: number; // ms
