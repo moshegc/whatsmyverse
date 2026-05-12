@@ -69,6 +69,7 @@ function drawRangeItem(
   rowTop: number,
   rowHeight: number,
   isSelected: boolean,
+  groupColor: string,
 ): void {
   const trackLeft = Math.min(scale.pxLeft, scale.pxRight);
   const trackRight = Math.max(scale.pxLeft, scale.pxRight);
@@ -81,14 +82,16 @@ function drawRangeItem(
   x1 = Math.max(trackLeft, x1);
   x2 = Math.min(trackRight, x2);
 
-  const w = x2 - x1;
-  if (w < 0.5) return; // too narrow to draw
+  const rawW = x2 - x1;
+  if (rawW < 0) return; // fully outside viewport
+  // Always render at least 1 px so items remain visible when zoomed far out
+  const w = Math.max(1, rawW);
 
   const y = rowTop + ITEM_V_MARGIN;
   const h = rowHeight - ITEM_V_MARGIN * 2;
   const r = Math.min(3, h / 2);
 
-  const baseColor = extractItemColor(item.style, '#4a90d9');
+  const baseColor = extractItemColor(item.style, groupColor);
   const fillColor = isSelected ? lightenHex(baseColor, 50) : baseColor;
 
   ctx.save();
@@ -132,6 +135,7 @@ function drawPointItem(
   rowTop: number,
   rowHeight: number,
   isSelected: boolean,
+  groupColor: string,
 ): void {
   const trackLeft = Math.min(scale.pxLeft, scale.pxRight);
   const trackRight = Math.max(scale.pxLeft, scale.pxRight);
@@ -141,7 +145,7 @@ function drawPointItem(
 
   const cy = rowTop + rowHeight / 2;
   const size = Math.min(rowHeight / 2 - 2, 7);
-  const color = extractItemColor(item.style, '#d94a4a');
+  const color = extractItemColor(item.style, groupColor);
   const fillColor = isSelected ? lightenHex(color, 50) : color;
 
   ctx.save();
@@ -166,8 +170,8 @@ export function drawShellLabel(
   shellWidth: number,
   isRtl: boolean,
   canvasWidth: number,
-  isShellExpanded: boolean,
 ): void {
+  const isShellExpanded = shellWidth >= 60;
   const shellX = isRtl ? canvasWidth - shellWidth : 0;
   const midY = track.y + track.height / 2;
 
@@ -251,8 +255,8 @@ function drawTrackBackground(
   const trackLeft = Math.min(scale.pxLeft, scale.pxRight);
   const trackRight = Math.max(scale.pxLeft, scale.pxRight);
 
-  ctx.fillStyle = '#fff';
-  ctx.fillRect(trackLeft, track.y, trackRight - trackLeft, track.height);
+  // No fill needed — the canvas is already cleared to white before the track loop.
+  // Leaving it transparent allows grid lines drawn beforehand to show through.
 
   // Bottom separator line
   ctx.strokeStyle = '#ececec';
@@ -277,10 +281,9 @@ export function drawTrack(
   selectedId: string | null,
   shellWidth: number,
   canvasWidth: number,
-  isShellExpanded: boolean,
 ): void {
   drawTrackBackground(ctx, track, scale);
-  drawShellLabel(ctx, track, shellWidth, scale.isRtl, canvasWidth, isShellExpanded);
+  drawShellLabel(ctx, track, shellWidth, scale.isRtl, canvasWidth);
 
   for (const { item, row, rowHeight } of track.renderedItems) {
     const rowTop = track.y + row * rowHeight;
@@ -288,9 +291,9 @@ export function drawTrack(
     const isPoint = !item.end;
 
     if (isPoint) {
-      drawPointItem(ctx, scale, item, rowTop, rowHeight, isSelected);
+      drawPointItem(ctx, scale, item, rowTop, rowHeight, isSelected, track.color);
     } else {
-      drawRangeItem(ctx, scale, item, rowTop, rowHeight, isSelected);
+      drawRangeItem(ctx, scale, item, rowTop, rowHeight, isSelected, track.color);
     }
   }
 }

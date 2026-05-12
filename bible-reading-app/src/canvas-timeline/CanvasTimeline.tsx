@@ -20,7 +20,7 @@ import {
 } from './timelineState';
 import { stackItems } from './stackItems';
 import { hitTest } from './hitTest';
-import { drawTimeAxis } from './drawTimeAxis';
+import { drawTimeAxis, drawGridLines } from './drawTimeAxis';
 import { drawTrack } from './drawTrack';
 import type { TrackLayout, RenderedItemEntry, AnyItem } from './types';
 import { generateTimelineData } from '../generateTimelineData';
@@ -152,6 +152,10 @@ const CanvasTimeline = ({ collapsedGroups, onToggleGroup }: CanvasTimelineProps)
   // Keep a ref copy of visibleWindow to use inside non-reactive event handlers
   const windowRef = useRef<VisibleWindow>(INITIAL_WINDOW);
 
+  // Shell animation
+  const animatedShellWidthRef = useRef(SHELL_WIDTH);
+  const shellAnimFrameRef = useRef<number | null>(null);
+
   // Drag state
   const isDraggingRef = useRef(false);
   const dragStartXRef = useRef(0);
@@ -168,14 +172,47 @@ const CanvasTimeline = ({ collapsedGroups, onToggleGroup }: CanvasTimelineProps)
   const [selectedItem, setSelectedItem] = useState<SelectedItem | null>(null);
   const [canvasWidth, setCanvasWidth] = useState(0);
   const [isShellExpanded, setIsShellExpanded] = useState(true);
-
-  const effectiveShellWidth = isShellExpanded ? SHELL_WIDTH : COLLAPSED_SHELL_WIDTH;
+  const [animatedShellWidth, setAnimatedShellWidth] = useState(SHELL_WIDTH);
 
   // Helper: update both state and ref
   const setVisibleWindow = useCallback((win: VisibleWindow) => {
     windowRef.current = win;
     setVisibleWindowState(win);
   }, []);
+
+  // ── Shell expand/collapse animation ────────────────────────────────────────
+  useEffect(() => {
+    const target = isShellExpanded ? SHELL_WIDTH : COLLAPSED_SHELL_WIDTH;
+    const DURATION = 250; // ms
+    const startVal = animatedShellWidthRef.current;
+    const startTime = performance.now();
+
+    if (shellAnimFrameRef.current !== null) {
+      cancelAnimationFrame(shellAnimFrameRef.current);
+    }
+
+    const step = (now: number) => {
+      const t = Math.min(1, (now - startTime) / DURATION);
+      // ease-in-out cubic
+      const eased = t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+      const val = startVal + (target - startVal) * eased;
+      animatedShellWidthRef.current = val;
+      setAnimatedShellWidth(val);
+      if (t < 1) {
+        shellAnimFrameRef.current = requestAnimationFrame(step);
+      } else {
+        shellAnimFrameRef.current = null;
+      }
+    };
+    shellAnimFrameRef.current = requestAnimationFrame(step);
+
+    return () => {
+      if (shellAnimFrameRef.current !== null) {
+        cancelAnimationFrame(shellAnimFrameRef.current);
+      }
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isShellExpanded]);
 
   // ── Data ────────────────────────────────────────────────────────────────────
   const { readingItems, historicalItems } = useMemo(() => ({
@@ -209,7 +246,7 @@ const CanvasTimeline = ({ collapsedGroups, onToggleGroup }: CanvasTimelineProps)
 
   // ── Drawing effect ───────────────────────────────────────────────────────────
   useEffect(() => {
-    if (canvasWidth <= effectiveShellWidth + 10) return;
+    if (canvasWidth <= animatedShellWidth + 10) return;
     const axisCanvas = axisCanvasRef.current;
     const tracksCanvas = tracksCanvasRef.current;
     if (!axisCanvas || !tracksCanvas) return;
@@ -218,15 +255,15 @@ const CanvasTimeline = ({ collapsedGroups, onToggleGroup }: CanvasTimelineProps)
     const scale = new HebrewTimeScale(
       visibleWindow.start,
       visibleWindow.end,
-      isRtl ? 0 : effectiveShellWidth,
-      isRtl ? canvasWidth - effectiveShellWidth : canvasWidth,
+      isRtl ? 0 : animatedShellWidth,
+      isRtl ? canvasWidth - animatedShellWidth : canvasWidth,
       isRtl,
     );
 
     // Axis canvas
     const axisCtx = setupCanvas(axisCanvas, canvasWidth, AXIS_HEIGHT);
     if (axisCtx) {
-      drawTimeAxis(axisCtx, scale, canvasWidth, AXIS_HEIGHT, effectiveShellWidth, locale, isShellExpanded);
+      drawTimeAxis(axisCtx, scale, canvasWidth, AXIS_HEIGHT, animatedShellWidth, locale);
     }
 
     // Tracks canvas
@@ -234,6 +271,10 @@ const CanvasTimeline = ({ collapsedGroups, onToggleGroup }: CanvasTimelineProps)
     if (tracksCtx) {
       tracksCtx.fillStyle = '#fff';
       tracksCtx.fillRect(0, 0, canvasWidth, totalTrackHeight);
+
+      // Grid lines drawn right after the white canvas clear, before tracks.
+      // drawTrackBackground no longer re-fills white, so lines remain visible.
+      drawGridLines(tracksCtx, scale, totalTrackHeight, animatedShellWidth, canvasWidth, locale);
 
       const selId =
         selectedItem?.kind === 'reading'
@@ -243,10 +284,10 @@ const CanvasTimeline = ({ collapsedGroups, onToggleGroup }: CanvasTimelineProps)
           : null;
 
       for (const track of trackLayouts) {
-        drawTrack(tracksCtx, track, scale, selId, effectiveShellWidth, canvasWidth, isShellExpanded);
+        drawTrack(tracksCtx, track, scale, selId, animatedShellWidth, canvasWidth);
       }
     }
-  }, [visibleWindow, selectedItem, trackLayouts, totalTrackHeight, locale, canvasWidth, isShellExpanded, effectiveShellWidth]);
+  }, [visibleWindow, selectedItem, trackLayouts, totalTrackHeight, locale, canvasWidth, animatedShellWidth]);
 
   // ── Wheel handler (non-passive, must use addEventListener) ───────────────────
   useEffect(() => {
@@ -255,7 +296,7 @@ const CanvasTimeline = ({ collapsedGroups, onToggleGroup }: CanvasTimelineProps)
 
     const onWheel = (e: WheelEvent) => {
       const rect = el.getBoundingClientRect();
-      const sw = isShellExpanded ? SHELL_WIDTH : COLLAPSED_SHELL_WIDTH;
+      const sw = animatedShellWidthRef.current;
       const trackAreaWidth = rect.width - sw;
       if (trackAreaWidth <= 0) return;
 
@@ -286,7 +327,7 @@ const CanvasTimeline = ({ collapsedGroups, onToggleGroup }: CanvasTimelineProps)
 
     el.addEventListener('wheel', onWheel, { passive: false });
     return () => el.removeEventListener('wheel', onWheel);
-  }, [locale, isShellExpanded, setVisibleWindow]);
+  }, [locale, setVisibleWindow]);
 
   // ── Touch event handlers (mobile pan & pinch-zoom) ──────────────────────────
   useEffect(() => {
@@ -312,7 +353,7 @@ const CanvasTimeline = ({ collapsedGroups, onToggleGroup }: CanvasTimelineProps)
       const outer = outerRef.current;
       if (!outer) return;
       const isRtl = locale === 'he';
-      const sw = isShellExpanded ? SHELL_WIDTH : COLLAPSED_SHELL_WIDTH;
+      const sw = animatedShellWidthRef.current;
       const trackAreaWidth = outer.clientWidth - sw;
       if (trackAreaWidth <= 0) return;
 
@@ -386,7 +427,7 @@ const CanvasTimeline = ({ collapsedGroups, onToggleGroup }: CanvasTimelineProps)
       el.removeEventListener('touchend', onTouchEnd);
       el.removeEventListener('touchcancel', onTouchEnd);
     };
-  }, [locale, isShellExpanded, setVisibleWindow]);
+  }, [locale, setVisibleWindow]);
 
   // ── Mouse drag-to-pan ────────────────────────────────────────────────────────
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
@@ -400,7 +441,7 @@ const CanvasTimeline = ({ collapsedGroups, onToggleGroup }: CanvasTimelineProps)
     if (!isDraggingRef.current) return;
     const outer = outerRef.current;
     if (!outer) return;
-    const trackAreaWidth = outer.clientWidth - effectiveShellWidth;
+    const trackAreaWidth = outer.clientWidth - animatedShellWidthRef.current;
     if (trackAreaWidth <= 0) return;
 
     const dx = e.clientX - dragStartXRef.current;
@@ -410,7 +451,7 @@ const CanvasTimeline = ({ collapsedGroups, onToggleGroup }: CanvasTimelineProps)
     const sign = locale === 'he' ? 1 : -1;
     const deltaMs = sign * dx * msPerPx;
     setVisibleWindow(panWindow(dragStartWindowRef.current, deltaMs));
-  }, [locale, effectiveShellWidth, setVisibleWindow]);
+  }, [locale, setVisibleWindow]);
 
   const handleMouseUp = useCallback(() => {
     isDraggingRef.current = false;
@@ -430,7 +471,7 @@ const CanvasTimeline = ({ collapsedGroups, onToggleGroup }: CanvasTimelineProps)
     const yInOuter = e.clientY - outerRect.top;
 
     const isRtl = locale === 'he';
-    const sw = effectiveShellWidth;
+    const sw = animatedShellWidthRef.current;
     const inShell = isRtl
       ? xInOuter > canvasWidth - sw
       : xInOuter < sw;
@@ -439,7 +480,7 @@ const CanvasTimeline = ({ collapsedGroups, onToggleGroup }: CanvasTimelineProps)
       if (yInOuter < AXIS_HEIGHT) {
         // Click on the axis shell header → toggle shell expand/collapse
         setIsShellExpanded((prev) => !prev);
-      } else if (isShellExpanded) {
+      } else if (sw >= 60) {
         // Click on a track row's shell label → toggle that group
         const yInTracks = yInOuter - AXIS_HEIGHT + container.scrollTop;
         const track = trackLayouts.find(
@@ -475,7 +516,7 @@ const CanvasTimeline = ({ collapsedGroups, onToggleGroup }: CanvasTimelineProps)
     } else {
       setSelectedItem({ kind: 'reading', data: hit as TimelineItem });
     }
-  }, [trackLayouts, canvasWidth, effectiveShellWidth, locale, isShellExpanded, onToggleGroup]);
+  }, [trackLayouts, canvasWidth, locale, onToggleGroup]);
 
   const handleCloseDetail = useCallback(() => {
     setSelectedItem(null);

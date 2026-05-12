@@ -175,7 +175,6 @@ function drawAxisShell(
   canvasWidth: number,
   axisHeight: number,
   isRtl: boolean,
-  isShellExpanded: boolean,
 ): void {
   const shellX = isRtl ? canvasWidth - shellWidth : 0;
 
@@ -191,13 +190,19 @@ function drawAxisShell(
   ctx.lineTo(borderX, axisHeight);
   ctx.stroke();
 
-  // Collapse/expand chevron
-  const chevron = isShellExpanded ? (isRtl ? '›' : '‹') : (isRtl ? '‹' : '›');
-  ctx.fillStyle = '#888';
-  ctx.font = 'bold 13px -apple-system, Segoe UI, sans-serif';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.fillText(chevron, shellX + shellWidth / 2, axisHeight / 2);
+  // Hamburger / burger button icon (≡)
+  const lineW = Math.min(14, shellWidth - 6);
+  const cx = shellX + shellWidth / 2;
+  const cy = axisHeight / 2;
+  ctx.strokeStyle = '#666';
+  ctx.lineWidth = 1.5;
+  ctx.lineCap = 'round';
+  for (const offset of [-4, 0, 4]) {
+    ctx.beginPath();
+    ctx.moveTo(cx - lineW / 2, cy + offset);
+    ctx.lineTo(cx + lineW / 2, cy + offset);
+    ctx.stroke();
+  }
 }
 
 // ── Public entry point ───────────────────────────────────────────────────────
@@ -206,7 +211,6 @@ function drawAxisShell(
  * Draw the time axis strip onto `ctx`.
  *
  * All coordinates are in CSS pixels (caller has already applied DPR scaling).
- * @param isShellExpanded  Whether the series-label shell column is fully expanded.
  */
 export function drawTimeAxis(
   ctx: CanvasRenderingContext2D,
@@ -215,7 +219,6 @@ export function drawTimeAxis(
   axisHeight: number,
   shellWidth: number,
   locale: Locale,
-  isShellExpanded = true,
 ): void {
   const isRtl = scale.isRtl;
 
@@ -232,7 +235,7 @@ export function drawTimeAxis(
   ctx.stroke();
 
   // Shell area (drawn on top of background)
-  drawAxisShell(ctx, shellWidth, canvasWidth, axisHeight, isRtl, isShellExpanded);
+  drawAxisShell(ctx, shellWidth, canvasWidth, axisHeight, isRtl);
 
   // ── Ticks and labels ──────────────────────────────────────────────────────
   const visibleDuration = scale.visibleEnd - scale.visibleStart;
@@ -289,4 +292,53 @@ export function drawTimeAxis(
       ctx.fillText(gregLabel, x, axisHeight - 27);
     }
   }
+}
+
+// ── Grid lines ───────────────────────────────────────────────────────────────
+
+/**
+ * Draw faint vertical grid lines on the tracks canvas at the same x-positions
+ * as the current date-axis ticks.  Call this BEFORE drawing track content so
+ * the lines appear behind items.
+ *
+ * @param canvasHeight  Total height of the tracks canvas in CSS pixels.
+ */
+export function drawGridLines(
+  ctx: CanvasRenderingContext2D,
+  scale: HebrewTimeScale,
+  canvasHeight: number,
+  shellWidth: number,
+  canvasWidth: number,
+  locale: Locale,
+): void {
+  const visibleDuration = scale.visibleEnd - scale.visibleStart;
+  const isSubYearMode = visibleDuration < ONE_YEAR_MS * 2;
+
+  const tickXs: number[] = isSubYearMode
+    ? computeSubYearTicks(scale, locale).map((t) => t.x)
+    : computeYearTicks(scale).map((t) => t.x);
+
+  if (tickXs.length === 0) return;
+
+  // Clip to track area (exclude shell column)
+  const isRtl = scale.isRtl;
+  const clipLeft = isRtl ? 0 : shellWidth;
+  const clipRight = isRtl ? canvasWidth - shellWidth : canvasWidth;
+
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(clipLeft, 0, clipRight - clipLeft, canvasHeight);
+  ctx.clip();
+
+  ctx.strokeStyle = 'rgba(0, 0, 0, 0.1)';
+  ctx.lineWidth = 1;
+  for (const x of tickXs) {
+    const px = Math.round(x) + 0.5;
+    ctx.beginPath();
+    ctx.moveTo(px, 0);
+    ctx.lineTo(px, canvasHeight);
+    ctx.stroke();
+  }
+
+  ctx.restore();
 }
