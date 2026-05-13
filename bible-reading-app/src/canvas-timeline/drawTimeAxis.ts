@@ -78,7 +78,7 @@ function computeYearTicks(scale: HebrewTimeScale): YearTick[] {
     const x = scale.timeToPx(ms);
     if (x < trackPxLeft - 1 || x > trackPxRight + 1) continue;
 
-    const gregYear = new Date(ms).getFullYear();
+    const gregYear = new Date(ms).getUTCFullYear();
     ticks.push({ ms, x, hebrewYear: year, gregorianYear: gregYear });
   }
   return ticks;

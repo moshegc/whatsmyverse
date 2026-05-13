@@ -1,7 +1,7 @@
 // src/canvas-timeline/CanvasTimeline.tsx
 //
 // Canvas-based timeline component that replaces vis-timeline.
-// Uses a single <canvas> for tracks (virtual scroll) and a sticky axis canvas,
+// Uses a single <canvas> for the track area and a sticky axis canvas,
 // borrowing Perfetto's coordinate-transform and zoom/pan patterns.
 
 import {
@@ -10,6 +10,8 @@ import {
   useState,
   useMemo,
   useCallback,
+  forwardRef,
+  useImperativeHandle,
 } from 'react';
 import { HebrewTimeScale } from './HebrewTimeScale';
 import {
@@ -68,6 +70,15 @@ function computeTrackLayouts(
   ].sort((a, b) => a.order - b.order);
 
   const allItems: AnyItem[] = [...historicalItems, ...readingItems];
+
+  // Pre-group items for O(1) per-group lookup instead of O(items) filter each time
+  const itemsByGroup = new Map<string, AnyItem[]>();
+  for (const item of allItems) {
+    const arr = itemsByGroup.get(item.group);
+    if (arr) arr.push(item);
+    else itemsByGroup.set(item.group, [item]);
+  }
+
   let y = 0;
   const layouts: TrackLayout[] = [];
 
@@ -84,7 +95,7 @@ function computeTrackLayouts(
       rowHeight = COLLAPSED_TRACK_HEIGHT;
       height = COLLAPSED_TRACK_HEIGHT;
     } else {
-      const groupItems = allItems.filter((item) => item.group === group.id);
+      const groupItems = itemsByGroup.get(group.id) ?? [];
       if (group.stacked) {
         rowHeight = STACKED_ROW_HEIGHT;
         const { stacked, maxRows } = stackItems(groupItems, rowHeight);
@@ -131,16 +142,21 @@ function setupCanvas(
   return ctx;
 }
 
-// ── Component props ───────────────────────────────────────────────────────────
+// ── Component props & handle ─────────────────────────────────────────────────
 
 interface CanvasTimelineProps {
   collapsedGroups: Set<string>;
   onToggleGroup?: (groupId: string) => void;
 }
 
+export interface CanvasTimelineHandle {
+  toggleShell: () => void;
+}
+
 // ── Main component ────────────────────────────────────────────────────────────
 
-const CanvasTimeline = ({ collapsedGroups, onToggleGroup }: CanvasTimelineProps) => {
+const CanvasTimeline = forwardRef<CanvasTimelineHandle, CanvasTimelineProps>(
+({ collapsedGroups, onToggleGroup }, ref) => {
   const { locale } = useLocale();
 
   // ── Refs ────────────────────────────────────────────────────────────────────
@@ -156,11 +172,6 @@ const CanvasTimeline = ({ collapsedGroups, onToggleGroup }: CanvasTimelineProps)
   const animatedShellWidthRef = useRef(SHELL_WIDTH);
   const shellAnimFrameRef = useRef<number | null>(null);
 
-  // Drag state
-  const isDraggingRef = useRef(false);
-  const dragStartXRef = useRef(0);
-  const dragStartWindowRef = useRef<VisibleWindow>(INITIAL_WINDOW);
-
   // Touch state
   const touchStartsRef = useRef<{ identifier: number; clientX: number; clientY: number }[]>([]);
   const touchWindowRef = useRef<VisibleWindow>(INITIAL_WINDOW);
@@ -175,6 +186,11 @@ const CanvasTimeline = ({ collapsedGroups, onToggleGroup }: CanvasTimelineProps)
   const [canvasWidth, setCanvasWidth] = useState(0);
   const [isShellExpanded, setIsShellExpanded] = useState(true);
   const [animatedShellWidth, setAnimatedShellWidth] = useState(SHELL_WIDTH);
+
+  // Expose toggleShell to parent via ref
+  useImperativeHandle(ref, () => ({
+    toggleShell: () => setIsShellExpanded((prev) => !prev),
+  }));
 
   // Helper: update both state and ref
   const setVisibleWindow = useCallback((win: VisibleWindow) => {
@@ -447,38 +463,8 @@ const CanvasTimeline = ({ collapsedGroups, onToggleGroup }: CanvasTimelineProps)
     };
   }, [locale, setVisibleWindow]);
 
-  // ── Mouse drag-to-pan ────────────────────────────────────────────────────────
-  const handleMouseDown = useCallback((e: React.MouseEvent) => {
-    if (e.button !== 0) return;
-    isDraggingRef.current = true;
-    dragStartXRef.current = e.clientX;
-    dragStartWindowRef.current = { ...windowRef.current };
-  }, []);
-
-  const handleMouseMove = useCallback((e: React.MouseEvent) => {
-    if (!isDraggingRef.current) return;
-    const outer = outerRef.current;
-    if (!outer) return;
-    const trackAreaWidth = outer.clientWidth - animatedShellWidthRef.current;
-    if (trackAreaWidth <= 0) return;
-
-    const dx = e.clientX - dragStartXRef.current;
-    const duration =
-      dragStartWindowRef.current.end - dragStartWindowRef.current.start;
-    const msPerPx = duration / trackAreaWidth;
-    const sign = locale === 'he' ? 1 : -1;
-    const deltaMs = sign * dx * msPerPx;
-    setVisibleWindow(panWindow(dragStartWindowRef.current, deltaMs));
-  }, [locale, setVisibleWindow]);
-
-  const handleMouseUp = useCallback(() => {
-    isDraggingRef.current = false;
-  }, []);
-
   // ── Click → hit test + shell toggle ─────────────────────────────────────────
   const handleClick = useCallback((e: React.MouseEvent) => {
-    // Ignore if this was a drag
-    if (Math.abs(e.clientX - dragStartXRef.current) > 5) return;
 
     const outer = outerRef.current;
     const container = scrollContainerRef.current;
@@ -552,13 +538,9 @@ const CanvasTimeline = ({ collapsedGroups, onToggleGroup }: CanvasTimelineProps)
         height: '100%',
         overflow: 'hidden',
         position: 'relative',
-        cursor: isDraggingRef.current ? 'grabbing' : 'default',
+        cursor: 'default',
         userSelect: 'none',
       }}
-      onMouseDown={handleMouseDown}
-      onMouseMove={handleMouseMove}
-      onMouseUp={handleMouseUp}
-      onMouseLeave={handleMouseUp}
       onClick={handleClick}
     >
       {/* ── Axis strip (non-scrolling) ── */}
@@ -598,6 +580,6 @@ const CanvasTimeline = ({ collapsedGroups, onToggleGroup }: CanvasTimelineProps)
       )}
     </div>
   );
-};
+});
 
 export default CanvasTimeline;

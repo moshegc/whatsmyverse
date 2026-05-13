@@ -1,8 +1,8 @@
 // src/App.tsx
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import TimelineView from './TimelineView';
-import { CanvasTimeline } from './canvas-timeline';
+import { CanvasTimeline, type CanvasTimelineHandle } from './canvas-timeline';
 import HeaderBar from './HeaderBar';
 import Sidebar from './Sidebar';
 import { useLocale } from './LocaleContext';
@@ -13,14 +13,17 @@ const USE_CANVAS_TIMELINE = true;
 
 function App() {
   const { locale } = useLocale();
+  const canvasTimelineRef = useRef<CanvasTimelineHandle>(null);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set());
 
   const handleToggleSidebar = useCallback(() => {
-    // On mobile: toggle mobile overlay sidebar
-    // On desktop: this button is hidden, sidebar collapse is used instead
-    setMobileSidebarOpen((prev) => !prev);
+    if (USE_CANVAS_TIMELINE) {
+      canvasTimelineRef.current?.toggleShell();
+    } else {
+      setMobileSidebarOpen((prev) => !prev);
+    }
   }, []);
 
   const handleToggleCollapse = useCallback(() => {
@@ -61,7 +64,7 @@ function App() {
           />
         )}
         {USE_CANVAS_TIMELINE
-          ? <CanvasTimeline collapsedGroups={collapsedGroups} onToggleGroup={handleToggleGroup} />
+          ? <CanvasTimeline ref={canvasTimelineRef} collapsedGroups={collapsedGroups} onToggleGroup={handleToggleGroup} />
           : <TimelineView collapsedGroups={collapsedGroups} />
         }
       </div>
