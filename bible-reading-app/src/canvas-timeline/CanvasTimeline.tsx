@@ -35,7 +35,7 @@ import type { TimelineItem } from '../generateTimelineData';
 
 // ── Layout constants ──────────────────────────────────────────────────────────
 const AXIS_HEIGHT = 52;              // px — fixed axis strip height
-const SHELL_WIDTH = 150;             // px — group-label column width (expanded)
+const SHELL_WIDTH = 170;             // px — group-label column width (expanded)
 const COLLAPSED_SHELL_WIDTH = 22;    // px — group-label column width (collapsed)
 const COLLAPSED_TRACK_HEIGHT = 18;   // px — height of a collapsed (hidden) track row
 const TRACK_ROW_HEIGHT = 26;         // px — default single-row track height
@@ -166,6 +166,8 @@ const CanvasTimeline = ({ collapsedGroups, onToggleGroup }: CanvasTimelineProps)
   const touchWindowRef = useRef<VisibleWindow>(INITIAL_WINDOW);
   const touchDirectionRef = useRef<'horizontal' | 'vertical' | null>(null);
   const pinchPrevDistRef = useRef(0);
+  // True when the gesture started over the detail card — skip timeline pan/zoom
+  const touchOverCardRef = useRef(false);
 
   // ── State ──────────────────────────────────────────────────────────────────
   const [visibleWindow, setVisibleWindowState] = useState<VisibleWindow>(INITIAL_WINDOW);
@@ -295,6 +297,9 @@ const CanvasTimeline = ({ collapsedGroups, onToggleGroup }: CanvasTimelineProps)
     if (!el) return;
 
     const onWheel = (e: WheelEvent) => {
+      // Let the detail card scroll itself without zooming the timeline
+      if ((e.target as Element).closest?.('.detail-card')) return;
+
       const rect = el.getBoundingClientRect();
       const sw = animatedShellWidthRef.current;
       const trackAreaWidth = rect.width - sw;
@@ -335,6 +340,13 @@ const CanvasTimeline = ({ collapsedGroups, onToggleGroup }: CanvasTimelineProps)
     if (!el) return;
 
     const onTouchStart = (e: TouchEvent) => {
+      // Detect whether the gesture started over the detail card
+      const firstTouch = e.touches[0];
+      const target = firstTouch
+        ? document.elementFromPoint(firstTouch.clientX, firstTouch.clientY)
+        : null;
+      touchOverCardRef.current = !!(target?.closest('.detail-card'));
+
       touchStartsRef.current = Array.from(e.touches).map((t) => ({
         identifier: t.identifier,
         clientX: t.clientX,
@@ -350,6 +362,9 @@ const CanvasTimeline = ({ collapsedGroups, onToggleGroup }: CanvasTimelineProps)
     };
 
     const onTouchMove = (e: TouchEvent) => {
+      // Let the detail card handle its own scrolling / zooming
+      if (touchOverCardRef.current) return;
+
       const outer = outerRef.current;
       if (!outer) return;
       const isRtl = locale === 'he';
@@ -414,7 +429,10 @@ const CanvasTimeline = ({ collapsedGroups, onToggleGroup }: CanvasTimelineProps)
         remainingIds.has(t.identifier),
       );
       if (e.touches.length < 2) pinchPrevDistRef.current = 0;
-      if (e.touches.length === 0) touchDirectionRef.current = null;
+      if (e.touches.length === 0) {
+        touchDirectionRef.current = null;
+        touchOverCardRef.current = false;
+      }
     };
 
     el.addEventListener('touchstart', onTouchStart, { passive: true });

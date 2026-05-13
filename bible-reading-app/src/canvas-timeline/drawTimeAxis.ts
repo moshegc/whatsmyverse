@@ -34,17 +34,20 @@ interface SubYearTick {
 
 // ── Year-mode helpers ────────────────────────────────────────────────────────
 
-function niceYearInterval(visibleYears: number): number {
+function niceYearInterval(visibleYears: number, trackWidth: number): number {
+  // Aim for at least 45 px per tick so year labels don't bunch up.
+  const maxTicks = Math.max(3, Math.floor(trackWidth / 45));
   const candidates = [1, 2, 5, 10, 25, 50, 100, 250, 500, 1000, 2000, 3000];
   for (const c of candidates) {
-    if (visibleYears / c <= 12) return c;
+    if (visibleYears / c <= maxTicks) return c;
   }
   return 3000;
 }
 
 function computeYearTicks(scale: HebrewTimeScale): YearTick[] {
   const visibleYears = (scale.visibleEnd - scale.visibleStart) / ONE_YEAR_MS;
-  const interval = niceYearInterval(visibleYears);
+  const trackWidth = Math.abs(scale.pxRight - scale.pxLeft);
+  const interval = niceYearInterval(visibleYears, trackWidth);
 
   let startHYear: number;
   try {
@@ -107,9 +110,11 @@ const SUB_YEAR_INTERVALS_MS = [
   Math.round(ONE_YEAR_MS),
 ];
 
-function niceSubYearIntervalMs(durationMs: number): number {
+function niceSubYearIntervalMs(durationMs: number, trackWidth: number): number {
+  // Aim for at least 70 px per tick so date+year labels don't bunch up.
+  const maxTicks = Math.max(3, Math.floor(trackWidth / 70));
   for (const interval of SUB_YEAR_INTERVALS_MS) {
-    if (durationMs / interval <= 12) return interval;
+    if (durationMs / interval <= maxTicks) return interval;
   }
   return Math.round(ONE_YEAR_MS);
 }
@@ -131,7 +136,8 @@ const HEBREW_MONTHS_HE = [
 
 function computeSubYearTicks(scale: HebrewTimeScale, locale: Locale): SubYearTick[] {
   const duration = scale.visibleEnd - scale.visibleStart;
-  const intervalMs = niceSubYearIntervalMs(duration);
+  const trackWidth = Math.abs(scale.pxRight - scale.pxLeft);
+  const intervalMs = niceSubYearIntervalMs(duration, trackWidth);
   const startTime = Math.floor(scale.visibleStart / intervalMs) * intervalMs;
   const trackPxLeft = Math.min(scale.pxLeft, scale.pxRight);
   const trackPxRight = Math.max(scale.pxLeft, scale.pxRight);
@@ -144,19 +150,23 @@ function computeSubYearTicks(scale: HebrewTimeScale, locale: Locale): SubYearTic
     if (x < trackPxLeft - 1 || x > trackPxRight + 1) continue;
 
     const d = new Date(t);
-    const gregDateLabel = `${GREG_MONTHS_SHORT[d.getUTCMonth()]} ${d.getUTCDate()}`;
+    const gregYear = d.getUTCFullYear();
+    const gregYearStr = gregYear > 0 ? String(gregYear) : `${1 - gregYear} BCE`;
+    const gregDateLabel = `${GREG_MONTHS_SHORT[d.getUTCMonth()]} ${d.getUTCDate()}, ${gregYearStr}`;
 
     let hebrewDateLabel = '';
     try {
       const hd = new HDate(d);
       const monthIdx = hd.getMonth() as number;
+      const hYear = hd.getFullYear();
       if (locale === 'he') {
         const monthName = HEBREW_MONTHS_HE[monthIdx] ?? '';
         const dayGem = gematriya(hd.getDate());
-        hebrewDateLabel = `${dayGem} ${monthName}`;
+        const yearStr = gematriyaYear(hYear);
+        hebrewDateLabel = `${dayGem} ${monthName} ${yearStr}`;
       } else {
         const monthName = HEBREW_MONTHS_EN[monthIdx] ?? '';
-        hebrewDateLabel = `${hd.getDate()} ${monthName}`;
+        hebrewDateLabel = `${hd.getDate()} ${monthName} ${hYear}`;
       }
     } catch {
       hebrewDateLabel = '';
