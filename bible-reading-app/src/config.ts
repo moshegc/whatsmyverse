@@ -31,9 +31,9 @@ export const schedules: ReadingSchedule[] = [
   {
     id: 'Psalms-Since-5708',    
     name: 'Yearly Psalms since 5708',
-    nameHe: 'תהלים שנתיים מ-5708',
+    nameHe: 'תהלים שנתיים מאז תש"ח',
     description: 'Yearly Psalms since the establishment of the State of Israel in 5708',
-    descriptionHe: 'תהלים שנתיים מאז הקמת מדינת ישראל בשנת 5708',
+    descriptionHe: 'תהלים שנתיים מאז הקמת מדינת ישראל בשנת תש"ח',
     csvFiles: ['/data/Psalms.csv'],
     displayMode: 'chapter',
     startDate: '5 Iyar 5708', // Corresponds to Rosh Hashanah 5785
@@ -66,7 +66,7 @@ export const schedules: ReadingSchedule[] = [
     name: 'Eons since creation',
     nameHe: 'עתים (עידנים) מבריאת העולם',
     description: '28 Eons since creation. Each Eon is 6000/28 years',
-    descriptionHe: '28 עתים (עידנים) מבריאת העולם. כל עת הוא 6000/28 שנים',
+    descriptionHe: '28 עתים (עידנים) על פי ספר קהלת מסודרים מבריאת העולם. כל עת הוא 6000/28 שנים',
     csvFiles: ['/data/Eons.csv'],
     displayMode: 'verse',
     startDate: '1 Tishrei 1',
