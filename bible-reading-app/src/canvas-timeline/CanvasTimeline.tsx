@@ -36,7 +36,7 @@ import DetailCard, { type SelectedItem } from '../DetailCard';
 import type { TimelineItem } from '../generateTimelineData';
 
 // ── Layout constants ──────────────────────────────────────────────────────────
-const AXIS_HEIGHT = 52;              // px — fixed axis strip height
+const AXIS_HEIGHT = 60;              // px — fixed axis strip height
 const SHELL_WIDTH = 170;             // px — group-label column width (expanded)
 const COLLAPSED_SHELL_WIDTH = 22;    // px — group-label column width (collapsed)
 const COLLAPSED_TRACK_HEIGHT = 18;   // px — height of a collapsed (hidden) track row
