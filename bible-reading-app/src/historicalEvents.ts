@@ -76,6 +76,14 @@ export function parseHebrewDate(dateString: string): HDate {
   return new HDate(parseInt(parts[0], 10), parts[1], parseInt(parts[2], 10));
 }
 
+export function hDateToUtcMidnight(hd: HDate): Date {
+  const d = hd.greg(); // local midnight, but LMT-shifted in UTC
+  const out = new Date(0);
+  // getFullYear/getMonth/getDate read local-time components = the intended calendar date
+  out.setUTCFullYear(d.getFullYear(), d.getMonth(), d.getDate());
+  return out;
+}
+
 // ─── Categories ─────────────────────────────────────────────────────────────
 
 export const historicalEventCategories: HistoricalEventCategory[] = [

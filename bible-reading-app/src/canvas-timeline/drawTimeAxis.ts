@@ -146,17 +146,18 @@ function computeSubYearTicks(scale: HebrewTimeScale, locale: Locale): SubYearTic
   for (let t = startTime; t <= scale.visibleEnd + intervalMs; t += intervalMs) {
     if (t < scale.visibleStart || t > scale.visibleEnd) continue;
 
-    const x = scale.timeToPx(t);
-    if (x < trackPxLeft - 1 || x > trackPxRight + 1) continue;
+    const hd = new HDate(new Date(t));
+    const d = hd.greg();
 
-    const d = new Date(t);
+    const x = scale.timeToPx(d.getTime());
+    if (x < trackPxLeft - 1 || x > trackPxRight + 1) continue;    
+    
     const gregYear = d.getUTCFullYear();
     const gregYearStr = gregYear > 0 ? String(gregYear) : `${1 - gregYear} BCE`;
     const gregDateLabel = `${GREG_MONTHS_SHORT[d.getUTCMonth()]} ${d.getUTCDate()}, ${gregYearStr}`;
 
     let hebrewDateLabel = '';
-    try {
-      const hd = new HDate(d);
+    try {      
       const monthIdx = hd.getMonth() as number;
       const hYear = hd.getFullYear();
       if (locale === 'he') {
