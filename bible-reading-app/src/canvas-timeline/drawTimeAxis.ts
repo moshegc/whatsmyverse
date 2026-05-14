@@ -50,8 +50,8 @@ interface ContextBand {
 // ── Year-mode helpers ────────────────────────────────────────────────────────
 
 function niceYearInterval(visibleYears: number, trackWidth: number): number {
-  // Aim for at least 45 px per tick so year labels don't bunch up.
-  const maxTicks = Math.max(3, Math.floor(trackWidth / 45));
+  // Aim for at least 40 px per tick so year labels don't bunch up.
+  const maxTicks = Math.max(3, Math.floor(trackWidth / 40));
   const candidates = [1, 2, 5, 10, 25, 50, 100, 250, 500, 1000, 2000, 3000];
   for (const c of candidates) {
     if (visibleYears / c <= maxTicks) return c;
@@ -177,8 +177,8 @@ const SUB_YEAR_INTERVALS_MS = [
 ];
 
 function niceSubYearIntervalMs(durationMs: number, trackWidth: number): number {
-  // Aim for at least 70 px per tick so date+year labels don't bunch up.
-  const maxTicks = Math.max(3, Math.floor(trackWidth / 70));
+  // Aim for at least 30 px per tick so date+year labels don't bunch up.
+  const maxTicks = Math.max(3, Math.floor(trackWidth / 30));
   for (const interval of SUB_YEAR_INTERVALS_MS) {
     if (durationMs / interval <= maxTicks) return interval;
   }
@@ -316,20 +316,20 @@ function computeSubYearTicks(
         : (HEBREW_MONTHS_EN[monthIdx] ?? '');
       secondaryLabel = GREG_MONTHS_SHORT[d.getUTCMonth()] ?? '';
     } else {
-      // Show only the day number — month+year is in the context band
-      try {
-        primaryLabel = locale === 'he'
-          ? gematriya(hd.getDate())
-          : String(hd.getDate());
-      } catch {
-        primaryLabel = String(hd.getDate());
-      }
-      const gregDay = String(d.getUTCDate());
-      if (showDow) {
-        const dow = locale === 'he' ? DOW_SHORT_HE[d.getDay()] : DOW_SHORT_EN[d.getDay()];
-        secondaryLabel = `${dow} ${gregDay}`;
-      } else {
-        secondaryLabel = gregDay;
+    // Show only the day number — month+year is in the context band
+    try {
+      primaryLabel = locale === 'he'
+        ? gematriya(hd.getDate())
+        : String(hd.getDate());
+    } catch {
+      primaryLabel = String(hd.getDate());
+    }
+    const gregDay = String(d.getUTCDate());
+    if (showDow) {
+      const dow = locale === 'he' ? DOW_SHORT_HE[d.getDay()] : DOW_SHORT_EN[d.getDay()];
+      secondaryLabel = `${dow} ${gregDay}`;
+    } else {
+      secondaryLabel = gregDay;
       }
     }
 
