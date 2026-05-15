@@ -180,6 +180,9 @@ const CanvasTimeline = forwardRef<CanvasTimelineHandle, CanvasTimelineProps>(
   // True when the gesture started over the detail card — skip timeline pan/zoom
   const touchOverCardRef = useRef(false);
 
+  // Mouse drag state (desktop pan)
+  const mouseDragRef = useRef<{ startX: number; startWindow: VisibleWindow } | null>(null);
+
   // ── State ──────────────────────────────────────────────────────────────────
   const [visibleWindow, setVisibleWindowState] = useState<VisibleWindow>(INITIAL_WINDOW);
   const [selectedItem, setSelectedItem] = useState<SelectedItem | null>(null);
@@ -463,6 +466,51 @@ const CanvasTimeline = forwardRef<CanvasTimelineHandle, CanvasTimelineProps>(
     };
   }, [locale, setVisibleWindow]);
 
+  // ── Mouse drag handlers (desktop pan) ───────────────────────────────────────
+  useEffect(() => {
+    const el = outerRef.current;
+    if (!el) return;
+
+    const onMouseDown = (e: MouseEvent) => {
+      // Only primary button; ignore if over the detail card
+      if (e.button !== 0) return;
+      const target = document.elementFromPoint(e.clientX, e.clientY);
+      if (target?.closest('.detail-card')) return;
+      mouseDragRef.current = { startX: e.clientX, startWindow: { ...windowRef.current } };
+      el.style.cursor = 'grabbing';
+      e.preventDefault();
+    };
+
+    const onMouseMove = (e: MouseEvent) => {
+      const drag = mouseDragRef.current;
+      if (!drag) return;
+      const isRtl = locale === 'he';
+      const sw = animatedShellWidthRef.current;
+      const trackAreaWidth = el.clientWidth - sw;
+      if (trackAreaWidth <= 0) return;
+      const dx = e.clientX - drag.startX;
+      const msPerPx = (drag.startWindow.end - drag.startWindow.start) / trackAreaWidth;
+      const sign = isRtl ? 1 : -1;
+      const deltaMs = sign * dx * msPerPx;
+      setVisibleWindow(panWindow(drag.startWindow, deltaMs));
+    };
+
+    const onMouseUp = () => {
+      if (!mouseDragRef.current) return;
+      mouseDragRef.current = null;
+      el.style.cursor = '';
+    };
+
+    el.addEventListener('mousedown', onMouseDown);
+    window.addEventListener('mousemove', onMouseMove);
+    window.addEventListener('mouseup', onMouseUp);
+    return () => {
+      el.removeEventListener('mousedown', onMouseDown);
+      window.removeEventListener('mousemove', onMouseMove);
+      window.removeEventListener('mouseup', onMouseUp);
+    };
+  }, [locale, setVisibleWindow]);
+
   // ── Click → hit test + shell toggle ─────────────────────────────────────────
   const handleClick = useCallback((e: React.MouseEvent) => {
 
@@ -538,7 +586,7 @@ const CanvasTimeline = forwardRef<CanvasTimelineHandle, CanvasTimelineProps>(
         height: '100%',
         overflow: 'hidden',
         position: 'relative',
-        cursor: 'default',
+        cursor: 'grab',
         userSelect: 'none',
       }}
       onClick={handleClick}
