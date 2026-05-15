@@ -11,7 +11,6 @@ import { type Locale, gematriyaYear } from '../i18n';
 
 const ONE_DAY_MS = 1_000 * 60 * 60 * 24;
 const ONE_YEAR_MS = ONE_DAY_MS * 365.25;
-const TIMELINE_MIN_MS = new HDate(1, 7, 1).greg().getTime(); // Hebrew year 1, Tishrei 1
 
 /** Height of the context-band row at the top of the axis strip (sub-year mode and future year-mode bands). */
 const TOP_BAND_H = 16;
@@ -547,8 +546,7 @@ export function drawTimeAxis(
   const isSubYearMode = visibleDuration < ONE_YEAR_MS * 2;
 
   if (isSubYearMode) {
-    const { ticks, isMonthLevel } = computeSubYearTicks(scale, locale);
-    const ONE_MONTH_MS_APPROX = Math.round(30.4375 * ONE_DAY_MS);
+    const { ticks, isMonthLevel } = computeSubYearTicks(scale, locale);    
     const ctxBands = isMonthLevel
       ? computeYearBands(scale, locale)
       : computeMonthBands(scale, locale);

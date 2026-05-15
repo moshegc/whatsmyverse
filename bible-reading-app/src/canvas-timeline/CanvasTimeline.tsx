@@ -334,8 +334,7 @@ const CanvasTimeline = forwardRef<CanvasTimelineHandle, CanvasTimelineProps>(
           firstScheduleTrack.y,
           animatedShellWidth,
           canvasWidth,
-          isRtl,          
-          SECTION_COL_WIDTH,
+          isRtl,                    
         );
       }
     }

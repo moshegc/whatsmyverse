@@ -285,8 +285,7 @@ export function drawSeparator(
   y: number,
   shellWidth: number,
   canvasWidth: number,
-  isRtl: boolean,  
-  sectionColWidth: number,
+  isRtl: boolean,    
 ): void {
   const LINE_Y = y - 1.5; // sit just above the first reading track
   const LINE_H = 3;
