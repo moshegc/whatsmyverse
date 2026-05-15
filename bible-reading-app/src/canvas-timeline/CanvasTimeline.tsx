@@ -23,7 +23,7 @@ import {
 import { stackItems } from './stackItems';
 import { hitTest } from './hitTest';
 import { drawTimeAxis, drawGridLines } from './drawTimeAxis';
-import { drawTrack } from './drawTrack';
+import { drawTrack, drawSeparator, drawSectionHeaderColumn } from './drawTrack';
 import type { TrackLayout, RenderedItemEntry, AnyItem } from './types';
 import { generateTimelineData } from '../generateTimelineData';
 import { generateHistoricalTimelineData, type HistoricalTimelineItem } from '../generateHistoricalTimelineData';
@@ -39,6 +39,7 @@ import type { TimelineItem } from '../generateTimelineData';
 const AXIS_HEIGHT = 60;              // px — fixed axis strip height
 const SHELL_WIDTH = 170;             // px — group-label column width (expanded)
 const COLLAPSED_SHELL_WIDTH = 22;    // px — group-label column width (collapsed)
+const SECTION_COL_WIDTH = 20;        // px — rotated section-header column width
 const COLLAPSED_TRACK_HEIGHT = 18;   // px — height of a collapsed (hidden) track row
 const TRACK_ROW_HEIGHT = 26;         // px — default single-row track height
 const STACKED_ROW_HEIGHT = 20;       // px — row height when stacking overlapping items
@@ -267,7 +268,7 @@ const CanvasTimeline = forwardRef<CanvasTimelineHandle, CanvasTimelineProps>(
 
   // ── Drawing effect ───────────────────────────────────────────────────────────
   useEffect(() => {
-    if (canvasWidth <= animatedShellWidth + 10) return;
+    if (canvasWidth <= animatedShellWidth + SECTION_COL_WIDTH + 10) return;
     const axisCanvas = axisCanvasRef.current;
     const tracksCanvas = tracksCanvasRef.current;
     if (!axisCanvas || !tracksCanvas) return;
@@ -276,15 +277,15 @@ const CanvasTimeline = forwardRef<CanvasTimelineHandle, CanvasTimelineProps>(
     const scale = new HebrewTimeScale(
       visibleWindow.start,
       visibleWindow.end,
-      isRtl ? 0 : animatedShellWidth,
-      isRtl ? canvasWidth - animatedShellWidth : canvasWidth,
+      isRtl ? 0 : animatedShellWidth + SECTION_COL_WIDTH,
+      isRtl ? canvasWidth - animatedShellWidth - SECTION_COL_WIDTH : canvasWidth,
       isRtl,
     );
 
     // Axis canvas
     const axisCtx = setupCanvas(axisCanvas, canvasWidth, AXIS_HEIGHT);
     if (axisCtx) {
-      drawTimeAxis(axisCtx, scale, canvasWidth, AXIS_HEIGHT, animatedShellWidth, locale);
+      drawTimeAxis(axisCtx, scale, canvasWidth, AXIS_HEIGHT, animatedShellWidth + SECTION_COL_WIDTH, locale);
     }
 
     // Tracks canvas
@@ -295,7 +296,7 @@ const CanvasTimeline = forwardRef<CanvasTimelineHandle, CanvasTimelineProps>(
 
       // Grid lines drawn right after the white canvas clear, before tracks.
       // drawTrackBackground no longer re-fills white, so lines remain visible.
-      drawGridLines(tracksCtx, scale, totalTrackHeight, animatedShellWidth, canvasWidth, locale);
+      drawGridLines(tracksCtx, scale, totalTrackHeight, animatedShellWidth + SECTION_COL_WIDTH, canvasWidth, locale);
 
       const selId =
         selectedItem?.kind === 'reading'
@@ -305,7 +306,37 @@ const CanvasTimeline = forwardRef<CanvasTimelineHandle, CanvasTimelineProps>(
           : null;
 
       for (const track of trackLayouts) {
-        drawTrack(tracksCtx, track, scale, selId, animatedShellWidth, canvasWidth);
+        drawTrack(tracksCtx, track, scale, selId, animatedShellWidth, canvasWidth, SECTION_COL_WIDTH);
+      }
+
+      // Draw separator between historical tracks and reading schedule tracks
+      const firstScheduleTrack = trackLayouts.find((t) =>
+        schedules.some((s) => s.id === t.groupId),
+      );     
+
+      // Draw section-header column (rotated labels)
+      const histLabel  = locale === 'he' ? 'היסטוריה' : 'History';
+      const verseLabel = locale === 'he' ? 'פסוקים'   : 'Verses';
+      drawSectionHeaderColumn(
+        tracksCtx,
+        firstScheduleTrack?.y ?? null,
+        totalTrackHeight,
+        canvasWidth,
+        isRtl,
+        SECTION_COL_WIDTH,
+        histLabel,
+        verseLabel,
+      );
+
+      if (firstScheduleTrack) {       
+        drawSeparator(
+          tracksCtx,
+          firstScheduleTrack.y,
+          animatedShellWidth,
+          canvasWidth,
+          isRtl,          
+          SECTION_COL_WIDTH,
+        );
       }
     }
   }, [visibleWindow, selectedItem, trackLayouts, totalTrackHeight, locale, canvasWidth, animatedShellWidth]);
@@ -320,7 +351,7 @@ const CanvasTimeline = forwardRef<CanvasTimelineHandle, CanvasTimelineProps>(
       if ((e.target as Element).closest?.('.detail-card')) return;
 
       const rect = el.getBoundingClientRect();
-      const sw = animatedShellWidthRef.current;
+      const sw = animatedShellWidthRef.current + SECTION_COL_WIDTH;
       const trackAreaWidth = rect.width - sw;
       if (trackAreaWidth <= 0) return;
 
@@ -387,7 +418,7 @@ const CanvasTimeline = forwardRef<CanvasTimelineHandle, CanvasTimelineProps>(
       const outer = outerRef.current;
       if (!outer) return;
       const isRtl = locale === 'he';
-      const sw = animatedShellWidthRef.current;
+      const sw = animatedShellWidthRef.current + SECTION_COL_WIDTH;
       const trackAreaWidth = outer.clientWidth - sw;
       if (trackAreaWidth <= 0) return;
 
@@ -486,7 +517,8 @@ const CanvasTimeline = forwardRef<CanvasTimelineHandle, CanvasTimelineProps>(
       if (!drag) return;
       const isRtl = locale === 'he';
       const sw = animatedShellWidthRef.current;
-      const trackAreaWidth = el.clientWidth - sw;
+      const totalSw = sw + SECTION_COL_WIDTH;
+      const trackAreaWidth = el.clientWidth - totalSw;
       if (trackAreaWidth <= 0) return;
       const dx = e.clientX - drag.startX;
       const msPerPx = (drag.startWindow.end - drag.startWindow.start) / trackAreaWidth;
@@ -524,9 +556,10 @@ const CanvasTimeline = forwardRef<CanvasTimelineHandle, CanvasTimelineProps>(
 
     const isRtl = locale === 'he';
     const sw = animatedShellWidthRef.current;
+    const totalSw = sw + SECTION_COL_WIDTH;
     const inShell = isRtl
-      ? xInOuter > canvasWidth - sw
-      : xInOuter < sw;
+      ? xInOuter > canvasWidth - totalSw
+      : xInOuter < totalSw;
 
     if (inShell) {
       if (yInOuter < AXIS_HEIGHT) {
@@ -551,12 +584,12 @@ const CanvasTimeline = forwardRef<CanvasTimelineHandle, CanvasTimelineProps>(
     const scale = new HebrewTimeScale(
       windowRef.current.start,
       windowRef.current.end,
-      isRtl ? 0 : sw,
-      isRtl ? canvasWidth - sw : canvasWidth,
+      isRtl ? 0 : totalSw,
+      isRtl ? canvasWidth - totalSw : canvasWidth,
       isRtl,
     );
 
-    const hit = hitTest(x, y, trackLayouts, scale, sw, canvasWidth);
+    const hit = hitTest(x, y, trackLayouts, scale, totalSw, canvasWidth);
 
     if (!hit) {
       setSelectedItem(null);

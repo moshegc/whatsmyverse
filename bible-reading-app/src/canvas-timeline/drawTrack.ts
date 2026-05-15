@@ -170,9 +170,10 @@ export function drawShellLabel(
   shellWidth: number,
   isRtl: boolean,
   canvasWidth: number,
+  sectionColWidth: number,
 ): void {
   const isShellExpanded = shellWidth >= 60;
-  const shellX = isRtl ? canvasWidth - shellWidth : 0;
+  const shellX = isRtl ? canvasWidth - sectionColWidth - shellWidth : sectionColWidth;
   const midY = track.y + track.height / 2;
 
   // Background
@@ -267,6 +268,125 @@ function drawTrackBackground(
   ctx.stroke();
 }
 
+// ── Section separator ─────────────────────────────────────────────────────────
+
+/**
+ * Draw a bold horizontal separator line between the historical-events section
+ * and the reading-schedules section, with a small label in the shell column.
+ *
+ * @param y           Top y-coordinate of the separator (first reading track's y).
+ * @param shellWidth     Width of the shell (label) column in CSS pixels.
+ * @param canvasWidth    Full canvas width in CSS pixels.
+ * @param isRtl          Whether the layout is right-to-left (Hebrew).
+ * @param sectionColWidth Width of the section-header column that precedes the shell.
+ */
+export function drawSeparator(
+  ctx: CanvasRenderingContext2D,
+  y: number,
+  shellWidth: number,
+  canvasWidth: number,
+  isRtl: boolean,  
+  sectionColWidth: number,
+): void {
+  const LINE_Y = y - 1.5; // sit just above the first reading track
+  const LINE_H = 3;
+  const SHELL_X = isRtl ? canvasWidth - shellWidth : 0;
+
+  // Full-width filled strip
+  ctx.save();
+  ctx.fillStyle = '#333';
+  ctx.fillRect(0, LINE_Y, canvasWidth, LINE_H);
+  ctx.restore();
+
+  // Small label in the shell column, vertically centred on the strip
+  const FONT_SIZE = 9; 
+
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(SHELL_X, LINE_Y - FONT_SIZE - 2, shellWidth, FONT_SIZE + 4);
+  ctx.clip();
+
+  ctx.fillStyle = '#555';
+  ctx.font = `italic ${FONT_SIZE}px -apple-system, Segoe UI, sans-serif`;
+  ctx.textBaseline = 'middle';
+
+  ctx.restore();
+}
+
+// ── Section header column ─────────────────────────────────────────────────────
+
+/**
+ * Draw the narrow section-header column that precedes the shell column.
+ * Renders two vertically-rotated labels:
+ *   - "Historical" spanning y=0 → separatorY
+ *   - "Verses" (or reading label) spanning separatorY → totalTrackHeight
+ *
+ * @param separatorY      Y of the first reading/verse track (null if absent).
+ * @param totalTrackHeight Full height of the tracks canvas.
+ * @param shellWidth       Width of the shell (label) column — NOT including sectionColWidth.
+ * @param canvasWidth      Full canvas width.
+ * @param isRtl            Whether the layout is right-to-left.
+ * @param sectionColWidth  Width of this section-header column.
+ * @param histLabel        Label for the historical section.
+ * @param verseLabel       Label for the reading/verse section.
+ */
+export function drawSectionHeaderColumn(
+  ctx: CanvasRenderingContext2D,
+  separatorY: number | null,
+  totalTrackHeight: number,
+  canvasWidth: number,
+  isRtl: boolean,
+  sectionColWidth: number,
+  histLabel: string,
+  verseLabel: string,
+): void {
+  // Column sits at the outer edge of the shell — left in LTR, right in RTL
+  const colX = isRtl ? canvasWidth - sectionColWidth : 0;
+
+  const histEnd   = separatorY ?? totalTrackHeight;
+  const verseEnd  = totalTrackHeight;
+
+  // Section definitions: [bgColor, label, sectionTop, sectionBottom]
+  const sections: [string, string, number, number][] = [
+    ['#eef3fb', histLabel,  0,       histEnd],
+    ...(separatorY != null
+      ? [['#f3f9f0', verseLabel, separatorY, verseEnd] as [string, string, number, number]]
+      : []),
+  ];
+
+  for (const [bg, text, sTop, sBottom] of sections) {
+    const sHeight = sBottom - sTop;
+    if (sHeight <= 0) continue;
+
+    // Background fill
+    ctx.fillStyle = bg;
+    ctx.fillRect(colX, sTop, sectionColWidth, sHeight);
+
+    // Right/left border of the section column (the edge that meets the shell)
+    const borderX = isRtl ? colX + 0.5 : colX + sectionColWidth - 0.5;
+    ctx.strokeStyle = '#c0c8d8';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(borderX, sTop);
+    ctx.lineTo(borderX, sBottom);
+    ctx.stroke();
+
+    // Rotated label centred in this section
+    const midY = sTop + sHeight / 2;
+    const FONT_SIZE = 14;
+    ctx.save();
+    ctx.translate(colX + sectionColWidth / 2, midY);
+    // RTL: rotate clockwise so text reads top-to-bottom from the right side
+    ctx.rotate(isRtl ? Math.PI / 2 : -Math.PI / 2);
+    ctx.fillStyle = '#555';
+    ctx.font = `bold ${FONT_SIZE}px -apple-system, Segoe UI, sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(text, 0, 0);
+    ctx.restore();
+  }
+}
+
 // ── Public entry point ────────────────────────────────────────────────────────
 
 /**
@@ -281,9 +401,10 @@ export function drawTrack(
   selectedId: string | null,
   shellWidth: number,
   canvasWidth: number,
+  sectionColWidth: number,
 ): void {
   drawTrackBackground(ctx, track, scale);
-  drawShellLabel(ctx, track, shellWidth, scale.isRtl, canvasWidth);
+  drawShellLabel(ctx, track, shellWidth, scale.isRtl, canvasWidth, sectionColWidth);
 
   for (const { item, row, rowHeight } of track.renderedItems) {
     const rowTop = track.y + row * rowHeight;
