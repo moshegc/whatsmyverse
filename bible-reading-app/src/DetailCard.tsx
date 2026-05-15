@@ -128,6 +128,17 @@ function HistoricalDetail({ item, locale }: { item: HistoricalTimelineItem; loca
           {localize(ev.description || '', ev.descriptionHe, locale)}
         </p>
       )}
+      {ev.link && (
+        <a
+          href={ev.link}
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{ fontSize: '0.8rem', color: 'var(--color-primary, #1a365d)', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 4, marginTop: 8, opacity: 0.75 }}
+        >
+          <span className="material-symbols-outlined" style={{ fontSize: 14 }}>open_in_new</span>
+          Wikipedia
+        </a>
+      )}
     </>
   );
 }
