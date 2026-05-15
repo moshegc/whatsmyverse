@@ -66,6 +66,8 @@ export interface HistoricalEvent {
   description?: string;
   /** Hebrew description */
   descriptionHe?: string;
+  /** Optional Wikipedia or external link shown in the detail card */
+  link?: string;
 }
 
 // ─── Helper ─────────────────────────────────────────────────────────────────
@@ -75,6 +77,8 @@ export function parseHebrewDate(dateString: string): HDate {
   const parts = dateString.trim().split(/\s+/);
   return new HDate(parseInt(parts[0], 10), parts[1], parseInt(parts[2], 10));
 }
+
+
 
 export function hDateToUtcMidnight(hd: HDate): Date {
   const d = hd.greg(); // local midnight, but LMT-shifted in UTC
@@ -100,7 +104,7 @@ export const historicalEventCategories: HistoricalEventCategory[] = [
     id: 'major-events',
     name: 'Major Events',
     nameHe: 'אירועים מרכזיים',
-    color: '#d94a4a',
+    color: '#142af5',
     order: 20,
     csvFile: '/data/major-events.csv',
   },
@@ -111,6 +115,24 @@ export const historicalEventCategories: HistoricalEventCategory[] = [
     color: '#50b87a',
     order: 30,
     csvFile: '/data/bible-books.csv',
+  },
+  {
+    id: 'jewish-exiles',
+    name: 'Exiles & Expulsions',
+    nameHe: 'גלויות וגירושים',
+    color: '#ca2323',
+    order: 40,
+    csvFile: '/data/exiles.csv',
+    stacked: true,
+  },
+  {
+    id: 'jewish-pogroms',
+    name: 'Pogroms & Persecutions',
+    nameHe: 'פוגרומים ורדיפות',
+    color: '#8b1a1a',
+    order: 50,
+    csvFile: '/data/pogroms.csv',
+    stacked: true,
   },
   // Add more categories by creating a CSV and adding an entry here.
   // Keep `order` below 100 so they stay above the reading-schedule rows.
@@ -126,6 +148,7 @@ interface CsvEventRow {
   endDate: string;
   description: string;
   descriptionHe: string;
+  link: string;
 }
 
 function fetchCsvSync(filePath: string): string {
@@ -154,6 +177,7 @@ function loadEventsFromCsv(category: HistoricalEventCategory): HistoricalEvent[]
     endDate: row.endDate?.trim() || undefined,
     description: row.description?.trim() || undefined,
     descriptionHe: row.descriptionHe?.trim() || undefined,
+    link: row.link?.trim() || undefined,
   }));
 }
 
