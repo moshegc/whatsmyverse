@@ -11,6 +11,7 @@ import { type Locale, gematriyaYear } from '../i18n';
 
 const ONE_DAY_MS = 1_000 * 60 * 60 * 24;
 const ONE_YEAR_MS = ONE_DAY_MS * 365.25;
+const TIMELINE_MIN_MS = new HDate(1, 7, 1).greg().getTime(); // Hebrew year 1, Tishrei 1
 
 /** Height of the context-band row at the top of the axis strip (sub-year mode and future year-mode bands). */
 const TOP_BAND_H = 16;
@@ -165,25 +166,44 @@ export function computeYearContextBands(scale: HebrewTimeScale, locale: Locale):
 
 // ── Sub-year helpers ─────────────────────────────────────────────────────────
 
-const SUB_YEAR_INTERVALS_MS = [
-  ONE_DAY_MS,
-  2 * ONE_DAY_MS,
-  7 * ONE_DAY_MS,
-  14 * ONE_DAY_MS,
-  Math.round(30.4375 * ONE_DAY_MS),
-  Math.round(91.3125 * ONE_DAY_MS),
-  Math.round(182.625 * ONE_DAY_MS),
-  Math.round(ONE_YEAR_MS),
+/** Describes one sub-year tick interval in terms of HDate calendar units. */
+interface SubYearInterval {
+  count: number;
+  /** 'd' = day, 'M' = month (passed directly to HDate.add). */
+  unit: 'd' | 'M';
+  /** Approximate millisecond length — used only for tick-density estimates. */
+  approxMs: number;
+}
+
+const SUB_MONTH_INTERVALS: SubYearInterval[] = [
+  { count:  1, unit: 'd', approxMs: ONE_DAY_MS },
+  { count:  7, unit: 'd', approxMs: 7 * ONE_DAY_MS },
+  { count: 14, unit: 'd', approxMs: 14 * ONE_DAY_MS },
 ];
 
-function niceSubYearIntervalMs(durationMs: number, trackWidth: number): number {
+const SUB_YEAR_INTERVALS: SubYearInterval[] = [  
+  { count:  1, unit: 'M', approxMs: Math.round(30.4375 * ONE_DAY_MS) },
+  { count:  6, unit: 'M', approxMs: Math.round(182.625 * ONE_DAY_MS) },
+  { count: 12, unit: 'M', approxMs: Math.round(ONE_YEAR_MS) },
+  { count: 24, unit: 'M', approxMs: Math.round(2 * ONE_YEAR_MS) },
+];
+
+function niceSubYearInterval(durationMs: number, trackWidth: number, isMonthLevel: boolean): SubYearInterval {
   // Aim for at least 30 px per tick so date+year labels don't bunch up.
-  const maxTicks = Math.max(3, Math.floor(trackWidth / 30));
-  for (const interval of SUB_YEAR_INTERVALS_MS) {
-    if (durationMs / interval <= maxTicks) return interval;
+  const maxTicks = Math.max(3, Math.floor(trackWidth / 40));
+  if (isMonthLevel) {
+  for (const iv of SUB_YEAR_INTERVALS) {
+    if (durationMs / iv.approxMs <= maxTicks) return iv;    
   }
-  return Math.round(ONE_YEAR_MS);
+   return { count: 1, unit: 'M', approxMs: Math.round(30.4375 * ONE_DAY_MS) };
+} else {
+  for (const iv of SUB_MONTH_INTERVALS) {
+    if (durationMs / iv.approxMs <= maxTicks) return iv;
+  }
+   return { count: 1, unit: 'd', approxMs: Math.round(ONE_DAY_MS) };
 }
+}
+ 
 
 const GREG_MONTHS_SHORT = [
   'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
@@ -243,26 +263,28 @@ export function computeYearBands(scale: HebrewTimeScale, locale: Locale): Contex
  * Label: e.g. "Av 5784 / Aug 2024" (en) or "אב תשפ״ד / Aug 2024" (he)
  */
 export function computeMonthBands(scale: HebrewTimeScale, locale: Locale): ContextBand[] {
-  let startYear: number;
+  let startDate: HDate;
+  let startYear: number;  
   try {
-    startYear = Math.max(1, new HDate(new Date(scale.visibleStart)).getFullYear() - 1);
+    startDate = new HDate(new Date(scale.visibleStart));
+    startYear = Math.max(1, startDate.getFullYear() - 1);
   } catch {
     return [];
   }
-  const endYear = Math.min(6100, startYear + 4);
+  const endYear = Math.min(6100, startYear + 2);
 
   const bands: ContextBand[] = [];
   for (let y = startYear; y <= endYear; y++) {
     const monthsInYear = HDate.isLeapYear(y) ? 13 : 12;
-    for (let m = 1; m <= monthsInYear; m++) {
+    for (let m = startDate.getMonth(); m <= monthsInYear; m++) {
       let startMs: number;
       let endMs: number;
-      try {
-        startMs = new HDate(1, m, y).greg().getTime();
-        const nextM = m < monthsInYear ? m + 1 : 1;
-        const nextY = m < monthsInYear ? y : y + 1;
-        endMs = new HDate(1, nextM, nextY).greg().getTime();
+      try {   
+        const currDate = new HDate(1, m, y);   
+        startMs = currDate.greg().getTime();        
+        endMs = currDate.add(1, 'M').greg().getTime();        
       } catch {
+        console.log(`Error computing month band for year ${y} month ${m}`);
         continue;
       }
       if (endMs < scale.visibleStart || startMs > scale.visibleEnd) continue;
@@ -283,59 +305,83 @@ export function computeMonthBands(scale: HebrewTimeScale, locale: Locale): Conte
 function computeSubYearTicks(
   scale: HebrewTimeScale,
   locale: Locale,
-): { ticks: SubYearTick[]; intervalMs: number } {
+): { ticks: SubYearTick[]; isMonthLevel: boolean } {
   const duration = scale.visibleEnd - scale.visibleStart;
+  //console.log(`duration=${duration} visibleStart=${scale.visibleStart} visibleEnd=${scale.visibleEnd}`);
+  const ONE_MONTH_MS_APPROX = Math.round(30.4375 * ONE_DAY_MS);  
+  const isMonthLevel = duration >= 2 * ONE_MONTH_MS_APPROX;
   const trackWidth = Math.abs(scale.pxRight - scale.pxLeft);
-  const intervalMs = niceSubYearIntervalMs(duration, trackWidth);
-  const ONE_MONTH_MS_APPROX = Math.round(30.4375 * ONE_DAY_MS);
-  const isMonthLevel = intervalMs >= ONE_MONTH_MS_APPROX;
-  const showDow = intervalMs < 10 * ONE_DAY_MS;
-
-  const startTime = Math.floor(scale.visibleStart / intervalMs) * intervalMs;
+  const interval = niceSubYearInterval(duration, trackWidth, isMonthLevel);  
+  const showDow = interval.approxMs < 10 * ONE_DAY_MS;
   const trackPxLeft = Math.min(scale.pxLeft, scale.pxRight);
   const trackPxRight = Math.max(scale.pxLeft, scale.pxRight);
 
-  const ticks: SubYearTick[] = [];
-  for (let t = startTime; t <= scale.visibleEnd + intervalMs; t += intervalMs) {
-    if (t < scale.visibleStart || t > scale.visibleEnd) continue;
-
-    const hd = new HDate(new Date(t));
-    const d = hd.greg();
-
-    const x = scale.timeToPx(d.getTime());
-    if (x < trackPxLeft - 1 || x > trackPxRight + 1) continue;
-
-    let primaryLabel: string;
-    let secondaryLabel: string;
-
-    if (isMonthLevel) {
-      // Show only the month name — year is in the context band
-      const monthIdx = hd.getMonth() as number;
-      primaryLabel = locale === 'he'
-        ? (HEBREW_MONTHS_HE[monthIdx] ?? '')
-        : (HEBREW_MONTHS_EN[monthIdx] ?? '');
-      secondaryLabel = GREG_MONTHS_SHORT[d.getUTCMonth()] ?? '';
-    } else {
-    // Show only the day number — month+year is in the context band
-    try {
-      primaryLabel = locale === 'he'
-        ? gematriya(hd.getDate())
-        : String(hd.getDate());
-    } catch {
-      primaryLabel = String(hd.getDate());
+  // Anchor to 1 Tishrei of the Hebrew year containing visibleStart, then
+  // advance using HDate.add so every tick lands on a true calendar boundary.
+  let cursor: HDate;
+  try {
+    let hYear = new HDate(new Date(scale.visibleStart)).getFullYear();
+    if (new HDate(1, 7, Math.max(1, hYear)).greg().getTime() > scale.visibleStart) {
+      hYear = Math.max(1, hYear - 1);
     }
-    const gregDay = String(d.getUTCDate());
-    if (showDow) {
-      const dow = locale === 'he' ? DOW_SHORT_HE[d.getDay()] : DOW_SHORT_EN[d.getDay()];
-      secondaryLabel = `${dow} ${gregDay}`;
-    } else {
-      secondaryLabel = gregDay;
+    cursor = new HDate(1, 7, hYear);
+    // Step forward until the *next* tick would reach or pass visibleStart,
+    // so cursor is the last tick position before the visible window.
+    let safety = 0;
+    while (safety++ < 10000) {
+      const next = cursor.add(interval.count, interval.unit);
+      if (next.greg().getTime() >= scale.visibleStart) break;
+      cursor = next;
+    }    
+  } catch {
+    cursor = new HDate(new Date(scale.visibleStart));
+  }
+
+  const ticks: SubYearTick[] = [];
+  let safety = 0;
+  while (safety++ < 10000) {
+    const d = cursor.greg();
+    const t = d.getTime();
+    if (t > scale.visibleEnd) break;
+
+    if (t >= scale.visibleStart) {
+      const x = scale.timeToPx(t);
+      if (x >= trackPxLeft - 1 && x <= trackPxRight + 1) {
+        let primaryLabel: string;
+        let secondaryLabel: string;
+
+        if (isMonthLevel) {
+          // Show only the month name — year is in the context band
+          const monthIdx = cursor.getMonth() as number;
+          primaryLabel = locale === 'he'
+            ? (HEBREW_MONTHS_HE[monthIdx] ?? '')
+            : (HEBREW_MONTHS_EN[monthIdx] ?? '');
+          secondaryLabel = GREG_MONTHS_SHORT[d.getUTCMonth()] ?? '';
+        } else {
+          // Show only the day number — month+year is in the context band
+          try {
+            primaryLabel = locale === 'he'
+              ? gematriya(cursor.getDate())
+              : String(cursor.getDate());
+          } catch {
+            primaryLabel = String(cursor.getDate());
+          }
+          const gregDay = String(d.getUTCDate());
+          if (showDow) {
+            const dow = locale === 'he' ? DOW_SHORT_HE[d.getDay()] : DOW_SHORT_EN[d.getDay()];
+            secondaryLabel = `${dow} ${gregDay}`;
+          } else {
+            secondaryLabel = gregDay;
+          }
+        }
+
+        ticks.push({ ms: t, x, primaryLabel, secondaryLabel });
       }
     }
 
-    ticks.push({ ms: t, x, primaryLabel, secondaryLabel });
-  }
-  return { ticks, intervalMs };
+    cursor = cursor.add(interval.count, interval.unit);
+  }  
+  return { ticks, isMonthLevel };
 }
 
 // ── Context band drawing helper ─────────────────────────────────────────────
@@ -382,9 +428,14 @@ function drawContextBand(
   for (const band of bands) {
     // The "leading" pixel is where this band's period begins in canvas space
     const leadingX = scale.timeToPx(band.startMs);
+    const trailingX = scale.timeToPx(band.endMs);
 
-    // Vertical divider at the left canvas edge of this band
-    const dividerX = isRtl ? scale.timeToPx(band.endMs) : leadingX;
+    // In LTR: band occupies [leadingX, trailingX]; in RTL it's [trailingX, leadingX]
+    const bandPxLeft  = Math.max(trackPxLeft,  Math.min(leadingX, trailingX));
+    const bandPxRight = Math.min(trackPxRight, Math.max(leadingX, trailingX));
+
+    // Vertical divider at the start (leading) edge of this band
+    const dividerX = isRtl ? trailingX : leadingX;
     if (dividerX > trackPxLeft + 1 && dividerX < trackPxRight - 1) {
       ctx.strokeStyle = '#bfc5cb';
       ctx.lineWidth = 1;
@@ -394,17 +445,30 @@ function drawContextBand(
       ctx.stroke();
     }
 
-    // Label anchored at the leading edge, clamped so it always stays visible
+    // Skip label if the visible slice of this band is too narrow to be useful
+    if (bandPxRight - bandPxLeft < padding * 2) continue;
+
+    // Clip the label to this band's visible pixel extent so it never bleeds
+    // into an adjacent band even when the leading edge is off-screen.
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(bandPxLeft, 0, bandPxRight - bandPxLeft, TOP_BAND_H);
+    ctx.clip();
+
     ctx.fillStyle = '#3a4a5a';
     if (isRtl) {
-      const anchorX = Math.min(trackPxRight - padding, Math.max(trackPxLeft + padding, leadingX));
+      // Anchor near the right (leading) edge, but stay inside the band
+      const anchorX = Math.min(bandPxRight - padding, Math.max(bandPxLeft + padding, leadingX - padding));
       ctx.textAlign = 'right';
       ctx.fillText(band.label, anchorX, textY);
     } else {
-      const anchorX = Math.max(trackPxLeft + padding, Math.min(trackPxRight - padding, leadingX));
+      // Anchor near the left (leading) edge, but stay inside the band
+      const anchorX = Math.max(bandPxLeft + padding, Math.min(bandPxRight - padding, leadingX + padding));
       ctx.textAlign = 'left';
       ctx.fillText(band.label, anchorX, textY);
     }
+
+    ctx.restore();
   }
 }
 
@@ -483,9 +547,9 @@ export function drawTimeAxis(
   const isSubYearMode = visibleDuration < ONE_YEAR_MS * 2;
 
   if (isSubYearMode) {
-    const { ticks, intervalMs } = computeSubYearTicks(scale, locale);
+    const { ticks, isMonthLevel } = computeSubYearTicks(scale, locale);
     const ONE_MONTH_MS_APPROX = Math.round(30.4375 * ONE_DAY_MS);
-    const ctxBands = intervalMs >= ONE_MONTH_MS_APPROX
+    const ctxBands = isMonthLevel
       ? computeYearBands(scale, locale)
       : computeMonthBands(scale, locale);
     drawContextBand(ctx, ctxBands, scale, canvasWidth);
