@@ -1,21 +1,13 @@
 // src/App.tsx
 
 import { useState, useCallback, useRef, useEffect } from 'react';
-import TimelineView from './TimelineView';
 import { CanvasTimeline, type CanvasTimelineHandle } from './canvas-timeline';
 import HeaderBar from './HeaderBar';
-import Sidebar from './Sidebar';
 import { useLocale } from './LocaleContext';
-
-// Switch to the new canvas-based timeline by setting this to true.
-// Keep false to retain vis-timeline while the new implementation is validated.
-const USE_CANVAS_TIMELINE = true;
 
 function App() {
   const { locale } = useLocale();
   const canvasTimelineRef = useRef<CanvasTimelineHandle>(null);
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set());
   const [headerVisible, setHeaderVisible] = useState(true);
 
@@ -38,13 +30,6 @@ function App() {
     canvasTimelineRef.current?.jumpToToday();
   }, []);
 
-  const handleToggleCollapse = useCallback(() => {
-    setSidebarCollapsed((prev) => !prev);
-  }, []);
-
-  const handleCloseMobile = useCallback(() => {
-    setMobileSidebarOpen(false);
-  }, []);
 
   const handleToggleGroup = useCallback((groupId: string) => {
     setCollapsedGroups((prev) => {
@@ -65,20 +50,7 @@ function App() {
     >
       <HeaderBar onZoomOut={handleZoomOut} onJumpToToday={handleJumpToToday} visible={headerVisible} />
       <div className="main-content">
-        {!USE_CANVAS_TIMELINE && (
-          <Sidebar
-            collapsed={sidebarCollapsed}
-            mobileOpen={mobileSidebarOpen}
-            onToggleCollapse={handleToggleCollapse}
-            onCloseMobile={handleCloseMobile}
-            collapsedGroups={collapsedGroups}
-            onToggleGroup={handleToggleGroup}
-          />
-        )}
-        {USE_CANVAS_TIMELINE
-          ? <CanvasTimeline ref={canvasTimelineRef} collapsedGroups={collapsedGroups} onToggleGroup={handleToggleGroup} onHeaderVisibilityChange={setHeaderVisible} />
-          : <TimelineView collapsedGroups={collapsedGroups} />
-        }
+        <CanvasTimeline ref={canvasTimelineRef} collapsedGroups={collapsedGroups} onToggleGroup={handleToggleGroup} onHeaderVisibilityChange={setHeaderVisible} />
       </div>
     </div>
   );
