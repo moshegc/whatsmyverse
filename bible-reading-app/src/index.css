@@ -83,24 +83,9 @@ body {
 #root {
   width: 100%;
   height: 100vh;
+  height: 100dvh;
   display: flex;
   flex-direction: column;
-}
-
-/* ── Custom Scrollbar ────────────────────────────────────────────────────── */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-::-webkit-scrollbar-thumb {
-  background: var(--color-border);
-  border-radius: 3px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: #D1D5DB;
 }
 
 /* ── Typography Classes ──────────────────────────────────────────────────── */
@@ -775,6 +760,46 @@ body {
 @media (max-width: 767px) {
   .vis-item.vis-range {
     min-height: 32px !important;
+  }
+}
+
+/* ── Landscape Phone Overrides ───────────────────────────────────────────── */
+/* Phones in landscape have width > 767px so the portrait mobile query doesn't
+   apply. Target them via orientation + max-height instead.                   */
+@media (orientation: landscape) and (max-height: 500px) {
+
+  /* Detail card: bottom sheet covering 80% of the (small) landscape height */
+  .detail-card {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    top: auto;
+    transform: none;
+    width: 100%;
+    max-height: 80vh;
+    max-height: 80dvh;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    box-shadow: 0 -10px 40px rgba(0,0,0,0.1);
+    border-top: 1px solid rgba(255,255,255,0.4);
+    animation: sheetSlideUp 0.3s ease-out forwards;
+    padding: 12px 20px 24px;
+  }
+  .detail-card-close {
+    display: none;
+  }
+  .bottom-sheet-handle {
+    display: block !important;
+  }
+
+  /* Header auto-hide: collapses to 0 when scrolling down */
+  .header-bar {
+    overflow: hidden;
+    transition: height 0.25s ease, border-bottom-width 0.25s ease;
+  }
+  .header-bar.header-hidden {
+    height: 0 !important;
+    border-bottom: none !important;
   }
 }
 

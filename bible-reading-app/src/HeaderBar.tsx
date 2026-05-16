@@ -5,13 +5,14 @@ import { t, type Locale } from './i18n';
 
 interface HeaderBarProps {
   onToggleSidebar: () => void;
+  visible?: boolean;
 }
 
-const HeaderBar = ({ onToggleSidebar }: HeaderBarProps) => {
+const HeaderBar = ({ onToggleSidebar, visible = true }: HeaderBarProps) => {
   const { locale, toggleLocale } = useLocale();
 
   return (
-    <header className="header-bar">
+    <header className={`header-bar${visible ? '' : ' header-hidden'}`}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
         {/* Hamburger for mobile */}
         <button

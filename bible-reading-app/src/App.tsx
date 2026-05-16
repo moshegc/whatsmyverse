@@ -1,6 +1,6 @@
 // src/App.tsx
 
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import TimelineView from './TimelineView';
 import { CanvasTimeline, type CanvasTimelineHandle } from './canvas-timeline';
 import HeaderBar from './HeaderBar';
@@ -17,6 +17,18 @@ function App() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set());
+  const [headerVisible, setHeaderVisible] = useState(true);
+
+  // Reset header visibility when orientation changes (e.g. rotate to portrait)
+  useEffect(() => {
+    const reset = () => setHeaderVisible(true);
+    window.addEventListener('orientationchange', reset);
+    screen.orientation?.addEventListener('change', reset);
+    return () => {
+      window.removeEventListener('orientationchange', reset);
+      screen.orientation?.removeEventListener('change', reset);
+    };
+  }, []);
 
   const handleToggleSidebar = useCallback(() => {
     if (USE_CANVAS_TIMELINE) {
@@ -48,10 +60,10 @@ function App() {
 
   return (
     <div
-      style={{ height: '100vh', width: '100%', display: 'flex', flexDirection: 'column' }}
+      style={{ height: '100%', width: '100%', display: 'flex', flexDirection: 'column' }}
       dir={locale === 'he' ? 'rtl' : 'ltr'}
     >
-      <HeaderBar onToggleSidebar={handleToggleSidebar} />
+      <HeaderBar onToggleSidebar={handleToggleSidebar} visible={headerVisible} />
       <div className="main-content">
         {!USE_CANVAS_TIMELINE && (
           <Sidebar
@@ -64,7 +76,7 @@ function App() {
           />
         )}
         {USE_CANVAS_TIMELINE
-          ? <CanvasTimeline ref={canvasTimelineRef} collapsedGroups={collapsedGroups} onToggleGroup={handleToggleGroup} />
+          ? <CanvasTimeline ref={canvasTimelineRef} collapsedGroups={collapsedGroups} onToggleGroup={handleToggleGroup} onHeaderVisibilityChange={setHeaderVisible} />
           : <TimelineView collapsedGroups={collapsedGroups} />
         }
       </div>

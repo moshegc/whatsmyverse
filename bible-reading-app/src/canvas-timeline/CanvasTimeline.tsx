@@ -148,6 +148,7 @@ function setupCanvas(
 interface CanvasTimelineProps {
   collapsedGroups: Set<string>;
   onToggleGroup?: (groupId: string) => void;
+  onHeaderVisibilityChange?: (visible: boolean) => void;
 }
 
 export interface CanvasTimelineHandle {
@@ -157,7 +158,7 @@ export interface CanvasTimelineHandle {
 // ── Main component ────────────────────────────────────────────────────────────
 
 const CanvasTimeline = forwardRef<CanvasTimelineHandle, CanvasTimelineProps>(
-({ collapsedGroups, onToggleGroup }, ref) => {
+({ collapsedGroups, onToggleGroup, onHeaderVisibilityChange }, ref) => {
   const { locale } = useLocale();
 
   // ── Refs ────────────────────────────────────────────────────────────────────
@@ -254,17 +255,62 @@ const CanvasTimeline = forwardRef<CanvasTimelineHandle, CanvasTimelineProps>(
   }, [trackLayouts]);
 
   // ── ResizeObserver: track canvas width ──────────────────────────────────────
+  // Observe the *scroll container* (not the outer div) so that canvasWidth
+  // reflects the actual content area after the vertical scrollbar is subtracted.
+  // Both the axis canvas and the tracks canvas are then sized to the same width,
+  // keeping tick labels and grid lines in sync even when a scrollbar is present.
   useEffect(() => {
-    const el = outerRef.current;
-    if (!el) return;
-    const observer = new ResizeObserver((entries) => {
-      const w = entries[0]?.contentRect.width ?? 0;
-      setCanvasWidth(w);
-    });
-    observer.observe(el);
-    setCanvasWidth(el.clientWidth);
-    return () => observer.disconnect();
+    // scrollContainerRef is set on first render; wait one frame if needed
+    const attach = () => {
+      const el = scrollContainerRef.current;
+      if (!el) return;
+      const observer = new ResizeObserver((entries) => {
+        const w = entries[0]?.contentRect.width ?? 0;
+        setCanvasWidth(w);
+      });
+      observer.observe(el);
+      setCanvasWidth(el.clientWidth);
+      return () => observer.disconnect();
+    };
+    const cleanup = attach();
+    return cleanup;
   }, []);
+
+  // ── Vertical scroll → auto-hide header in landscape ─────────────────────────
+  useEffect(() => {
+    const el = scrollContainerRef.current;
+    if (!el || !onHeaderVisibilityChange) return;
+
+    const landscapeQuery = window.matchMedia('(orientation: landscape) and (max-height: 500px)');
+    let lastScrollY = 0;
+    let restoreTimer: ReturnType<typeof setTimeout> | null = null;
+
+    const onScroll = () => {
+      if (!landscapeQuery.matches) return;
+      const currentY = el.scrollTop;
+      const delta = currentY - lastScrollY;
+      lastScrollY = currentY;
+
+      // Hide immediately on any downward movement
+      if (delta > 3) {
+        onHeaderVisibilityChange(false);
+      }
+
+      // Only restore after scroll fully settles at the very top
+      if (restoreTimer !== null) clearTimeout(restoreTimer);
+      restoreTimer = setTimeout(() => {
+        if (el.scrollTop <= 1) {
+          onHeaderVisibilityChange(true);
+        }
+      }, 200);
+    };
+
+    el.addEventListener('scroll', onScroll, { passive: true });
+    return () => {
+      el.removeEventListener('scroll', onScroll);
+      if (restoreTimer !== null) clearTimeout(restoreTimer);
+    };
+  }, [onHeaderVisibilityChange]);
 
   // ── Drawing effect ───────────────────────────────────────────────────────────
   useEffect(() => {
@@ -624,11 +670,15 @@ const CanvasTimeline = forwardRef<CanvasTimelineHandle, CanvasTimelineProps>(
       onClick={handleClick}
     >
       {/* ── Axis strip (non-scrolling) ── */}
+      {/* Width is set to canvasWidth (= scroll-container content width) so the
+          axis pixel coordinates exactly match those used by the tracks canvas.
+          The scrollbar gutter (if any) sits to the right and is covered by the
+          outer div's background. */}
       <canvas
         ref={axisCanvasRef}
         style={{
           display: 'block',
-          width: '100%',
+          width: canvasWidth || '100%',
           height: AXIS_HEIGHT,
           flexShrink: 0,
         }}
