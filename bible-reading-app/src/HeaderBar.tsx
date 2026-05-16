@@ -4,27 +4,38 @@ import { useLocale } from './LocaleContext';
 import { t, type Locale } from './i18n';
 
 interface HeaderBarProps {
-  onToggleSidebar: () => void;
+  onZoomOut: () => void;
+  onJumpToToday: () => void;
   visible?: boolean;
 }
 
-const HeaderBar = ({ onToggleSidebar, visible = true }: HeaderBarProps) => {
+const HeaderBar = ({ onZoomOut, onJumpToToday, visible = true }: HeaderBarProps) => {
   const { locale, toggleLocale } = useLocale();
 
   return (
     <header className={`header-bar${visible ? '' : ' header-hidden'}`}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-        {/* Hamburger for mobile */}
-        <button
-          className="hamburger-btn"
-          onClick={onToggleSidebar}
-          aria-label="Open Menu"
-        >
-          <span className="material-symbols-outlined">menu</span>
-        </button>
         <h1 className="header-title">{t('appTitle', locale)}</h1>
       </div>
-      <LanguageToggle locale={locale} onToggle={toggleLocale} />
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <button
+          className="header-icon-btn"
+          onClick={onZoomOut}
+          aria-label="Zoom out to full timeline"
+          title="Zoom out (full 6000 years)"
+        >
+          <span className="material-symbols-outlined">zoom_out_map</span>
+        </button>
+        <button
+          className="header-icon-btn"
+          onClick={onJumpToToday}
+          aria-label="Jump to today"
+          title="Jump to today"
+        >
+          <span className="material-symbols-outlined">today</span>
+        </button>
+        <LanguageToggle locale={locale} onToggle={toggleLocale} />
+      </div>
     </header>
   );
 };

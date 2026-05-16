@@ -15,6 +15,8 @@ import {
 } from 'react';
 import { HebrewTimeScale } from './HebrewTimeScale';
 import {
+  TIMELINE_MIN_MS,
+  TIMELINE_MAX_MS,
   INITIAL_WINDOW,
   zoomWindow,
   panWindow,
@@ -153,6 +155,8 @@ interface CanvasTimelineProps {
 
 export interface CanvasTimelineHandle {
   toggleShell: () => void;
+  zoomOut: () => void;
+  jumpToToday: () => void;
 }
 
 // ── Main component ────────────────────────────────────────────────────────────
@@ -192,9 +196,17 @@ const CanvasTimeline = forwardRef<CanvasTimelineHandle, CanvasTimelineProps>(
   const [isShellExpanded, setIsShellExpanded] = useState(true);
   const [animatedShellWidth, setAnimatedShellWidth] = useState(SHELL_WIDTH);
 
-  // Expose toggleShell to parent via ref
+  // Expose toggleShell, zoomOut, jumpToToday to parent via ref
   useImperativeHandle(ref, () => ({
     toggleShell: () => setIsShellExpanded((prev) => !prev),
+    zoomOut: () => setVisibleWindow({ start: TIMELINE_MIN_MS, end: TIMELINE_MAX_MS }),
+    jumpToToday: () => {
+      const now = Date.now();
+      const win = windowRef.current;
+      const half = (win.end - win.start) / 2;
+      const newStart = Math.max(TIMELINE_MIN_MS, Math.min(now - half, TIMELINE_MAX_MS - (win.end - win.start)));
+      setVisibleWindow({ start: newStart, end: newStart + (win.end - win.start) });
+    },
   }));
 
   // Helper: update both state and ref

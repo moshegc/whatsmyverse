@@ -30,12 +30,12 @@ function App() {
     };
   }, []);
 
-  const handleToggleSidebar = useCallback(() => {
-    if (USE_CANVAS_TIMELINE) {
-      canvasTimelineRef.current?.toggleShell();
-    } else {
-      setMobileSidebarOpen((prev) => !prev);
-    }
+  const handleZoomOut = useCallback(() => {
+    canvasTimelineRef.current?.zoomOut();
+  }, []);
+
+  const handleJumpToToday = useCallback(() => {
+    canvasTimelineRef.current?.jumpToToday();
   }, []);
 
   const handleToggleCollapse = useCallback(() => {
@@ -63,7 +63,7 @@ function App() {
       style={{ height: '100%', width: '100%', display: 'flex', flexDirection: 'column' }}
       dir={locale === 'he' ? 'rtl' : 'ltr'}
     >
-      <HeaderBar onToggleSidebar={handleToggleSidebar} visible={headerVisible} />
+      <HeaderBar onZoomOut={handleZoomOut} onJumpToToday={handleJumpToToday} visible={headerVisible} />
       <div className="main-content">
         {!USE_CANVAS_TIMELINE && (
           <Sidebar

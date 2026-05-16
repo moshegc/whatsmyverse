@@ -195,6 +195,27 @@ body {
   }
 }
 
+/* ── Header Icon Buttons (zoom-out, today) ───────────────────────────────── */
+.header-icon-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: none;
+  background: transparent;
+  color: var(--color-primary);
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  transition: background 0.15s;
+}
+.header-icon-btn:hover {
+  background: rgba(0,0,0,0.06);
+}
+.header-icon-btn .material-symbols-outlined {
+  font-size: 22px;
+}
+
 /* ── Main Content Layout ─────────────────────────────────────────────────── */
 .main-content {
   display: flex;
