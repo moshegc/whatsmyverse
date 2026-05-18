@@ -4,12 +4,13 @@ import { useLocale } from './LocaleContext';
 import { t, type Locale } from './i18n';
 
 interface HeaderBarProps {
-  onZoomOut: () => void;
+  onZoomToggle: () => void;
+  isZoomedOut: boolean;
   onJumpToToday: () => void;
   visible?: boolean;
 }
 
-const HeaderBar = ({ onZoomOut, onJumpToToday, visible = true }: HeaderBarProps) => {
+const HeaderBar = ({ onZoomToggle, isZoomedOut, onJumpToToday, visible = true }: HeaderBarProps) => {
   const { locale, toggleLocale } = useLocale();
 
   return (
@@ -20,11 +21,11 @@ const HeaderBar = ({ onZoomOut, onJumpToToday, visible = true }: HeaderBarProps)
       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
         <button
           className="header-icon-btn"
-          onClick={onZoomOut}
-          aria-label="Zoom out to full timeline"
-          title="Zoom out (full 6000 years)"
+          onClick={onZoomToggle}
+          aria-label={isZoomedOut ? 'Zoom in to current period' : 'Zoom out to full timeline'}
+          title={isZoomedOut ? 'Zoom in to today' : 'Zoom out (full 6000 years)'}
         >
-          <span className="material-symbols-outlined">zoom_out_map</span>
+          <span className="material-symbols-outlined">{isZoomedOut ? 'zoom_in' : 'zoom_out_map'}</span>
         </button>
         <button
           className="header-icon-btn"

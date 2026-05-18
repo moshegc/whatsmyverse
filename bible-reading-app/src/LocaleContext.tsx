@@ -14,7 +14,10 @@ const LocaleContext = createContext<LocaleContextType>({
 });
 
 export function LocaleProvider({ children }: { children: ReactNode }) {
-  const [locale, setLocale] = useState<Locale>('en');
+  const [locale, setLocale] = useState<Locale>(() => {
+    const lang = navigator.language || navigator.languages?.[0] || 'en';
+    return lang.startsWith('he') ? 'he' : 'en';
+  });
 
   const toggleLocale = () => {
     setLocale((prev) => (prev === 'en' ? 'he' : 'en'));

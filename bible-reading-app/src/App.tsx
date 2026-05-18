@@ -10,6 +10,7 @@ function App() {
   const canvasTimelineRef = useRef<CanvasTimelineHandle>(null);
   const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set());
   const [headerVisible, setHeaderVisible] = useState(true);
+  const [isZoomedOut, setIsZoomedOut] = useState(true);
 
   // Reset header visibility when orientation changes (e.g. rotate to portrait)
   useEffect(() => {
@@ -22,9 +23,13 @@ function App() {
     };
   }, []);
 
-  const handleZoomOut = useCallback(() => {
-    canvasTimelineRef.current?.zoomOut();
-  }, []);
+  const handleZoomToggle = useCallback(() => {
+    if (isZoomedOut) {
+      canvasTimelineRef.current?.zoomIn();
+    } else {
+      canvasTimelineRef.current?.zoomOut();
+    }
+  }, [isZoomedOut]);
 
   const handleJumpToToday = useCallback(() => {
     canvasTimelineRef.current?.jumpToToday();
@@ -48,9 +53,9 @@ function App() {
       style={{ height: '100%', width: '100%', display: 'flex', flexDirection: 'column' }}
       dir={locale === 'he' ? 'rtl' : 'ltr'}
     >
-      <HeaderBar onZoomOut={handleZoomOut} onJumpToToday={handleJumpToToday} visible={headerVisible} />
+      <HeaderBar onZoomToggle={handleZoomToggle} isZoomedOut={isZoomedOut} onJumpToToday={handleJumpToToday} visible={headerVisible} />
       <div className="main-content">
-        <CanvasTimeline ref={canvasTimelineRef} collapsedGroups={collapsedGroups} onToggleGroup={handleToggleGroup} onHeaderVisibilityChange={setHeaderVisible} />
+        <CanvasTimeline ref={canvasTimelineRef} collapsedGroups={collapsedGroups} onToggleGroup={handleToggleGroup} onHeaderVisibilityChange={setHeaderVisible} onZoomChange={setIsZoomedOut} />
       </div>
     </div>
   );

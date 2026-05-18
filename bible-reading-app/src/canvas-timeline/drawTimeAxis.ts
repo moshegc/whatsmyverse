@@ -596,8 +596,12 @@ export function drawTimeAxis(
       ctx.textAlign = 'center';
       ctx.textBaseline = 'alphabetic';
 
-      // Hebrew year (primary, bottom)
-      const heLabel = formatHebrewYear(tick.hebrewYear, locale);
+      // Hebrew year (primary, bottom) — when the year is an exact multiple of
+      // 1000 (gematria shows a single letter), also show the number in parentheses
+      let heLabel = formatHebrewYear(tick.hebrewYear, locale);
+      if (locale === 'he' && tick.hebrewYear % 1000 === 0) {
+        heLabel = `${heLabel} (${tick.hebrewYear.toLocaleString('en')})`;
+      }
       ctx.fillStyle = '#222';
       ctx.font = 'bold 11px -apple-system, Segoe UI, sans-serif';
       ctx.fillText(heLabel, x, axisHeight - 13);

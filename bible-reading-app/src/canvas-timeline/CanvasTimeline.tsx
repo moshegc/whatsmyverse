@@ -151,18 +151,20 @@ interface CanvasTimelineProps {
   collapsedGroups: Set<string>;
   onToggleGroup?: (groupId: string) => void;
   onHeaderVisibilityChange?: (visible: boolean) => void;
+  onZoomChange?: (isFullyZoomedOut: boolean) => void;
 }
 
 export interface CanvasTimelineHandle {
   toggleShell: () => void;
   zoomOut: () => void;
+  zoomIn: () => void;
   jumpToToday: () => void;
 }
 
 // ── Main component ────────────────────────────────────────────────────────────
 
 const CanvasTimeline = forwardRef<CanvasTimelineHandle, CanvasTimelineProps>(
-({ collapsedGroups, onToggleGroup, onHeaderVisibilityChange }, ref) => {
+({ collapsedGroups, onToggleGroup, onHeaderVisibilityChange, onZoomChange }, ref) => {
   const { locale } = useLocale();
 
   // ── Refs ────────────────────────────────────────────────────────────────────
@@ -195,11 +197,21 @@ const CanvasTimeline = forwardRef<CanvasTimelineHandle, CanvasTimelineProps>(
   const [canvasWidth, setCanvasWidth] = useState(0);
   const [isShellExpanded, setIsShellExpanded] = useState(true);
   const [animatedShellWidth, setAnimatedShellWidth] = useState(SHELL_WIDTH);
+  const detailCardRef = useRef<DetailCardHandle>(null);
 
   // Expose toggleShell, zoomOut, jumpToToday to parent via ref
+  const ONE_YEAR_MS_INNER = 1_000 * 60 * 60 * 24 * 365.25;
+
   useImperativeHandle(ref, () => ({
     toggleShell: () => setIsShellExpanded((prev) => !prev),
     zoomOut: () => setVisibleWindow({ start: TIMELINE_MIN_MS, end: TIMELINE_MAX_MS }),
+    zoomIn: () => {
+      const now = Date.now();
+      const half = 250 * ONE_YEAR_MS_INNER;
+      const newStart = Math.max(TIMELINE_MIN_MS, now - half);
+      const newEnd = Math.min(TIMELINE_MAX_MS, now + half);
+      setVisibleWindow({ start: newStart, end: newEnd });
+    },
     jumpToToday: () => {
       const now = Date.now();
       const win = windowRef.current;
@@ -213,7 +225,9 @@ const CanvasTimeline = forwardRef<CanvasTimelineHandle, CanvasTimelineProps>(
   const setVisibleWindow = useCallback((win: VisibleWindow) => {
     windowRef.current = win;
     setVisibleWindowState(win);
-  }, []);
+    const fullyOut = win.start <= TIMELINE_MIN_MS + 1 && win.end >= TIMELINE_MAX_MS - 1;
+    onZoomChange?.(fullyOut);
+  }, [onZoomChange]);
 
   // ── Shell expand/collapse animation ────────────────────────────────────────
   useEffect(() => {
@@ -649,7 +663,7 @@ const CanvasTimeline = forwardRef<CanvasTimelineHandle, CanvasTimelineProps>(
     const hit = hitTest(x, y, trackLayouts, scale, totalSw, canvasWidth);
 
     if (!hit) {
-      setSelectedItem(null);
+      detailCardRef.current?.startClose();
       return;
     }
 
@@ -718,7 +732,7 @@ const CanvasTimeline = forwardRef<CanvasTimelineHandle, CanvasTimelineProps>(
 
       {/* ── Detail card popup ── */}
       {selectedItem && (
-        <DetailCard item={selectedItem} onClose={handleCloseDetail} />
+        <DetailCard ref={detailCardRef} item={selectedItem} onClose={handleCloseDetail} />
       )}
     </div>
   );
