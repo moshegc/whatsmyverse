@@ -152,6 +152,10 @@ interface CanvasTimelineProps {
   onToggleGroup?: (groupId: string) => void;
   onHeaderVisibilityChange?: (visible: boolean) => void;
   onZoomChange?: (isFullyZoomedOut: boolean) => void;
+  /** Called when user clicks a series label in the expanded shell */
+  onSeriesInfo?: (groupId: string) => void;
+  /** Called when user clicks the History or Verses section-header column */
+  onSectionInfo?: (section: 'history' | 'verses') => void;
 }
 
 export interface CanvasTimelineHandle {
@@ -164,7 +168,7 @@ export interface CanvasTimelineHandle {
 // ── Main component ────────────────────────────────────────────────────────────
 
 const CanvasTimeline = forwardRef<CanvasTimelineHandle, CanvasTimelineProps>(
-({ collapsedGroups, onToggleGroup, onHeaderVisibilityChange, onZoomChange }, ref) => {
+({ collapsedGroups, onToggleGroup, onHeaderVisibilityChange, onZoomChange, onSeriesInfo, onSectionInfo }, ref) => {
   const { locale } = useLocale();
 
   // ── Refs ────────────────────────────────────────────────────────────────────
@@ -636,13 +640,42 @@ const CanvasTimeline = forwardRef<CanvasTimelineHandle, CanvasTimelineProps>(
       if (yInOuter < AXIS_HEIGHT) {
         // Click on the axis shell header → toggle shell expand/collapse
         setIsShellExpanded((prev) => !prev);
-      } else if (sw >= 60) {
-        // Click on a track row's shell label → toggle that group
-        const yInTracks = yInOuter - AXIS_HEIGHT + container.scrollTop;
-        const track = trackLayouts.find(
-          (t) => yInTracks >= t.y && yInTracks < t.y + t.height,
+        return;
+      }
+
+      const yInTracks = yInOuter - AXIS_HEIGHT + container.scrollTop;
+
+      // The section-header column sits at the outer edge of the panel:
+      //   LTR: x = [0, SECTION_COL_WIDTH)
+      //   RTL: x = [canvasWidth - SECTION_COL_WIDTH, canvasWidth)
+      // The shell sits adjacent to it (further inside).
+      const inSectionCol = isRtl
+        ? xInOuter >= canvasWidth - SECTION_COL_WIDTH
+        : xInOuter < SECTION_COL_WIDTH;
+
+      if (inSectionCol) {
+        const firstScheduleTrack = trackLayouts.find((t) =>
+          schedules.some((s) => s.id === t.groupId),
         );
-        if (track) onToggleGroup?.(track.groupId);
+        const section = !firstScheduleTrack || yInTracks < firstScheduleTrack.y
+          ? 'history' as const
+          : 'verses' as const;
+        onSectionInfo?.(section);
+        return;
+      }
+
+      // Shell track row click
+      const track = trackLayouts.find(
+        (t) => yInTracks >= t.y && yInTracks < t.y + t.height,
+      );
+      if (track) {
+        if (sw >= 60) {
+          // Shell expanded → open series info card
+          onSeriesInfo?.(track.groupId);
+        } else {
+          // Shell collapsed → direct toggle (no card)
+          onToggleGroup?.(track.groupId);
+        }
       }
       return;
     }
@@ -672,7 +705,43 @@ const CanvasTimeline = forwardRef<CanvasTimelineHandle, CanvasTimelineProps>(
     } else {
       setSelectedItem({ kind: 'reading', data: hit as TimelineItem });
     }
-  }, [trackLayouts, canvasWidth, locale, onToggleGroup]);
+  }, [trackLayouts, canvasWidth, locale, onToggleGroup, onSeriesInfo, onSectionInfo]);
+
+  // ── Cursor: pointer over section-col and expanded shell track rows ──────────
+  useEffect(() => {
+    const el = outerRef.current;
+    if (!el) return;
+
+    const onMouseMove = (e: MouseEvent) => {
+      if (mouseDragRef.current) return;
+      const rect = el.getBoundingClientRect();
+      const xInOuter = e.clientX - rect.left;
+      const yInOuter = e.clientY - rect.top;
+      if (yInOuter < AXIS_HEIGHT) {
+        el.style.cursor = 'grab';
+        return;
+      }
+      const isRtl = locale === 'he';
+      const sw = animatedShellWidthRef.current;
+      const totalSw = sw + SECTION_COL_WIDTH;
+      // Section col: outermost strip ([0,20) LTR, [cw-20,cw) RTL)
+      const inSectionCol = isRtl
+        ? xInOuter >= canvasWidth - SECTION_COL_WIDTH
+        : xInOuter < SECTION_COL_WIDTH;
+      // Shell track area: strip adjacent to section col
+      const inShellTrack = isRtl
+        ? xInOuter >= canvasWidth - totalSw && xInOuter < canvasWidth - SECTION_COL_WIDTH
+        : xInOuter >= SECTION_COL_WIDTH && xInOuter < totalSw;
+      if (inSectionCol || inShellTrack) {
+        el.style.cursor = 'pointer';
+      } else {
+        el.style.cursor = 'grab';
+      }
+    };
+
+    el.addEventListener('mousemove', onMouseMove);
+    return () => el.removeEventListener('mousemove', onMouseMove);
+  }, [locale, canvasWidth]);
 
   const handleCloseDetail = useCallback(() => {
     setSelectedItem(null);

@@ -560,11 +560,12 @@ body {
 
 /* ── Frosted Detail Card (Desktop) ───────────────────────────────────────── */
 .detail-card {
-  position: absolute;
+  position: fixed;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
   width: 500px;
+  max-width: calc(100vw - 10vw);
   overflow: hidden;
   background: rgba(255, 255, 255, 0.92);
   backdrop-filter: blur(12px);
@@ -739,7 +740,7 @@ body {
   .detail-card {
     position: fixed;
     bottom: 0;
-    left: 0;
+    left: 5vw;
     right: 0;
     top: auto;
     transform: none;
@@ -845,6 +846,246 @@ body {
     border-bottom: none !important;
   }
 }
+
+/* ── Welcome Overlay ─────────────────────────────────────────────────────── */
+.welcome-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  animation: overlayFadeIn 0.25s ease-out;
+}
+
+@keyframes overlayFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.welcome-card {
+  background: rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+  padding: 36px 32px 32px;
+  max-width: 480px;
+  width: 100%;
+  animation: cardFadeIn 0.25s ease-out;
+  text-align: center;
+}
+
+.welcome-icon {
+  margin-bottom: 16px;
+  line-height: 1;
+}
+
+.welcome-title {
+  font-family: var(--font-serif-en);
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--color-primary);
+  margin: 0 0 16px;
+}
+
+[dir="rtl"] .welcome-title {
+  font-family: var(--font-serif-he);
+}
+
+.welcome-body {
+  font-size: 14px;
+  line-height: 1.7;
+  color: rgba(43, 45, 66, 0.8);
+  margin-bottom: 28px;
+  text-align: start;
+}
+
+.welcome-body p {
+  margin: 0 0 12px;
+}
+.welcome-body p:last-child {
+  margin-bottom: 0;
+}
+
+.welcome-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 28px;
+  background: var(--color-primary);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.1s;
+  letter-spacing: 0.02em;
+}
+.welcome-cta:hover {
+  background: #2a4a7f;
+  transform: translateY(-1px);
+}
+.welcome-cta:active {
+  transform: none;
+}
+
+@media (max-width: 767px) {
+  .welcome-card {
+    padding: 28px 20px 24px;
+  }
+  .welcome-title {
+    font-size: 22px;
+  }
+}
+
+/* ── Info Card (series / section) ────────────────────────────────────────── */
+/* .info-card extends .detail-card — extra rules only */
+.info-card {
+  /* Slightly wider on desktop to accommodate longer description text */
+  
+}
+
+.info-card-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 29; /* just below .detail-card z-index: 30 */
+  background: transparent;
+}
+
+.info-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 14px;
+}
+
+.info-card-title {
+  /* override detail-card-title bottom margin — header row manages spacing */
+  margin-bottom: 0 !important;
+  flex: 1;
+}
+
+.info-card-body-text {
+  /* Scrollable if content is long */
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+/* Markdown elements inside info cards */
+.info-card-body-text p {
+  font-size: 14px;
+  line-height: 1.6;
+  color: rgba(43, 45, 66, 0.8);
+  margin: 0 0 10px;
+}
+.info-card-body-text p:last-child {
+  margin-bottom: 0;
+}
+.info-card-body-text strong {
+  font-weight: 600;
+  color: var(--color-text);
+}
+.info-card-body-text em {
+  font-style: italic;
+}
+.info-card-body-text a {
+  color: var(--color-primary);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  opacity: 0.85;
+}
+.info-card-body-text a:hover {
+  opacity: 1;
+}
+.info-card-body-text ul {
+  margin: 4px 0 10px 0;
+  padding-inline-start: 20px;
+}
+.info-card-body-text li {
+  font-size: 14px;
+  line-height: 1.6;
+  color: rgba(43, 45, 66, 0.8);
+  margin-bottom: 3px;
+}
+
+/* ── Toggle Switch ───────────────────────────────────────────────────────── */
+.info-toggle {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  flex-shrink: 0;
+  user-select: none;
+  padding-top: 2px;
+}
+
+.info-toggle input[type="checkbox"] {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+
+.info-toggle-track {
+  position: relative;
+  width: 40px;
+  height: 22px;
+  background: var(--color-border);
+  border-radius: 11px;
+  transition: background 0.2s;
+  display: block;
+}
+
+.info-toggle input:checked ~ .info-toggle-track {
+  background: var(--color-primary);
+}
+
+.info-toggle-thumb {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 16px;
+  height: 16px;
+  background: #fff;
+  border-radius: 50%;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  transition: transform 0.2s cubic-bezier(0.34,1.56,0.64,1);
+  display: block;
+}
+
+.info-toggle input:checked ~ .info-toggle-track .info-toggle-thumb {
+  transform: translateX(18px);
+}
+
+.info-toggle-label {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+
+/* RTL toggle thumb direction */
+[dir="rtl"] .info-toggle-thumb {
+  left: auto;
+  right: 3px;
+}
+[dir="rtl"] .info-toggle input:checked ~ .info-toggle-track .info-toggle-thumb {
+  transform: translateX(-18px);
+}
+
+/* Mobile: info-card is also a bottom sheet (inherits from .detail-card media query) */
 
 /* ── Error toast ─────────────────────────────────────────────────────────── */
 .error-toast {

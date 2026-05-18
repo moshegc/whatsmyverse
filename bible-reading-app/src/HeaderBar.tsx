@@ -7,16 +7,21 @@ interface HeaderBarProps {
   onZoomToggle: () => void;
   isZoomedOut: boolean;
   onJumpToToday: () => void;
+  onTitleClick?: () => void;
   visible?: boolean;
 }
 
-const HeaderBar = ({ onZoomToggle, isZoomedOut, onJumpToToday, visible = true }: HeaderBarProps) => {
+const HeaderBar = ({ onZoomToggle, isZoomedOut, onJumpToToday, onTitleClick, visible = true }: HeaderBarProps) => {
   const { locale, toggleLocale } = useLocale();
 
   return (
     <header className={`header-bar${visible ? '' : ' header-hidden'}`}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-        <h1 className="header-title">{t('appTitle', locale)}</h1>
+        <h1
+          className="header-title"
+          onClick={onTitleClick}
+          style={onTitleClick ? { cursor: 'pointer' } : undefined}
+        >{t('appTitle', locale)}</h1>
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
         <button

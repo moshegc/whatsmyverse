@@ -86,6 +86,9 @@ const uiStrings: Record<string, Record<Locale, string>> = {
   eras: { en: 'Eras', he: 'תקופות' },
   noErasSelected: { en: 'No eras selected', he: 'לא נבחרו תקופות' },
   close: { en: 'Close', he: 'סגור' },
+  welcomeGetStarted: { en: 'Get started', he: 'בואו נתחיל' },
+  seriesEnabled: { en: 'Shown', he: 'מוצג' },
+  seriesDisabled: { en: 'Hidden', he: 'מוסתר' },
 };
 
 /**

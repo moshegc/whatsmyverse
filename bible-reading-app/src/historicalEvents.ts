@@ -93,8 +93,8 @@ export function hDateToUtcMidnight(hd: HDate): Date {
 export const historicalEventCategories: HistoricalEventCategory[] = [
   {
     id: 'biblical-figures',
-    name: 'Biblical Figures',
-    nameHe: 'דמויות מקראיות',
+    name: 'Figures',
+    nameHe: 'דמויות ואישים',
     color: '#4a90d9',
     order: 10,
     csvFile: '/data/biblical-figures.csv',
