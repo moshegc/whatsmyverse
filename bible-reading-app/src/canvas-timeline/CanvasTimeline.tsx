@@ -34,7 +34,7 @@ import { schedules } from '../config';
 import { generateColorFromString } from '../colorUtils';
 import { useLocale } from '../LocaleContext';
 import { localize, type Locale } from '../i18n';
-import DetailCard, { type SelectedItem } from '../DetailCard';
+import DetailCard, { type SelectedItem, type DetailCardHandle } from '../DetailCard';
 import type { TimelineItem } from '../generateTimelineData';
 
 // ── Layout constants ──────────────────────────────────────────────────────────

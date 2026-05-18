@@ -1,5 +1,6 @@
 // src/DetailCard.tsx
 
+import { useRef, useCallback, useEffect, forwardRef, useImperativeHandle } from 'react';
 import type { TimelineItem } from './generateTimelineData';
 import type { HistoricalTimelineItem } from './generateHistoricalTimelineData';
 import { historicalEventCategories } from './historicalEvents';
@@ -17,24 +18,158 @@ interface DetailCardProps {
   onClose: () => void;
 }
 
-const DetailCard = ({ item, onClose }: DetailCardProps) => {
+export interface DetailCardHandle {
+  startClose: () => void;
+}
+
+const DetailCard = forwardRef<DetailCardHandle, DetailCardProps>(({ item, onClose }, ref) => {
   const { locale } = useLocale();
+  const cardRef = useRef<HTMLDivElement>(null);
+  const closingRef = useRef(false);
+  const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const startClose = useCallback((currentOffset = 0) => {
+    if (closingRef.current) return;
+    closingRef.current = true;
+
+    const card = cardRef.current;
+    if (!card) { onClose(); return; }
+
+    const isMobile = window.innerWidth <= 767;
+    if (isMobile) {
+      // Cancel the CSS entry animation (and any fill) so it doesn't override
+      // the JS exit transition via the animation cascade layer.
+      card.style.animation = 'none';
+      // Pin the current (or drag) position explicitly as the transition's "from" state.
+      card.style.transform = `translateY(${currentOffset}px)`;
+      void card.offsetHeight; // force reflow — commit the "from" state
+      const totalH = card.offsetHeight;
+      const remaining = Math.max(0, totalH - currentOffset);
+      const dur = Math.max(100, Math.round((remaining / Math.max(totalH, 1)) * 280));
+      card.style.transition = `transform ${dur}ms ease-in`;
+      card.style.transform = `translateY(${totalH}px)`;
+      closeTimerRef.current = setTimeout(onClose, dur);
+    } else {
+      card.style.transition = 'transform 180ms ease-in, opacity 180ms ease-in';
+      card.style.transform = `translate(-50%, -50%) translateY(${currentOffset + 24}px)`;
+      card.style.opacity = '0';
+      closeTimerRef.current = setTimeout(onClose, 180);
+    }
+  }, [onClose]);
+
+  // Cancel pending timer if unmounted externally
+  useEffect(() => () => {
+    if (closeTimerRef.current !== null) clearTimeout(closeTimerRef.current);
+  }, []);
+
+  useImperativeHandle(ref, () => ({ startClose: () => startClose(0) }), [startClose]);
+
+  // Attach native pointer listeners to the drag header so movement is tracked
+  // reliably across the whole window (avoids React delegation issues).
+  useEffect(() => {
+    const header = cardRef.current?.querySelector<HTMLElement>('.detail-card-drag-header');
+    if (!header) return;
+
+    let startY = 0;
+    let wasDrag = false;
+    let active = false;
+
+    const onMove = (e: PointerEvent) => {
+      if (!active || closingRef.current) return;
+      const offset = Math.max(0, e.clientY - startY);
+      if (offset > 4) wasDrag = true;
+
+      const card = cardRef.current;
+      if (!card) return;
+      const isMobile = window.innerWidth <= 767;
+      card.style.transition = 'none';
+      card.style.transform = isMobile
+        ? `translateY(${offset}px)`
+        : `translate(-50%, -50%) translateY(${offset}px)`;
+
+      if (offset > 120) {
+        active = false;
+        cleanup();
+        startClose(offset);
+      }
+    };
+
+    const onUp = (e: PointerEvent) => {
+      if (!active) return;
+      active = false;
+      cleanup();
+
+      const offset = Math.max(0, e.clientY - startY);
+      const card = cardRef.current;
+      if (!card || closingRef.current) return;
+
+      if (offset > 60) {
+        startClose(offset);
+      } else {
+        // Snap back with a spring feel
+        const isMobile = window.innerWidth <= 767;
+        // Force a reflow so the browser sees the current (dragged) transform
+        // before we apply the transition, ensuring it actually animates.
+        void card.offsetHeight;
+        card.style.transition = 'transform 0.22s cubic-bezier(0.34,1.56,0.64,1)';
+        card.style.transform = isMobile ? 'translateY(0)' : 'translate(-50%, -50%)';
+      }
+    };
+
+    const onDown = (e: PointerEvent) => {
+      if (closingRef.current) return;
+      // Cancel the CSS entry animation so it doesn't fight drag transforms.
+      const card = cardRef.current;
+      if (card) { card.style.animation = 'none'; }
+      startY = e.clientY;
+      wasDrag = false;
+      active = true;
+      window.addEventListener('pointermove', onMove);
+      window.addEventListener('pointerup', onUp);
+      e.stopPropagation();
+    };
+
+    const onClick = (e: MouseEvent) => {
+      e.stopPropagation();
+      if (!wasDrag) startClose(0);
+      wasDrag = false;
+    };
+
+    function cleanup() {
+      window.removeEventListener('pointermove', onMove);
+      window.removeEventListener('pointerup', onUp);
+    }
+
+    header.addEventListener('pointerdown', onDown);
+    header.addEventListener('click', onClick);
+    return () => {
+      header.removeEventListener('pointerdown', onDown);
+      header.removeEventListener('click', onClick);
+      cleanup();
+    };
+  }, [startClose]);
 
   return (
-    <div className="detail-card" onClick={(e) => e.stopPropagation()}>
-      {/* Mobile drag handle */}
-      <div className="bottom-sheet-handle" />
+    <div ref={cardRef} className="detail-card" onClick={(e) => e.stopPropagation()}>
+      {/* Drag header — darker strip, drag down or click to close */}
+      <div className="detail-card-drag-header">
+        <div className="bottom-sheet-handle" />
+        <button
+          className="detail-card-close"
+          onClick={(e) => { e.stopPropagation(); startClose(0); }}
+          aria-label="Close"
+        >
+          <span className="material-symbols-outlined" style={{ fontSize: 18 }}>close</span>
+        </button>
+      </div>
 
-      {/* Close button (desktop only) */}
-      <button className="detail-card-close" onClick={onClose} aria-label="Close">
-        <span className="material-symbols-outlined" style={{ fontSize: 18 }}>close</span>
-      </button>
-
-      {item.kind === 'reading' && <ReadingDetail item={item.data} locale={locale} />}
-      {item.kind === 'historical' && <HistoricalDetail item={item.data} locale={locale} />}
+      {item.kind === 'reading' && <div className="detail-card-body"><ReadingDetail item={item.data} locale={locale} /></div>}
+      {item.kind === 'historical' && <div className="detail-card-body"><HistoricalDetail item={item.data} locale={locale} /></div>}
     </div>
   );
-};
+});
+
+DetailCard.displayName = 'DetailCard';
 
 // ── Reading schedule detail ─────────────────────────────────────────────────
 
