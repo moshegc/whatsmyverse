@@ -740,8 +740,7 @@ body {
   .detail-card {
     position: fixed;
     bottom: 0;
-    left: 5vw;
-    right: 0;
+    left: 5vw;    
     top: auto;
     transform: none;
     width: 100%;
@@ -816,8 +815,7 @@ body {
   .detail-card {
     position: fixed;
     bottom: 0;
-    left: 0;
-    right: 0;
+    left: 0;    
     top: auto;
     transform: none;
     width: 100%;
@@ -934,6 +932,37 @@ body {
 }
 .welcome-cta:active {
   transform: none;
+}
+
+.welcome-footer-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.welcome-footer-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  background: transparent;
+  border: 1px solid rgba(43, 45, 66, 0.2);
+  border-radius: 50%;
+  color: rgba(43, 45, 66, 0.55);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+.welcome-footer-btn:hover {
+  background: rgba(43, 45, 66, 0.07);
+  color: var(--color-primary);
+  border-color: var(--color-primary);
+}
+.welcome-footer-btn:active {
+  background: rgba(43, 45, 66, 0.12);
 }
 
 @media (max-width: 767px) {

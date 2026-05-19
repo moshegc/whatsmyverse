@@ -3,10 +3,11 @@
 // Full-screen welcome overlay shown once per browser session.
 // Dismissed by clicking the CTA button or the backdrop.
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { useLocale } from './LocaleContext';
-import { getWelcomeContent } from './infoContent';
+import { getWelcomeContent, getHelpContent, getAboutContent } from './infoContent';
+import InfoCard from './InfoCard';
 
 const SESSION_KEY = 'welcomeSeen';
 
@@ -18,6 +19,7 @@ function WelcomeOverlay({ onDismiss }: WelcomeOverlayProps) {
   const { locale } = useLocale();
   const { title, body, cta } = getWelcomeContent(locale);
   const cardRef = useRef<HTMLDivElement>(null);
+  const [activeModal, setActiveModal] = useState<'help' | 'about' | null>(null);
 
   const handleDismiss = () => {
     sessionStorage.setItem(SESSION_KEY, '1');
@@ -72,10 +74,47 @@ function WelcomeOverlay({ onDismiss }: WelcomeOverlayProps) {
         <button className="welcome-cta" onClick={handleDismiss}>
           {cta}
           <span className="material-symbols-outlined" style={{ fontSize: 18, marginInlineStart: 6 }}>
-            arrow_forward
+            {locale === 'he' ? 'arrow_back' : 'arrow_forward'}
           </span>
         </button>
+
+        <div className="welcome-footer-actions">
+          <button
+            className="welcome-footer-btn"
+            onClick={() => setActiveModal('help')}
+            aria-label="How to use"
+          >
+            <span className="material-symbols-outlined" style={{ fontSize: 20 }}>help</span>
+          </button>
+          <button
+            className="welcome-footer-btn"
+            onClick={() => setActiveModal('about')}
+            aria-label="About"
+          >
+            <span className="material-symbols-outlined" style={{ fontSize: 20 }}>info</span>
+          </button>
+        </div>
       </div>
+
+      {activeModal && (
+        // Stop propagation so backdrop clicks don't also dismiss the welcome overlay
+        <div onClick={(e) => e.stopPropagation()}>
+          {(() => {
+            const isMobile = window.innerWidth <= 767;
+            const { title: modalTitle, body: modalBody } =
+              activeModal === 'help'
+                ? getHelpContent(locale, isMobile)
+                : getAboutContent(locale);
+            return (
+              <InfoCard
+                title={modalTitle}
+                body={modalBody}
+                onClose={() => setActiveModal(null)}
+              />
+            );
+          })()}
+        </div>
+      )}
     </div>
   );
 }

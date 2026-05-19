@@ -29,6 +29,17 @@ interface WelcomeContent {
   cta: BilingualText;
 }
 
+interface HelpContent {
+  title: BilingualText;
+  body_desktop: BilingualText;
+  body_mobile: BilingualText;
+}
+
+interface AboutContent {
+  title: BilingualText;
+  body: BilingualText;
+}
+
 // ── Welcome overlay ──────────────────────────────────────────────────────────
 
 export const welcomeContent: WelcomeContent = {
@@ -203,5 +214,52 @@ export function getWelcomeContent(locale: Locale): {
     title: welcomeContent.title[locale],
     body: welcomeContent.body[locale],
     cta: welcomeContent.cta[locale],
+  };
+}
+
+// ── Help content ──────────────────────────────────────────────────────────────
+
+export const helpContent: HelpContent = {
+  title: {
+    en: 'How to use',
+    he: 'כיצד להשתמש',
+  },
+  body_desktop: {
+    en: '**Click and drag** left or right to move through time. Use the **mouse wheel** (or two-finger trackpad scroll) to zoom in and out.\n\n**Click** any bar or diamond marker to open a detail card for that event or figure.\n\nUse the **sidebar** on the left to show or hide category names. **Click** on any category name for a description.',
+    he: '**גרור** שמאלה או ימינה כדי לנוע בזמן. השתמש ב**גלגלת העכבר** (או בגלילה דו-אצבעית) כדי להתקרב ולהתרחק.\n\n**לחץ** על כל פס או מעוין כדי לפתוח כרטיס פרטים על אותו אירוע או דמות.\n\nהשתמש ב**סרגל הצד** כדי להציג או להסתיר שמות קטגוריות. **לחץ** על שם קטגוריה לתיאור.',
+  },
+  body_mobile: {
+    en: '**Swipe** left or right to move through time. Use a **pinch gesture** to zoom in and out.\n\n**Tap** any bar or diamond marker to open a detail card for that event or figure.\n\nTap the **☰ menu** button to open the sidebar, where you can show or hide category names. **Tap** on any category name for a description.',
+    he: '**החלק** שמאלה או ימינה כדי לנוע בזמן. השתמש ב**תנועת צביטה** כדי להתקרב ולהתרחק.\n\n**הקש** על כל פס או מעוין כדי לפתוח כרטיס פרטים על אותו אירוע או דמות.\n\nהקש על כפתור **תפריט ☰** כדי לפתוח את סרגל הצד, שם תוכל להציג או להסתיר שמות קטגוריות. **הקש** על שם קטגוריה לתיאור.',
+  },
+};
+
+// ── About / copyright content ─────────────────────────────────────────────────
+
+export const aboutContent: AboutContent = {
+  title: {
+    en: 'About',
+    he: 'אודות',
+  },
+  body: {
+    en: '**Hebrew History Timeline**\n\nAn interactive timeline spanning 6,000 years of Hebrew history.\n\n[View source on GitHub](https://github.com/moshegc/whatsmyverse) · © 2026 Moshe Goren\n\n---\n\n**Attributions**\n\nHebrew date calculations powered by [HebCal](https://www.hebcal.com/). [@hebcal/core](https://github.com/hebcal/hebcal-es6) is licensed under the [GNU GPL v2](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html).\n\nBible text from [Sefaria](https://www.sefaria.org/).',
+    he: '**ציר הזמן העברי**\n\nציר זמן אינטראקטיבי המשתרע על 6,000 שנות היסטוריה עברית.\n\n© 2026 משה גורן · [קוד מקור ב-GitHub](https://github.com/moshegc/whatsmyverse)\n\n---\n\n**קרדיטים**\n\nחישובי תאריך עברי מופעלים על ידי [HebCal](https://www.hebcal.com/). [@hebcal/core](https://github.com/hebcal/hebcal-es6) מורשה תחת [GNU GPL v2](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html).\n\nטקסט מקרא מ-[ספריא](https://www.sefaria.org/).',
+  },
+};
+
+export function getHelpContent(
+  locale: Locale,
+  isMobile: boolean,
+): { title: string; body: string } {
+  return {
+    title: helpContent.title[locale],
+    body: isMobile ? helpContent.body_mobile[locale] : helpContent.body_desktop[locale],
+  };
+}
+
+export function getAboutContent(locale: Locale): { title: string; body: string } {
+  return {
+    title: aboutContent.title[locale],
+    body: aboutContent.body[locale],
   };
 }
