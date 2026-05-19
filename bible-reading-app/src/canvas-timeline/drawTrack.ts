@@ -117,7 +117,7 @@ function drawRangeItem(
 
     const textColor = isLightColor(fillColor) ? '#222' : '#fff';
     ctx.fillStyle = textColor;
-    const fontSize = Math.min(11, h - 2);
+    const fontSize = Math.min(13, h - 2);
     ctx.font = `${fontSize}px -apple-system, Segoe UI, sans-serif`;
     ctx.textAlign = 'left';
     ctx.textBaseline = 'middle';
@@ -219,7 +219,7 @@ export function drawShellLabel(
       ctx.rect(shellX, track.y, dotX - dotR - 4 - shellX, track.height);
       ctx.clip();
       ctx.fillStyle = track.isCollapsed ? '#aaa' : '#333';
-      ctx.font = '11px -apple-system, Segoe UI, sans-serif';
+      ctx.font = '13px -apple-system, Segoe UI, sans-serif';
       ctx.textAlign = 'right';
       ctx.textBaseline = 'middle';
       ctx.fillText(track.label, dotX - dotR - 6, midY);
@@ -229,7 +229,7 @@ export function drawShellLabel(
       ctx.rect(dotX + dotR + 4, track.y, shellX + shellWidth - dotX - dotR - 8, track.height);
       ctx.clip();
       ctx.fillStyle = track.isCollapsed ? '#aaa' : '#333';
-      ctx.font = '11px -apple-system, Segoe UI, sans-serif';
+      ctx.font = '13px -apple-system, Segoe UI, sans-serif';
       ctx.textAlign = 'left';
       ctx.textBaseline = 'middle';
       ctx.fillText(track.label, dotX + dotR + 6, midY);
@@ -298,7 +298,7 @@ export function drawSeparator(
   ctx.restore();
 
   // Small label in the shell column, vertically centred on the strip
-  const FONT_SIZE = 9; 
+  const FONT_SIZE = 11; 
 
   ctx.save();
   ctx.beginPath();
@@ -372,7 +372,7 @@ export function drawSectionHeaderColumn(
 
     // Rotated label centred in this section
     const midY = sTop + sHeight / 2;
-    const FONT_SIZE = 14;
+    const FONT_SIZE = 16;
     ctx.save();
     ctx.translate(colX + sectionColWidth / 2, midY);
     // RTL: rotate clockwise so text reads top-to-bottom from the right side

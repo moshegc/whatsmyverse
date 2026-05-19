@@ -97,7 +97,7 @@ export const historicalEventCategories: HistoricalEventCategory[] = [
     nameHe: 'דמויות ואישים',
     color: '#4a90d9',
     order: 10,
-    csvFile: '/data/biblical-figures.csv',
+    csvFile: '/data/history/biblical-figures.csv',
     stacked: true,           // cascading so overlapping lifetimes show
   },
   {
@@ -106,7 +106,7 @@ export const historicalEventCategories: HistoricalEventCategory[] = [
     nameHe: 'אירועים מרכזיים',
     color: '#142af5',
     order: 20,
-    csvFile: '/data/major-events.csv',
+    csvFile: '/data/history/major-events.csv',
   },
   {
     id: 'bible-books',
@@ -114,7 +114,7 @@ export const historicalEventCategories: HistoricalEventCategory[] = [
     nameHe: 'תקופות ספרי התנ״ך',
     color: '#50b87a',
     order: 30,
-    csvFile: '/data/bible-books.csv',
+    csvFile: '/data/history/bible-books.csv',
   },
   {
     id: 'jewish-exiles',
@@ -122,7 +122,7 @@ export const historicalEventCategories: HistoricalEventCategory[] = [
     nameHe: 'גלויות וגירושים',
     color: '#ca2323',
     order: 40,
-    csvFile: '/data/exiles.csv',
+    csvFile: '/data/history/exiles.csv',
     stacked: true,
   },
   {
@@ -131,7 +131,7 @@ export const historicalEventCategories: HistoricalEventCategory[] = [
     nameHe: 'פוגרומים ורדיפות',
     color: '#8b1a1a',
     order: 50,
-    csvFile: '/data/pogroms.csv',
+    csvFile: '/data/history/pogroms.csv',
     stacked: true,
   },
   // Add more categories by creating a CSV and adding an entry here.

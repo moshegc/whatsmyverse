@@ -419,7 +419,7 @@ function drawContextBand(
 
   if (bands.length === 0) return;
 
-  ctx.font = '10px -apple-system, Segoe UI, sans-serif';
+  ctx.font = '12px -apple-system, Segoe UI, sans-serif';
   ctx.textBaseline = 'middle';
   const textY = (TOP_BAND_H - 1) / 2;
   const padding = 4;
@@ -567,12 +567,12 @@ export function drawTimeAxis(
 
       // Primary label: Hebrew short unit (month name or day number), bottom
       ctx.fillStyle = '#222';
-      ctx.font = 'bold 11px -apple-system, Segoe UI, sans-serif';
+      ctx.font = 'bold 13px -apple-system, Segoe UI, sans-serif';
       ctx.fillText(tick.primaryLabel, x, axisHeight - 13);
 
       // Secondary label: Gregorian short unit (optionally prefixed with DOW), above primary
       ctx.fillStyle = '#888';
-      ctx.font = '10px -apple-system, Segoe UI, sans-serif';
+      ctx.font = '12px -apple-system, Segoe UI, sans-serif';
       ctx.fillText(tick.secondaryLabel, x, axisHeight - 28);
     }
   } else {
@@ -603,13 +603,13 @@ export function drawTimeAxis(
         heLabel = `${heLabel} (${tick.hebrewYear.toLocaleString('en')})`;
       }
       ctx.fillStyle = '#222';
-      ctx.font = 'bold 11px -apple-system, Segoe UI, sans-serif';
+      ctx.font = 'bold 13px -apple-system, Segoe UI, sans-serif';
       ctx.fillText(heLabel, x, axisHeight - 13);
 
       // Gregorian year (secondary, above primary)
       const gregLabel = formatGregorianYear(tick.gregorianYear);
       ctx.fillStyle = '#888';
-      ctx.font = '10px -apple-system, Segoe UI, sans-serif';
+      ctx.font = '12px -apple-system, Segoe UI, sans-serif';
       ctx.fillText(gregLabel, x, axisHeight - 28);
     }
   }

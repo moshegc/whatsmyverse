@@ -431,92 +431,7 @@ body {
   margin-right: var(--sidebar-collapsed);
 }
 
-/* ── vis-timeline Overrides (Refined Gallery Theme) ──────────────────────── */
-.vis-timeline {
-  border: none !important;
-  background: var(--color-background) !important;
-  font-family: var(--font-sans-en) !important;
-}
-[dir="rtl"] .vis-timeline {
-  font-family: var(--font-sans-he) !important;
-}
 
-/* Panel backgrounds */
-.vis-panel.vis-top,
-.vis-panel.vis-bottom,
-.vis-panel.vis-center {
-  border-color: var(--color-border) !important;
-}
-
-/* Time axis styling */
-.vis-time-axis .vis-text {
-  font-size: 11px !important;
-  font-weight: 500 !important;
-  color: var(--color-text-muted) !important;
-  text-transform: uppercase !important;
-  letter-spacing: 0.04em !important;
-  font-family: var(--font-sans-en) !important;
-}
-[dir="rtl"] .vis-time-axis .vis-text {
-  font-family: var(--font-sans-he) !important;
-}
-.vis-time-axis .vis-grid.vis-minor {
-  border-color: rgba(229, 231, 235, 0.4) !important;
-}
-.vis-time-axis .vis-grid.vis-major {
-  border-color: var(--color-border) !important;
-}
-
-/* Group labels in vis-timeline left panel */
-.vis-labelset .vis-label {
-  border-bottom: 1px solid var(--color-border) !important;
-  background: var(--color-surface-solid) !important;
-  font-size: 13px !important;
-  font-weight: 500 !important;
-  color: var(--color-text) !important;
-}
-.vis-labelset .vis-label .vis-inner {
-  padding: 8px 12px !important;
-  font-family: var(--font-sans-en) !important;
-}
-[dir="rtl"] .vis-labelset .vis-label .vis-inner {
-  font-family: var(--font-sans-he) !important;
-}
-
-
-/* Range items */
-.vis-item.vis-range {
-  border-radius: var(--radius-sm) !important;
-  border-width: 1px !important;
-  box-shadow: none !important;
-  transition: box-shadow 0.15s ease, transform 0.1s ease !important;
-  min-height: 28px !important;
-}
-.vis-item.vis-range:hover {
-  box-shadow: 0 2px 8px rgba(0,0,0,0.08) !important;
-}
-.vis-item.vis-range .vis-item-content {
-  font-size: 12px !important;
-  font-weight: 500 !important;
-  padding: 0 8px !important;
-  font-family: var(--font-sans-en) !important;
-}
-[dir="rtl"] .vis-item.vis-range .vis-item-content {
-  font-family: var(--font-sans-he) !important;
-}
-
-/* Point items */
-.vis-item.vis-point .vis-dot {
-  width: 10px !important;
-  height: 10px !important;
-  border-radius: 50% !important;
-  border-width: 2px !important;
-}
-
-/* Selected state */
-.vis-item.vis-selected {
-  box-shadow: 0 0 0 2px var(--color-primary) !important;
-}
 
 /* ── Historical-event group styles ───────────────────────────────────────── */
 .hist-group .vis-inner {
@@ -1130,4 +1045,32 @@ body {
   font-weight: 500;
   z-index: 100;
   border: 1px solid #FECACA;
+}
+
+/* ── Desktop Font Size Overrides (+2px across content) ───────────────────── */
+@media (min-width: 768px) {
+  .header-title                              { font-size: 22px; }
+  .group-row-name                            { font-size: 15px; }
+  .group-row-dates                           { font-size: 13px; }
+
+  .vis-time-axis .vis-text                   { font-size: 13px !important; }
+  .vis-labelset .vis-label                   { font-size: 15px !important; }
+  .vis-item.vis-range .vis-item-content      { font-size: 14px !important; }
+  .hist-item.vis-range .vis-item-content     { font-size: 13px !important; }
+
+  .detail-card-title                         { font-size: 20px; }
+  .detail-card-dates                         { font-size: 14px; }
+  .detail-card-description                   { font-size: 16px; }
+  .detail-card-verse-text                    { font-size: 16px; }
+  .detail-card-verse-ref                     { font-size: 12px; }
+  .detail-card-tag                           { font-size: 12px; }
+
+  .welcome-title                             { font-size: 28px; }
+  .welcome-body                              { font-size: 16px; }
+  .welcome-cta                               { font-size: 16px; }
+
+  .info-card-body-text p                     { font-size: 16px; }
+  .info-card-body-text li                    { font-size: 16px; }
+
+  .error-toast                               { font-size: 15px; }
 }

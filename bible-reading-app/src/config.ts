@@ -34,7 +34,7 @@ export const schedules: ReadingSchedule[] = [
     nameHe: 'תהלים שנתיים מאז תש"ח',
     description: 'Yearly Psalms since the establishment of the State of Israel in 5708',
     descriptionHe: 'תהלים שנתיים מאז הקמת מדינת ישראל בשנת תש"ח',
-    csvFiles: ['/data/Psalms.csv'],
+    csvFiles: ['/data/verses/Psalms.csv'],
     displayMode: 'chapter',
     startDate: '5 Iyar 5708', // Corresponds to Rosh Hashanah 5785
     periodInYears: 1
@@ -45,7 +45,7 @@ export const schedules: ReadingSchedule[] = [
     nameHe: 'פסוק תורה מבריאת העולם',
     description: 'Single verse of Torah per year since creation',
     descriptionHe: 'פסוק אחד מהתורה לכל שנה מבריאת העולם',
-    csvFiles: ['/data/Genesis.csv', '/data/Exodus.csv', '/data/Leviticus.csv', '/data/Numbers.csv', '/data/Deuteronomy.csv', '/data/Joshua.csv'],
+    csvFiles: ['/data/verses/Genesis.csv', '/data/verses/Exodus.csv', '/data/verses/Leviticus.csv', '/data/verses/Numbers.csv', '/data/verses/Deuteronomy.csv', '/data/verses/Joshua.csv'],
     displayMode: 'verse',
     startDate: '1 Tishrei 1', // Corresponds to the first Shabbat after Simchat Torah 5785
     periodInYears: 1
@@ -56,7 +56,7 @@ export const schedules: ReadingSchedule[] = [
     nameHe: 'שעות בריאת אדם הראשון',
     description: 'Hours of Adams creation based on the Midrash Pirkei deRabbi Eliezer, starting from the second half of the fifth millennium since creation',
     descriptionHe: 'שעות בריאת אדם הראשון על פי מדרש פרקי דרבי אליעזר, החל מהמחצית השניה של האלף החמישי לבריאת העולם',
-    csvFiles: ['/data/Adam.csv'],
+    csvFiles: ['/data/verses/Adam.csv'],
     displayMode: 'verse',
     startDate: '1 Tishrei 5500',
     periodInYears: 500/12
@@ -67,7 +67,7 @@ export const schedules: ReadingSchedule[] = [
     nameHe: 'עתים (עידנים) מבריאת העולם',
     description: '28 Eons since creation. Each Eon is 6000/28 years',
     descriptionHe: '28 עתים (עידנים) על פי ספר קהלת מסודרים מבריאת העולם. כל עת הוא 6000/28 שנים',
-    csvFiles: ['/data/Eons.csv'],
+    csvFiles: ['/data/verses/Eons.csv'],
     displayMode: 'verse',
     startDate: '1 Tishrei 1',
     periodInYears: 6000/28
