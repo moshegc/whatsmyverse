@@ -23,12 +23,12 @@ function HDateFromString(dateString: string) {
     return new HDate(parseInt(parts[0]), parts[1], parseInt(parts[2]));
 }
 
-function calculateStartDateForPeriod(schedule: ReadingSchedule, periodIndex: number): HDate {
+function calculateStartDateForPeriod(schedule: ReadingSchedule, periodIndex: number): Date {
     const scheduleStartHDate = HDateFromString(schedule.startDate);
 
     if (Math.floor(schedule.periodInYears) === schedule.periodInYears) {
         const yearsToAdd = periodIndex * schedule.periodInYears;
-        return new HDate(scheduleStartHDate.getDate(), scheduleStartHDate.getMonth(), scheduleStartHDate.getFullYear() + yearsToAdd);
+        return new HDate(scheduleStartHDate.getDate(), scheduleStartHDate.getMonth(), scheduleStartHDate.getFullYear() + yearsToAdd).greg();
     } else {
         const totalYears = periodIndex * schedule.periodInYears;
         const yearsElapsed = Math.floor(totalYears);
@@ -36,14 +36,17 @@ function calculateStartDateForPeriod(schedule: ReadingSchedule, periodIndex: num
 
         let targetYear = scheduleStartHDate.getFullYear() + yearsElapsed;
         const daysInTargetYear = HDate.daysInYear(targetYear);
-        const daysToAdd = Math.floor(yearFraction * daysInTargetYear);
+        const exactDaysToAdd = yearFraction * daysInTargetYear;
+        const wholeDaysToAdd = Math.floor(exactDaysToAdd);
+        const dayFraction = exactDaysToAdd - wholeDaysToAdd;
 
         if (periodIndex >= 1 && scheduleStartHDate.getFullYear() === 1) {
             targetYear -= 1; // Handle missing year 0 in the Hebrew calendar
         }
        
         const roshHashanahOfTargetYear = new HDate(1, 7, targetYear);
-        return roshHashanahOfTargetYear.add(daysToAdd);
+        const baseDate = roshHashanahOfTargetYear.add(wholeDaysToAdd).greg();
+        return new Date(baseDate.getTime() + dayFraction * 24 * 60 * 60 * 1000);
     }
 }
 
@@ -81,8 +84,8 @@ export function generateTimelineData(locale: Locale = 'en'): TimelineItem[] {
 
             timelineItems.push({
                 id: `${schedule.id}-${i}`,
-                start: startDate.greg(),
-                end: endDate.greg(),
+                start: startDate,
+                end: endDate,
                 content: content,
                 group: schedule.id,
                 verses: entry.verses,
