@@ -3,7 +3,7 @@
 import {
   historicalEventCategories,
   historicalEvents,
-  parseHebrewDate,
+  parseDateString,
   type HistoricalEvent,
   type HistoricalEventCategory,
 } from './historicalEvents';
@@ -17,7 +17,8 @@ export interface HistoricalTimelineItem {
   end?: Date;
   content: string;
   group: string;
-  type: 'range' | 'point';
+  /** range: bar with defined end | point: diamond marker | ongoing: bar ending at today + gradient */
+  type: 'range' | 'point' | 'ongoing';
   title: string;        // tooltip on hover
   className: string;    // for CSS styling
   style?: string;
@@ -53,8 +54,16 @@ export function generateHistoricalTimelineData(locale: Locale = 'en'): Historica
       continue;
     }
 
-    const startHDate = parseHebrewDate(event.startDate);
-    const isRange = !!event.endDate;
+    const hasStart = !!event.startDate;
+    const hasEnd = !!event.endDate;
+
+    if (!hasStart && !hasEnd) {
+      console.warn(
+        `[historicalEvents] Event "${event.id}" has neither startDate nor endDate – skipping.`,
+      );
+      continue;
+    }
+
     const displayName = localize(event.name, event.nameHe, locale);
     const displayDesc = localize(
       event.description || event.name,
@@ -62,24 +71,41 @@ export function generateHistoricalTimelineData(locale: Locale = 'en'): Historica
       locale,
     );
 
+    let itemType: 'range' | 'point' | 'ongoing';
+    let startDate: Date;
+    let endDate: Date | undefined;
+
+    if (hasStart && hasEnd) {
+      // Defined range: bar from startDate to endDate
+      itemType = 'range';
+      startDate = parseDateString(event.startDate!);
+      endDate = parseDateString(event.endDate!);
+    } else if (hasStart) {
+      // Ongoing: bar from startDate to today, with gradient fade
+      itemType = 'ongoing';
+      startDate = parseDateString(event.startDate!);
+      endDate = new Date();
+    } else {
+      // Point event: diamond marker at endDate
+      itemType = 'point';
+      startDate = parseDateString(event.endDate!);
+      endDate = undefined;
+    }
+
     const item: HistoricalTimelineItem = {
       id: `hist-${event.id}`,
-      start: startHDate.greg(),
+      start: startDate,
+      end: endDate,
       content: displayName,
       group: event.categoryId,
-      type: isRange ? 'range' : 'point',
+      type: itemType,
       title: displayDesc,
       className: `hist-item hist-${event.categoryId}`,
-      style: isRange
-        ? `background-color: ${category.color}; border-color: ${category.color};`
-        : `color: ${category.color}; border-color: ${category.color};`,
+      style: itemType === 'point'
+        ? `color: ${category.color}; border-color: ${category.color};`
+        : `background-color: ${category.color}; border-color: ${category.color};`,
       _event: event,
     };
-
-    if (isRange && event.endDate) {
-      const endHDate = parseHebrewDate(event.endDate);
-      item.end = endHDate.greg();
-    }
 
     items.push(item);
   }

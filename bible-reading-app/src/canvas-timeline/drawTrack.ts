@@ -61,7 +61,8 @@ function roundedRect(
 // ── Item rendering ───────────────────────────────────────────────────────────
 
 const ITEM_V_MARGIN = 2; // px top + bottom inside the row
-
+/** Width of the pixel-space gradient tail drawn past the present date on ongoing items. */
+const ONGOING_EXTENSION_PX = 60;
 function drawRangeItem(
   ctx: CanvasRenderingContext2D,
   scale: HebrewTimeScale,
@@ -160,6 +161,98 @@ function drawPointItem(
   ctx.fill();
   ctx.stroke();
   ctx.restore();
+}
+
+function drawOngoingItem(
+  ctx: CanvasRenderingContext2D,
+  scale: HebrewTimeScale,
+  item: AnyItem,
+  rowTop: number,
+  rowHeight: number,
+  isSelected: boolean,
+  groupColor: string,
+): void {
+  const trackLeft = Math.min(scale.pxLeft, scale.pxRight);
+  const trackRight = Math.max(scale.pxLeft, scale.pxRight);
+
+  const startMs = item.start.getTime();
+  const nowMs = Date.now();
+
+  // Solid bar: start → now (same span logic as drawRangeItem)
+  let [x1, x2] = scale.timeRangeToPxSpan(startMs, nowMs);
+  x1 = Math.max(trackLeft, x1);
+  x2 = Math.min(trackRight, x2);
+  const solidW = Math.max(1, x2 - x1);
+
+  const y = rowTop + ITEM_V_MARGIN;
+  const h = rowHeight - ITEM_V_MARGIN * 2;
+  const r = Math.min(3, h / 2);
+
+  const baseColor = extractItemColor(item.style, groupColor);
+  const fillColor = isSelected ? lightenHex(baseColor, 50) : baseColor;
+
+  if (x2 > trackLeft && x1 < trackRight) {
+    ctx.save();
+    ctx.globalAlpha = isSelected ? 1.0 : 0.85;
+    ctx.fillStyle = fillColor;
+    ctx.beginPath();
+    roundedRect(ctx, x1, y, solidW, h, r);
+    ctx.fill();
+    if (isSelected) {
+      ctx.strokeStyle = '#1a365d';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+    }
+    ctx.globalAlpha = 1;
+
+    if (solidW >= 20) {
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(x1 + 2, y, solidW - 4, h);
+      ctx.clip();
+      const textColor = isLightColor(fillColor) ? '#222' : '#fff';
+      ctx.fillStyle = textColor;
+      const fontSize = Math.min(13, h - 2);
+      ctx.font = `${fontSize}px -apple-system, Segoe UI, sans-serif`;
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(item.content, x1 + 4, y + h / 2);
+      ctx.restore();
+    }
+    ctx.restore();
+  }
+
+  // Gradient extension from nowX in the future direction (pixel-space, zoom-independent)
+  const nowX = scale.timeToPx(nowMs);
+  const clampedNowX = Math.min(trackRight, Math.max(trackLeft, nowX));
+
+  // LTR: future is rightward (+), RTL: future is leftward (-)
+  const extend = scale.isRtl ? -ONGOING_EXTENSION_PX : ONGOING_EXTENSION_PX;
+  const gradEnd = clampedNowX + extend;
+  const clampedGradEnd = scale.isRtl
+    ? Math.max(trackLeft, gradEnd)
+    : Math.min(trackRight, gradEnd);
+
+  const gradX = Math.min(clampedNowX, clampedGradEnd);
+  const gradW = Math.abs(clampedGradEnd - clampedNowX);
+
+  if (gradW > 0) {
+    // Gradient runs from fillColor (at nowX side) → transparent (at far end)
+    // createLinearGradient coords must go from the opaque end to the transparent end
+    const [gradFrom, gradTo] = scale.isRtl
+      ? [clampedNowX, clampedGradEnd]   // RTL: nowX is the right/opaque end
+      : [clampedNowX, clampedGradEnd];  // LTR: nowX is the left/opaque end
+    const grad = ctx.createLinearGradient(gradFrom, 0, gradTo, 0);
+    grad.addColorStop(0, fillColor + 'aa'); // ~67% opacity at transition point
+    grad.addColorStop(1, fillColor + '00'); // transparent at tail end
+
+    ctx.save();
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.rect(gradX, y, gradW, h);
+    ctx.fill();
+    ctx.restore();
+  }
 }
 
 // ── Shell (group label) column ───────────────────────────────────────────────
@@ -408,9 +501,11 @@ export function drawTrack(
   for (const { item, row, rowHeight } of track.renderedItems) {
     const rowTop = track.y + row * rowHeight;
     const isSelected = (item as { id: string }).id === selectedId;
-    const isPoint = !item.end;
+    const itemType = (item as { type?: string }).type;
 
-    if (isPoint) {
+    if (itemType === 'ongoing') {
+      drawOngoingItem(ctx, scale, item, rowTop, rowHeight, isSelected, track.color);
+    } else if (!item.end) {
       drawPointItem(ctx, scale, item, rowTop, rowHeight, isSelected, track.color);
     } else {
       drawRangeItem(ctx, scale, item, rowTop, rowHeight, isSelected, track.color);

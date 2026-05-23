@@ -1,44 +1,42 @@
 id,name,nameHe,startDate,endDate,description,descriptionHe
 event-flood,The Flood,המבול,17 Cheshvan 1656,27 Cheshvan 1657,The Great Flood in the days of Noah (Genesis 7:11),המבול הגדול בימי נח (בראשית ז:יא)
-event-babel,Tower of Babel,מגדל בבל,1 Tishrei 1996,,Dispersion after the Tower of Babel (Genesis 11:9),הפלגה לאחר מגדל בבל (בראשית יא:ט)
-event-covenant,Covenant of the Parts,ברית בין הבתרים,15 Nisan 2018,,Brit Bein HaBetarim – God's covenant with Abraham (Genesis 15),ברית בין הבתרים – ברית ה' עם אברהם (בראשית טו)
-event-sodom, Destruction of Sodom and Gemorrah,הפיכת סדום ועמורה,1 Tishrei 2047,,Destruction of Sodom and Gemora by rain and brimstone,הפיכת סדום באש מן השמים גפרית ומלח
-event-binding-isaac,Binding of Isaac,עקידת יצחק,1 Tishrei 2078,,The Akeidah – binding of Isaac on Mount Moriah (Genesis 22),העקידה – עקידת יצחק על הר המוריה (בראשית כב)
-event-exodus,The Exodus,יציאת מצרים,15 Nisan 2448,,The Exodus from Egypt (Exodus 12:41),יציאת מצרים (שמות יב:מא)
-event-torah,Giving of the Torah,מתן תורה,6 Sivan 2448,,The Torah was given at Mount Sinai (Exodus 19-20),מתן תורה בהר סיני (שמות יט-כ)
-event-golden-calf,Golden Calf,חטא העגל,17 Tammuz 2448,,The sin of the Golden Calf (Exodus 32),חטא עגל הזהב (שמות לב)
-event-spies,Sin of the Spies,חטא המרגלים,9 Av 2449,,The spies returned with an evil report (Numbers 13-14),המרגלים חזרו עם דיבה רעה (במדבר יג-יד)
-event-enter-land,Entering the Land,כניסה לארץ,10 Nisan 2488,,Israel crossed the Jordan into the Land (Joshua 3-4),ישראל חצו את הירדן אל הארץ (יהושע ג-ד)
-event-first-temple,First Temple Period,תקופת בית ראשון,1 Tishrei 2928,9 Av 3338,Solomon's Temple completed (1 Kings 6:38) through destruction by Babylon (2 Kings 25),בית המקדש הראשון של שלמה (מלכים א ו:לח) עד החורבן על ידי בבל (מלכים ב כה)
-event-split,Split of Kingdom,התפלגות הממלכה,1 Tishrei 2964,,Kingdom is split into Judah and Israel,התפלגות הממלכה ליהודה וישראל
-event-second-temple,Second Temple Period,תקופת בית שני,1 Tishrei 3408,9 Av 3828,Second Temple completed (Ezra 6:15) through destruction by Rome,בית המקדש השני (עזרא ו:טו) עד החורבן על ידי רומי
-event-purim,Purim,פורים,14 Adar 3405,,The miracle of Purim (Esther 9:21),נס פורים (אסתר ט:כא)
-event-chanukah,Chanukah,חנוכה,25 Kislev 3622,,Rededication of the Temple by the Maccabees,חנוכת בית המקדש מחדש על ידי המכבים
-event-jesus,Life of Jesus,חיי ישו,1 Tishrei 3757,1 Tishrei 3793,Life of Jesus of Nazareth – central figure of Christianity (c. 4 BCE – 33 CE),חיי ישו הנוצרי – דמות מרכזית בנצרות (כ-4 לפה"ס – 33 לספירה)
-event-muhammad,Life of Muhammad,חיי מוחמד,1 Tishrei 4330,1 Tishrei 4392,Life of Muhammad – prophet and founder of Islam (570–632 CE),חיי מוחמד – נביא ומייסד האסלאם (570–632 לספירה)
-event-golden-age-spain,Jewish Golden Age in Spain,תור הזהב בספרד,1 Tishrei 4660,1 Tishrei 4960,The Jewish Golden Age in al-Andalus – cultural and intellectual flourishing under Muslim rule (c. 900–1200 CE),תור הזהב של היהודים בספרד המוסלמית – פריחה תרבותית ואינטלקטואלית (כ-900–1200 לספירה)
-event-emancipation,Jewish Emancipation,האמנציפציה,1 Tishrei 5551,1 Tishrei 5631,Jewish emancipation in Europe – from France (1791) through German unification (1871),שחרור היהודים באירופה – מצרפת (1791) ועד איחוד גרמניה (1871)
-event-return-to-zion,Return to Zion,שיבת ציון,1 Tishrei 5642,1 Tishrei 5663,The First Aliyah – first wave of modern Jewish immigration to the Land of Israel (1882–1903),העלייה הראשונה – גל ראשון של עלייה יהודית מודרנית לארץ ישראל (1882–1903)
-event-zionism,Zionism,הציונות,1 Tishrei 5657,5 Iyar 5708,The Zionist movement – from Herzl's Der Judenstaat (1896) to the establishment of the State of Israel (1948),התנועה הציונית – מ"מדינת היהודים" של הרצל (1896) עד הקמת מדינת ישראל (1948)
-event-zionist-meeting,First World Zionist Congress,קונגרס ציוני עולמי הראשון,1 Elul 5657,,The first World Congress of Zionism held in Bazel,הקונגרס הציוני העולמי הראשון בבאזל
+event-babel,Tower of Babel,מגדל בבל,,1996,Dispersion after the Tower of Babel (Genesis 11:9),הפלגה לאחר מגדל בבל (בראשית יא:ט)
+event-covenant,Covenant of the Parts,ברית בין הבתרים,,15 Nisan 2018,Brit Bein HaBetarim – God's covenant with Abraham (Genesis 15),ברית בין הבתרים – ברית ה' עם אברהם (בראשית טו)
+event-sodom, Destruction of Sodom and Gemorrah,הפיכת סדום ועמורה,,2047,Destruction of Sodom and Gemora by rain and brimstone,הפיכת סדום באש מן השמים גפרית ומלח
+event-binding-isaac,Binding of Isaac,עקידת יצחק,,2078,The Akeidah – binding of Isaac on Mount Moriah (Genesis 22),העקידה – עקידת יצחק על הר המוריה (בראשית כב)
+event-exodus,The Exodus,יציאת מצרים,,15 Nisan 2448,The Exodus from Egypt (Exodus 12:41),יציאת מצרים (שמות יב:מא)
+event-torah,Giving of the Torah,מתן תורה,,6 Sivan 2448,The Torah was given at Mount Sinai (Exodus 19-20),מתן תורה בהר סיני (שמות יט-כ)
+event-golden-calf,Golden Calf,חטא העגל,,17 Tammuz 2448,The sin of the Golden Calf (Exodus 32),חטא עגל הזהב (שמות לב)
+event-spies,Sin of the Spies,חטא המרגלים,,9 Av 2449,The spies returned with an evil report (Numbers 13-14),המרגלים חזרו עם דיבה רעה (במדבר יג-יד)
+event-enter-land,Entering the Land,כניסה לארץ,,10 Nisan 2488,Israel crossed the Jordan into the Land (Joshua 3-4),ישראל חצו את הירדן אל הארץ (יהושע ג-ד)
+event-first-temple,First Temple Period,תקופת בית ראשון,2928,9 Av 3338,Solomon's Temple completed (1 Kings 6:38) through destruction by Babylon (2 Kings 25),בית המקדש הראשון של שלמה (מלכים א ו:לח) עד החורבן על ידי בבל (מלכים ב כה)
+event-split,Split of Kingdom,התפלגות הממלכה,,2964,Kingdom is split into Judah and Israel,התפלגות הממלכה ליהודה וישראל
+event-second-temple,Second Temple Period,תקופת בית שני,3408,9 Av 3828,Second Temple completed (Ezra 6:15) through destruction by Rome,בית המקדש השני (עזרא ו:טו) עד החורבן על ידי רומי
+event-purim,Purim,פורים,,14 Adar 3405,The miracle of Purim (Esther 9:21),נס פורים (אסתר ט:כא)
+event-chanukah,Chanukah,חנוכה,,25 Kislev 3622,Rededication of the Temple by the Maccabees,חנוכת בית המקדש מחדש על ידי המכבים
+event-golden-age-spain,Jewish Golden Age in Spain,תור הזהב בספרד,4660,4960,The Jewish Golden Age in al-Andalus – cultural and intellectual flourishing under Muslim rule (c. 900–1200 CE),תור הזהב של היהודים בספרד המוסלמית – פריחה תרבותית ואינטלקטואלית (כ-900–1200 לספירה)
+event-emancipation,Jewish Emancipation,האמנציפציה,5551,5631,Jewish emancipation in Europe – from France (1791) through German unification (1871),שחרור היהודים באירופה – מצרפת (1791) ועד איחוד גרמניה (1871)
+event-return-to-zion,Return to Zion,שיבת ציון,5642,5663,The First Aliyah – first wave of modern Jewish immigration to the Land of Israel (1882–1903),העלייה הראשונה – גל ראשון של עלייה יהודית מודרנית לארץ ישראל (1882–1903)
+event-zionism,Zionism,הציונות,5657,5 Iyar 5708,The Zionist movement – from Herzl's Der Judenstaat (1896) to the establishment of the State of Israel (1948),התנועה הציונית – ממדינת היהודים של הרצל (1896) עד הקמת מדינת ישראל (1948)
+event-zionist-meeting,First World Zionist Congress,קונגרס ציוני עולמי הראשון,,1 Elul 5657,The first World Congress of Zionism held in Bazel,הקונגרס הציוני העולמי הראשון בבאזל
 event-war-of-independence,War of Independence,מלחמת העצמאות,5 Iyar 5708,23 Tammuz 5709,Israel's War of Independence – fought against Arab armies following the declaration of the State of Israel (May 1948 – July 1949),מלחמת העצמאות של ישראל – נלחמה נגד הצבאות הערביים לאחר הכרזת המדינה (מאי 1948 – יולי 1949)
 event-sinai-campaign,Sinai Campaign,מבצע קדש,24 Tishrei 5717,5 Cheshvan 5717,The Sinai Campaign (Operation Kadesh) – Israeli offensive in the Sinai Peninsula alongside British and French forces (October–November 1956),מבצע קדש – מבצע ישראלי בסיני לצד כוחות בריטים וצרפתיים (אוקטובר–נובמבר 1956)
-event-six-day-war,Six-Day War,מלחמת ששת הימים,26 Iyar 5727,2 Sivan 5727,The Six-Day War – Israel captured the West Bank, Gaza, Sinai, and the Golan Heights (June 5–10, 1967),מלחמת ששת הימים – ישראל כבשה את יהודה ושומרון, עזה, סיני והגולן (5–10 ביוני 1967)
+event-six-day-war,Six-Day War,מלחמת ששת הימים,26 Iyar 5727,2 Sivan 5727,The Six-Day War – Israel captured the West Bank, Gaza
 event-war-of-attrition,War of Attrition,מלחמת ההתשה,1 Nisan 5729,7 Av 5730,The War of Attrition – prolonged conflict between Israel and Egypt along the Suez Canal (March 1969 – August 1970),מלחמת ההתשה – עימות ממושך בין ישראל למצרים לאורך תעלת סואץ (מרץ 1969 – אוגוסט 1970)
-event-yom-kippur-war,Yom Kippur War,מלחמת יום כיפור,10 Tishrei 5734,24 Tishrei 5734,The Yom Kippur War – surprise attack by Egypt and Syria on the holiest day of the Jewish year (October 6–25, 1973),מלחמת יום כיפור – מתקפת הפתע של מצרים וסוריה ביום הקדוש ביותר (6–25 באוקטובר 1973)
-event-first-lebanon-war,First Lebanon War,מלחמת לבנון הראשונה,6 Sivan 5742,1 Elul 5745,The First Lebanon War – Israeli invasion of Lebanon to expel the PLO (June 1982 – 1985),מלחמת לבנון הראשונה – פלישת ישראל ללבנון לגירוש אש"ף (יוני 1982 – 1985)
+event-yom-kippur-war,Yom Kippur War,מלחמת יום כיפור,10 Tishrei 5734,24 Tishrei 5734,The Yom Kippur War – surprise attack by Egypt and Syria on the holiest day of the Jewish year (October 6–25, 1973)
+event-first-lebanon-war,First Lebanon War,מלחמת לבנון הראשונה,6 Sivan 5742,1 Elul 5745,The First Lebanon War – Israeli invasion of Lebanon to expel the PLO (June 1982 – 1985),מלחמת לבנון הראשונה – פלישת ישראל ללבנון לגירוש אשף (יוני 1982 – 1985)
 event-second-lebanon-war,Second Lebanon War,מלחמת לבנון השנייה,16 Tammuz 5766,18 Av 5766,The Second Lebanon War – conflict between Israel and Hezbollah triggered by the kidnapping of soldiers (July–August 2006),מלחמת לבנון השנייה – עימות בין ישראל לחיזבאללה שנפתח בחטיפת חיילים (יולי–אוגוסט 2006)
-event-war-of-independence,War of Independence,מלחמת העצמאות,5 Iyar 5708,,Israel's War of Independence – fought against Arab armies following the declaration of the State of Israel (May 1948 – July 1949),מלחמת העצמאות של ישראל – נלחמה נגד הצבאות הערביים לאחר הכרזת המדינה (מאי 1948 – יולי 1949)
-event-sinai-campaign,Sinai Campaign,מבצע קדש,24 Tishrei 5717,,The Sinai Campaign (Operation Kadesh) – Israeli offensive in the Sinai Peninsula alongside British and French forces (October–November 1956),מבצע קדש – מבצע ישראלי בסיני לצד כוחות בריטים וצרפתיים (אוקטובר–נובמבר 1956)
-event-six-day-war,Six-Day War,מלחמת ששת הימים,26 Iyar 5727,,The Six-Day War – Israel captured the West Bank, Gaza, Sinai, and the Golan Heights (June 5–10, 1967),מלחמת ששת הימים – ישראל כבשה את יהודה ושומרון, עזה, סיני והגולן (5–10 ביוני 1967)
-event-war-of-attrition,War of Attrition,מלחמת ההתשה,1 Nisan 5729,,The War of Attrition – prolonged conflict between Israel and Egypt along the Suez Canal (March 1969 – August 1970),מלחמת ההתשה – עימות ממושך בין ישראל למצרים לאורך תעלת סואץ (מרץ 1969 – אוגוסט 1970)
-event-yom-kippur-war,Yom Kippur War,מלחמת יום כיפור,10 Tishrei 5734,,The Yom Kippur War – surprise attack by Egypt and Syria on the holiest day of the Jewish year (October 6–25, 1973),מלחמת יום כיפור – מתקפת הפתע של מצרים וסוריה ביום הקדוש ביותר (6–25 באוקטובר 1973)
-event-first-lebanon-war,First Lebanon War,מלחמת לבנון הראשונה,6 Sivan 5742,,The First Lebanon War – Israeli invasion of Lebanon to expel the PLO (June 1982 – 1985),מלחמת לבנון הראשונה – פלישת ישראל ללבנון לגירוש אש"ף (יוני 1982 – 1985)
-event-second-lebanon-war,Second Lebanon War,מלחמת לבנון השנייה,16 Tammuz 5766,,The Second Lebanon War – conflict between Israel and Hezbollah triggered by the kidnapping of soldiers (July–August 2006),מלחמת לבנון השנייה – עימות בין ישראל לחיזבאללה שנפתח בחטיפת חיילים (יולי–אוגוסט 2006)
-event-iron-swords,Iron Swords War,מלחמת חרבות ברזל,22 Tishrei 5784,1 Tishrei 5786,The Iron Swords War – began with Hamas's Simchat Torah massacre on October 7 2023; Israel's ongoing military campaign in Gaza and across the region,מלחמת חרבות ברזל – החלה עם טבח חמאס בשמחת תורה ב-7 באוקטובר 2023; המערכה הצבאית המתמשכת של ישראל בעזה וברחבי האזור
-event-iran-attack-1,Operation True Promise I,מבצע הבטחה אמיתית א,5 Nisan 5784,6 Nisan 5784,Iran's first direct attack on Israel – hundreds of drones and ballistic missiles launched (April 13–14 2024); intercepted by Israel and allies,המתקפה הישירה הראשונה של איראן על ישראל – מאות מזל"טים וטילים בליסטיים (13–14 באפריל 2024); יורטו על ידי ישראל ובנות בריתה
-event-iran-attack-2,Operation True Promise II,מבצע הבטחה אמיתית ב,28 Elul 5784,,Iran's second direct ballistic missile attack on Israel (October 1 2024); fired approximately 180 ballistic missiles,המתקפה הישירה השנייה של איראן על ישראל בטילים בליסטיים (1 באוקטובר 2024); כ-180 טילים בליסטיים נורו לעבר ישראל
+event-war-of-independence,War of Independence,מלחמת העצמאות,,5 Iyar 5708,Israel's War of Independence – fought against Arab armies following the declaration of the State of Israel (May 1948 – July 1949),מלחמת העצמאות של ישראל – נלחמה נגד הצבאות הערביים לאחר הכרזת המדינה (מאי 1948 – יולי 1949)
+event-sinai-campaign,Sinai Campaign,מבצע קדש,,24 Tishrei 5717,The Sinai Campaign (Operation Kadesh) – Israeli offensive in the Sinai Peninsula alongside British and French forces (October–November 1956),מבצע קדש – מבצע ישראלי בסיני לצד כוחות בריטים וצרפתיים (אוקטובר–נובמבר 1956)
+event-six-day-war,Six-Day War,מלחמת ששת הימים,,26 Iyar 5727,The Six-Day War – Israel captured the West Bank, Gaza
+event-war-of-attrition,War of Attrition,מלחמת ההתשה,,1 Nisan 5729,The War of Attrition – prolonged conflict between Israel and Egypt along the Suez Canal (March 1969 – August 1970),מלחמת ההתשה – עימות ממושך בין ישראל למצרים לאורך תעלת סואץ (מרץ 1969 – אוגוסט 1970)
+event-yom-kippur-war,Yom Kippur War,מלחמת יום כיפור,,10 Tishrei 5734,The Yom Kippur War – surprise attack by Egypt and Syria on the holiest day of the Jewish year (October 6–25, 1973)
+event-first-lebanon-war,First Lebanon War,מלחמת לבנון הראשונה,,6 Sivan 5742,The First Lebanon War – Israeli invasion of Lebanon to expel the PLO (June 1982 – 1985),מלחמת לבנון הראשונה – פלישת ישראל ללבנון לגירוש אשף (יוני 1982 – 1985)
+event-second-lebanon-war,Second Lebanon War,מלחמת לבנון השנייה,,16 Tammuz 5766,The Second Lebanon War – conflict between Israel and Hezbollah triggered by the kidnapping of soldiers (July–August 2006),מלחמת לבנון השנייה – עימות בין ישראל לחיזבאללה שנפתח בחטיפת חיילים (יולי–אוגוסט 2006)
+event-iron-swords,Iron Swords War,מלחמת חרבות ברזל,22 Tishrei 5784,5786,The Iron Swords War – began with Hamas's Simchat Torah massacre on October 7 2023; Israel's ongoing military campaign in Gaza and across the region,מלחמת חרבות ברזל – החלה עם טבח חמאס בשמחת תורה ב-7 באוקטובר 2023; המערכה הצבאית המתמשכת של ישראל בעזה וברחבי האזור
+event-iran-attack-1,Operation True Promise I,מבצע הבטחה אמיתית א,5 Nisan 5784,6 Nisan 5784,Iran's first direct attack on Israel – hundreds of drones and ballistic missiles launched (April 13–14 2024); intercepted by Israel and allies,המתקפה הישירה הראשונה של איראן על ישראל – מאות מזלטים וטילים בליסטיים (13–14 באפריל 2024); יורטו על ידי ישראל ובנות בריתה
+event-iran-attack-2,Operation True Promise II,מבצע הבטחה אמיתית ב,,28 Elul 5784,Iran's second direct ballistic missile attack on Israel (October 1 2024); fired approximately 180 ballistic missiles,המתקפה הישירה השנייה של איראן על ישראל בטילים בליסטיים (1 באוקטובר 2024); כ-180 טילים בליסטיים נורו לעבר ישראל
 event-12-day-war,12 Day War,מבצע עם כלביא,17 Sivan 5785,28 Sivan 5785,Surprise attack on Iran by Israel,התקפת פתע נגד איראן
-event-iran-war,Epic Fury,מבצע שאגת הארי,11 Adar 5786,1 Tishrei 5787,Israel and US attack Iran,מתקפה של ישראל וארה"ב נגד איראן
-event-12-day-war,12 Day War,מבצע עם כלביא,17 Sivan 5785,,Surprise attack on Iran by Israel,התקפת פתע נגד איראן
-event-iran-war,Epic Fury,מבצע שאגת הארי,11 Adar 5786,,Israel and US attack Iran,מתקפה של ישראל וארה"ב נגד איראן
+event-iran-war,Epic Fury,מבצע שאגת הארי,11 Adar 5786,,Israel and US attack Iran,מתקפה של ישראל וארהב נגד איראן
+event-12-day-war,12 Day War,מבצע עם כלביא,,17 Sivan 5785,Surprise attack on Iran by Israel,התקפת פתע נגד איראן
+event-iran-war,Epic Fury,מבצע שאגת הארי,,11 Adar 5786,Israel and US attack Iran,מתקפה של ישראל וארהב נגד איראן
