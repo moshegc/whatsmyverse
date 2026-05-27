@@ -209,7 +209,7 @@ export const historicalEventCategories: HistoricalEventCategory[] = [
     color: '#8b1a1a',
     order: 50,
     csvFile: '/data/history/pogroms.csv',
-    stacked: true,
+    stacked: false,
   },
   {
     id: 'global-events',
@@ -220,6 +220,14 @@ export const historicalEventCategories: HistoricalEventCategory[] = [
     csvFile: '/data/history/global-events.csv',
     stacked: true,
   },
+  {
+    id: 'land-of-israel',
+    name: 'Rulers of the Land of Israel',
+    nameHe: 'שליטי ארץ ישראל',
+    color: '#27ae60',
+    order: 60,
+    csvFile: '/data/history/land-of-israel.csv'    
+  }  
   // Add more categories by creating a CSV and adding an entry here.
   // Keep `order` below 100 so they stay above the reading-schedule rows.
 ];

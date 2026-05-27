@@ -136,6 +136,26 @@ export const seriesInfo: Record<string, SeriesInfoEntry> = {
       he: 'מתעד **פוגרומים ורדיפות מאורגנות** של העם היהודי לאורך הדורות, מאלימות ימי הביניים דרך ה[שואה](https://he.wikipedia.org/wiki/שואה) ומעבר לה.\n\nכל רשומה מייצגת אפיזודה מתועדת. לחץ על כל פריט לפרטים.',
     },
   },
+  'global-events': {
+    title: {
+      en: 'Global Events',
+      he: 'אירועים עולמיים',
+    },
+    description: {
+      en: 'Highlights major historical events from world history to provide context alongside Hebrew history. Includes the rise and fall of empires, major wars, and global milestones.\n\nClick any entry for details on the global context.',
+      he: 'מדגיש אירועים היסטוריים מרכזיים מהיסטוריית העולם כדי לספק הקשר לצד ההיסטוריה העברית. כולל את עלייתן ונפילתן של אימפריות, מלחמות גדולות ואבני דרך עולמיות.\n\nלחץ על כל רשומה לפרטים על ההקשר העולמי.',
+    },
+  },
+  'land-of-israel': {
+    title: {
+      en: 'Land of Israel',
+      he: 'ארץ ישראל',
+    },
+    description: {
+      en: 'Traces the historical periods and ruling powers over the **Land of Israel** through the centuries, from the biblical era and various conquests to the modern State of Israel.\n\nBars show the duration of each era. Click any bar for details.',
+      he: 'עוקב אחר התקופות ההיסטוריות והמעצמות השולטות ב**ארץ ישראל** לאורך מאות השנים, מהתקופה המקראית וכיבושים שונים ועד למדינת ישראל המודרנית.\n\nהפסים מציגים את משך כל תקופה. לחץ על כל פס לפרטים.',
+    },
+  },
 
   // ── Reading schedules ──────────────────────────────────────────────────────
   'Psalms-Since-5708': {
