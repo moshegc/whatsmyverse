@@ -71,6 +71,7 @@ function drawRangeItem(
   rowHeight: number,
   isSelected: boolean,
   groupColor: string,
+  hasOverlapOutline: boolean = false,
 ): void {
   const trackLeft = Math.min(scale.pxLeft, scale.pxRight);
   const trackRight = Math.max(scale.pxLeft, scale.pxRight);
@@ -88,8 +89,11 @@ function drawRangeItem(
   // Always render at least 1 px so items remain visible when zoomed far out
   const w = Math.max(1, rawW);
 
-  const y = rowTop + ITEM_V_MARGIN;
-  const h = rowHeight - ITEM_V_MARGIN * 2;
+  // Overlapping shorter items get extra vertical inset so the longer item
+  // behind them remains partially visible above and below.
+  const vMargin = hasOverlapOutline ? ITEM_V_MARGIN + 3 : ITEM_V_MARGIN;
+  const y = rowTop + vMargin;
+  const h = rowHeight - vMargin * 2;
   const r = Math.min(3, h / 2);
 
   const baseColor = extractItemColor(item.style, groupColor);
@@ -106,6 +110,12 @@ function drawRangeItem(
     ctx.strokeStyle = '#1a365d';
     ctx.lineWidth = 1.5;
     ctx.stroke();
+  } else if (hasOverlapOutline) {
+    // Thin white outline so shorter overlapping items are visually separated
+    // from the longer item drawn behind them.
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.80)';
+    ctx.lineWidth = 2;
+    ctx.stroke();
   }
   ctx.globalAlpha = 1;
 
@@ -120,9 +130,9 @@ function drawRangeItem(
     ctx.fillStyle = textColor;
     const fontSize = Math.min(13, h - 2);
     ctx.font = `${fontSize}px -apple-system, Segoe UI, sans-serif`;
-    ctx.textAlign = 'left';
+    ctx.textAlign = scale.isRtl ? 'right' : 'left';
     ctx.textBaseline = 'middle';
-    ctx.fillText(item.content, x1 + 4, y + h / 2);
+    ctx.fillText(item.content, scale.isRtl ? x2 - 4 : x1 + 4, y + h / 2);
     ctx.restore();
   }
 
@@ -214,9 +224,9 @@ function drawOngoingItem(
       ctx.fillStyle = textColor;
       const fontSize = Math.min(13, h - 2);
       ctx.font = `${fontSize}px -apple-system, Segoe UI, sans-serif`;
-      ctx.textAlign = 'left';
+      ctx.textAlign = scale.isRtl ? 'right' : 'left';
       ctx.textBaseline = 'middle';
-      ctx.fillText(item.content, x1 + 4, y + h / 2);
+      ctx.fillText(item.content, scale.isRtl ? x2 - 4 : x1 + 4, y + h / 2);
       ctx.restore();
     }
     ctx.restore();
@@ -484,6 +494,10 @@ export function drawSectionHeaderColumn(
 /**
  * Draw a single track group (label + all its items) onto `ctx`.
  *
+ * `track.renderedItems` is already sorted for correct z-order (longest range bars
+ * first, point events last) and has `hasOverlapOutline` pre-computed — both are
+ * done once in `computeTrackLayouts`, not per frame.
+ *
  * @param selectedId  The `id` of the currently selected item (or null).
  */
 export function drawTrack(
@@ -498,7 +512,7 @@ export function drawTrack(
   drawTrackBackground(ctx, track, scale);
   drawShellLabel(ctx, track, shellWidth, scale.isRtl, canvasWidth, sectionColWidth);
 
-  for (const { item, row, rowHeight } of track.renderedItems) {
+  for (const { item, row, rowHeight, hasOverlapOutline } of track.renderedItems) {
     const rowTop = track.y + row * rowHeight;
     const isSelected = (item as { id: string }).id === selectedId;
     const itemType = (item as { type?: string }).type;
@@ -508,7 +522,7 @@ export function drawTrack(
     } else if (!item.end) {
       drawPointItem(ctx, scale, item, rowTop, rowHeight, isSelected, track.color);
     } else {
-      drawRangeItem(ctx, scale, item, rowTop, rowHeight, isSelected, track.color);
+      drawRangeItem(ctx, scale, item, rowTop, rowHeight, isSelected, track.color, hasOverlapOutline ?? false);
     }
   }
 }

@@ -47,6 +47,54 @@ const TRACK_ROW_HEIGHT = 26;         // px — default single-row track height
 const STACKED_ROW_HEIGHT = 20;       // px — row height when stacking overlapping items
 const MIN_TRACK_HEIGHT = 26;         // px — floor so tracks are always clickable
 
+// ── Z-order helpers (used in computeTrackLayouts) ────────────────────────────
+
+function isPointItem(item: AnyItem): boolean {
+  return !item.end && (item as { type?: string }).type !== 'ongoing';
+}
+
+function itemDurationMs(item: AnyItem): number {
+  if (isPointItem(item)) return 0;
+  const endMs = item.end ? item.end.getTime() : Date.now();
+  return endMs - item.start.getTime();
+}
+
+/**
+ * Sort entries for correct draw z-order (longest bars behind, point events on top)
+ * and mark shorter items that overlap a longer item so they get an outline.
+ * Mutates the array in-place and returns it.
+ */
+function applyZOrderAndOverlapOutlines(
+  entries: import('./types').RenderedItemEntry[],
+): import('./types').RenderedItemEntry[] {
+  // Sort: descending duration for range/ongoing items; point events last.
+  entries.sort((a, b) => {
+    const aPoint = isPointItem(a.item);
+    const bPoint = isPointItem(b.item);
+    if (aPoint !== bPoint) return aPoint ? 1 : -1;
+    return itemDurationMs(b.item) - itemDurationMs(a.item);
+  });
+
+  // Detect time-overlapping pairs in non-stacked (row=0) tracks and mark the shorter.
+  const rangeEntries = entries.filter(e => !isPointItem(e.item));
+  for (let i = 0; i < rangeEntries.length; i++) {
+    for (let j = i + 1; j < rangeEntries.length; j++) {
+      const a = rangeEntries[i].item;
+      const b = rangeEntries[j].item;
+      const aStart = a.start.getTime();
+      const aEnd = a.end ? a.end.getTime() : Date.now();
+      const bStart = b.start.getTime();
+      const bEnd = b.end ? b.end.getTime() : Date.now();
+      if (aStart < bEnd && bStart < aEnd) {
+        // b is shorter (array is duration-descending), mark it for outline
+        rangeEntries[j].hasOverlapOutline = true;
+      }
+    }
+  }
+
+  return entries;
+}
+
 // ── Track layout computation ──────────────────────────────────────────────────
 
 function computeTrackLayouts(
@@ -106,7 +154,9 @@ function computeTrackLayouts(
         height = Math.max(MIN_TRACK_HEIGHT, maxRows * rowHeight);
       } else {
         rowHeight = TRACK_ROW_HEIGHT;
-        renderedItems = groupItems.map((item) => ({ item, row: 0, rowHeight }));
+        renderedItems = applyZOrderAndOverlapOutlines(
+          groupItems.map((item) => ({ item, row: 0, rowHeight })),
+        );
         height = Math.max(MIN_TRACK_HEIGHT, rowHeight);
       }
     }

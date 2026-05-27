@@ -13,6 +13,12 @@ export interface RenderedItemEntry {
   row: number;
   /** Height of each row in this track, in CSS pixels */
   rowHeight: number;
+  /**
+   * True when this range item is shorter than another range item it overlaps
+   * in the same non-stacked track.  Used to draw a thin outline so the shorter
+   * item remains visually distinct from the longer one behind it.
+   */
+  hasOverlapOutline?: boolean;
 }
 
 export interface TrackLayout {

@@ -497,7 +497,8 @@ function drawAxisShell(
   // Hamburger / burger button icon (≡)
   const lineW = Math.min(14, shellWidth - 6);
   const cx = shellX + shellWidth / 2;
-  const cy = axisHeight / 2;
+  // Centre in the lower tick-label zone (below the context band separator)
+  const cy = TOP_BAND_H + (axisHeight - TOP_BAND_H) / 2;
   ctx.strokeStyle = '#666';
   ctx.lineWidth = 1.5;
   ctx.lineCap = 'round';
