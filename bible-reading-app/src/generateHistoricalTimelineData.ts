@@ -29,6 +29,18 @@ export interface HistoricalTimelineItem {
 
 // ─── Generator ─────────────────────────────────────────────────────────────
 
+const regionColors: Record<string, string> = {
+  egypt: '#F59E0B',        // Gold/Amber
+  mesopotamia: '#D97706',  // Dark Orange
+  greece: '#3B82F6',       // Blue
+  rome: '#EF4444',         // Red
+  religion: '#8B5CF6',     // Purple
+  europe: '#10B981',       // Emerald
+  asia: '#EC4899',         // Pink
+  america: '#14B8A6',      // Teal
+  world: '#6B7280',        // Gray
+};
+
 /** Build a lookup of categories by id for quick access */
 function buildCategoryMap(): Map<string, HistoricalEventCategory> {
   const map = new Map<string, HistoricalEventCategory>();
@@ -56,9 +68,10 @@ export function generateHistoricalTimelineData(locale: Locale = 'en'): Historica
   }).filter(e => e.time !== 0).sort((a, b) => a.time - b.time);
 
   for (const { event } of validEvents) {
-    const count = categoryCounters.get(event.categoryId) ?? 0;
+    const cycleKey = event.regionId ? `${event.categoryId}-${event.regionId}` : event.categoryId;
+    const count = categoryCounters.get(cycleKey) ?? 0;
     cycleIndices.set(event.id, count);
-    categoryCounters.set(event.categoryId, count + 1);
+    categoryCounters.set(cycleKey, count + 1);
   }
 
   for (const event of historicalEvents) {
@@ -109,8 +122,11 @@ export function generateHistoricalTimelineData(locale: Locale = 'en'): Historica
     }
 
     const cycleIdx = cycleIndices.get(event.id) ?? 0;
-    const totalInCategory = categoryCounters.get(event.categoryId) ?? 1;
-    const itemColor = getGradientColor(category.color, cycleIdx, totalInCategory);
+    const cycleKey = event.regionId ? `${event.categoryId}-${event.regionId}` : event.categoryId;
+    const totalInCategory = categoryCounters.get(cycleKey) ?? 1;
+
+    const baseColor = event.regionId && regionColors[event.regionId] ? regionColors[event.regionId] : category.color;
+    const itemColor = getGradientColor(baseColor, cycleIdx, totalInCategory);
 
     const item: HistoricalTimelineItem = {
       id: `hist-${event.id}`,
@@ -120,7 +136,7 @@ export function generateHistoricalTimelineData(locale: Locale = 'en'): Historica
       group: event.categoryId,
       type: itemType,
       title: displayDesc,
-      className: `hist-item hist-${event.categoryId}`,
+      className: `hist-item hist-${event.categoryId} ${event.regionId ? 'hist-region-' + event.regionId : ''}`.trim(),
       style: itemType === 'point'
         ? `color: ${itemColor}; border-color: ${itemColor};`
         : `background-color: ${itemColor}; border-color: ${itemColor};`,

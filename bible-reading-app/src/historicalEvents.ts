@@ -56,6 +56,8 @@ export interface HistoricalEvent {
   id: string;
   /** Must match a `HistoricalEventCategory.id` */
   categoryId: string;
+  /** Optional region or sub-category id parsed from the CSV's categoryId column */
+  regionId?: string;
   /** Short label shown on the timeline item */
   name: string;
   /** Hebrew name */
@@ -238,6 +240,7 @@ export const historicalEventCategories: HistoricalEventCategory[] = [
 
 interface CsvEventRow {
   id: string;
+  categoryId?: string;
   name: string;
   nameHe: string;
   startDate: string;
@@ -268,6 +271,7 @@ function loadEventsFromCsv(category: HistoricalEventCategory): HistoricalEvent[]
   return results.data.map((row) => ({
     id: row.id.trim(),
     categoryId: category.id,
+    regionId: row.categoryId?.trim() || undefined,
     name: row.name.trim(),
     nameHe: row.nameHe?.trim() || undefined,
     startDate: row.startDate?.trim() || undefined,
