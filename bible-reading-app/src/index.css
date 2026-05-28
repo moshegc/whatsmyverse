@@ -40,6 +40,13 @@
   --radius-lg: 16px;
   --border-thin: 1px solid var(--color-border);
 
+  /* Safe area insets for iOS devices.
+     These variables provide fallbacks for browsers that don't support them. */
+  --safe-area-inset-top: env(safe-area-inset-top, 0px);
+  --safe-area-inset-right: env(safe-area-inset-right, 0px);
+  --safe-area-inset-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-area-inset-left: env(safe-area-inset-left, 0px);
+
   /* Header */
   --header-height: 48px;
   --sidebar-width: 240px;
@@ -78,6 +85,8 @@ body {
   min-width: 320px;
   min-height: 100vh;
   overflow: hidden;
+  /* Disable the default tap highlight on iOS for a more native feel */
+  -webkit-tap-highlight-color: transparent;
 }
 
 #root {
@@ -108,21 +117,24 @@ body {
 
 /* ── Header Bar ──────────────────────────────────────────────────────────── */
 .header-bar {
-  height: var(--header-height);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 24px;
+  padding-left: calc(24px + var(--safe-area-inset-left));
+  padding-right: calc(24px + var(--safe-area-inset-right));
   background-color: var(--color-background);
   border-bottom: var(--border-thin);
   flex-shrink: 0;
   z-index: 20;
+  height: calc(var(--header-height) + var(--safe-area-inset-top));
+  padding-top: var(--safe-area-inset-top);
 }
 
 @media (max-width: 767px) {
   .header-bar {
-    height: 56px;
-    padding: 0 16px;
+    height: calc(56px + var(--safe-area-inset-top));
+    padding-left: calc(16px + var(--safe-area-inset-left));
+    padding-right: calc(16px + var(--safe-area-inset-right));
   }
 }
 
@@ -384,11 +396,16 @@ body {
     transform: translateX(-100%);
     z-index: 50;
     box-shadow: 4px 0 16px rgba(0,0,0,0.1);
+    padding-top: var(--safe-area-inset-top);
+    padding-bottom: var(--safe-area-inset-bottom);
+    padding-left: var(--safe-area-inset-left);
   }
   [dir="rtl"] .sidebar {
     left: auto;
     right: 0;
     transform: translateX(100%);
+    padding-left: 0;
+    padding-right: var(--safe-area-inset-right);
   }
   .sidebar.mobile-open {
     transform: translateX(0);
@@ -663,6 +680,7 @@ body {
     box-shadow: 0 -10px 40px rgba(0,0,0,0.1);
     border-top: 1px solid rgba(255,255,255,0.4);
     animation: sheetSlideUp 0.3s ease-out;
+    padding-bottom: var(--safe-area-inset-bottom);
   }
   .detail-card-body {
     max-height: calc(60vh - 44px);
@@ -740,7 +758,10 @@ body {
     box-shadow: 0 -10px 40px rgba(0,0,0,0.1);
     border-top: 1px solid rgba(255,255,255,0.4);
     animation: sheetSlideUp 0.3s ease-out;
-    padding: 12px 20px 24px;
+    padding-top: 12px;
+    padding-bottom: calc(24px + var(--safe-area-inset-bottom));
+    padding-left: calc(20px + var(--safe-area-inset-left));
+    padding-right: calc(20px + var(--safe-area-inset-right));
   }
   .detail-card-close {
     display: none;
@@ -771,7 +792,10 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 20px;
+  padding-top: calc(20px + var(--safe-area-inset-top));
+  padding-right: calc(20px + var(--safe-area-inset-right));
+  padding-bottom: calc(20px + var(--safe-area-inset-bottom));
+  padding-left: calc(20px + var(--safe-area-inset-left));
   animation: overlayFadeIn 0.25s ease-out;
 }
 
@@ -1034,7 +1058,7 @@ body {
 /* ── Error toast ─────────────────────────────────────────────────────────── */
 .error-toast {
   position: fixed;
-  bottom: 24px;
+  bottom: calc(24px + var(--safe-area-inset-bottom));
   left: 50%;
   transform: translateX(-50%);
   background: #FEE2E2;

@@ -800,20 +800,30 @@ const CanvasTimeline = forwardRef<CanvasTimelineHandle, CanvasTimelineProps>(
   // ── Render ────────────────────────────────────────────────────────────────────
   return (
     <div
-      ref={outerRef}
       className="timeline-canvas"
-      dir={locale === 'he' ? 'rtl' : 'ltr'}
       style={{
-        display: 'flex',
-        flexDirection: 'column',
-        height: '100%',
-        overflow: 'hidden',
-        position: 'relative',
-        cursor: 'grab',
-        userSelect: 'none',
+        paddingLeft: 'var(--safe-area-inset-left)',
+        paddingRight: 'var(--safe-area-inset-right)',
       }}
-      onClick={handleClick}
     >
+      <div
+        ref={outerRef}
+        dir={locale === 'he' ? 'rtl' : 'ltr'}
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          height: '100%',
+          overflow: 'hidden',
+          position: 'relative',
+          cursor: 'grab',
+          userSelect: 'none',
+          // Tell iOS Safari to only handle vertical scrolling natively.
+          // This prevents native swipe-back and page zooming from interfering
+          // with the timeline's custom horizontal pan and pinch-zoom.
+          touchAction: 'pan-y',
+        }}
+        onClick={handleClick}
+      >
       {/* ── Axis strip (non-scrolling) ── */}
       {/* Width is set to canvasWidth (= scroll-container content width) so the
           axis pixel coordinates exactly match those used by the tracks canvas.
@@ -837,6 +847,8 @@ const CanvasTimeline = forwardRef<CanvasTimelineHandle, CanvasTimelineProps>(
           overflowY: 'auto',
           overflowX: 'hidden',
           position: 'relative',
+          // Pad the bottom so the last track can be scrolled above the home indicator
+          paddingBottom: 'var(--safe-area-inset-bottom)',
         }}
       >
         <canvas
@@ -853,6 +865,7 @@ const CanvasTimeline = forwardRef<CanvasTimelineHandle, CanvasTimelineProps>(
       {selectedItem && (
         <DetailCard ref={detailCardRef} item={selectedItem} onClose={handleCloseDetail} />
       )}
+      </div>
     </div>
   );
 });
