@@ -318,15 +318,19 @@ const CanvasTimeline = forwardRef<CanvasTimelineHandle, CanvasTimelineProps>(
   }, [isShellExpanded]);
 
   // ── Data ────────────────────────────────────────────────────────────────────
-  const { readingItems, historicalItems } = useMemo(() => ({
-    readingItems: generateTimelineData(locale),
-    historicalItems: generateHistoricalTimelineData(locale),
-  }), [locale]);
-
-  const trackLayouts = useMemo(
-    () => computeTrackLayouts(readingItems, historicalItems, collapsedGroups, locale),
-    [readingItems, historicalItems, collapsedGroups, locale],
+  // Pre-compute track layouts for BOTH locales so that switching between English
+  // and Hebrew is an O(1) reference swap instead of re-running the expensive
+  // overlap-detection pass.  Only recomputed when the underlying data changes
+  // (collapsedGroups), not on every locale toggle.
+  const allTrackLayouts = useMemo<Record<string, TrackLayout[]>>(
+    () => ({
+      en: computeTrackLayouts(generateTimelineData('en'), generateHistoricalTimelineData('en'), collapsedGroups, 'en'),
+      he: computeTrackLayouts(generateTimelineData('he'), generateHistoricalTimelineData('he'), collapsedGroups, 'he'),
+    }),
+    [collapsedGroups],
   );
+
+  const trackLayouts = allTrackLayouts[locale] ?? allTrackLayouts['en'];
 
   const totalTrackHeight = useMemo(() => {
     if (trackLayouts.length === 0) return MIN_TRACK_HEIGHT;
