@@ -38,3 +38,61 @@ export function getScheduleAccentColor(id: string): string {
 export function generateColorFromString(str: string): string {
     return getScheduleAccentColor(str);
 }
+
+/**
+ * Generate a shade of a base hex color to create a gradient across all items.
+ */
+export function getGradientColor(hex: string, index: number, total: number): string {
+  if (hex.length < 7 || total <= 1) return hex;
+
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+
+  const rNorm = r / 255;
+  const gNorm = g / 255;
+  const bNorm = b / 255;
+  const max = Math.max(rNorm, gNorm, bNorm);
+  const min = Math.min(rNorm, gNorm, bNorm);
+  let h = 0, s = 0, l = (max + min) / 2;
+
+  if (max !== min) {
+    const d = max - min;
+    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+    switch (max) {
+      case rNorm: h = (gNorm - bNorm) / d + (gNorm < bNorm ? 6 : 0); break;
+      case gNorm: h = (bNorm - rNorm) / d + 2; break;
+      case bNorm: h = (rNorm - gNorm) / d + 4; break;
+    }
+    h /= 6;
+  }
+
+  const offset = -0.20 + (0.15 * (index / (total - 1)));
+  l = Math.max(0, Math.min(1, l + offset));
+
+  let rOut, gOut, bOut;
+  if (s === 0) {
+    rOut = gOut = bOut = l;
+  } else {
+    const hue2rgb = (p: number, q: number, t: number) => {
+      if (t < 0) t += 1;
+      if (t > 1) t -= 1;
+      if (t < 1 / 6) return p + (q - p) * 6 * t;
+      if (t < 1 / 2) return q;
+      if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
+      return p;
+    };
+    const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+    const p = 2 * l - q;
+    rOut = hue2rgb(p, q, h + 1 / 3);
+    gOut = hue2rgb(p, q, h);
+    bOut = hue2rgb(p, q, h - 1 / 3);
+  }
+
+  const toHex = (c: number) => {
+    const hexStr = Math.round(c * 255).toString(16);
+    return hexStr.length === 1 ? '0' + hexStr : hexStr;
+  };
+
+  return `#${toHex(rOut)}${toHex(gOut)}${toHex(bOut)}`;
+}

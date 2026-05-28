@@ -3,7 +3,7 @@
 import { schedules, type ReadingSchedule } from './config';
 import { generateReadingMap } from './generateReadingMap';
 import { HDate, gematriya } from '@hebcal/core';
-import { getScheduleBgColor } from './colorUtils';
+import { getScheduleBgColor, getGradientColor } from './colorUtils';
 import type { BibleVerse } from './csvUtils';
 import { getBookName, type Locale } from './i18n';
 
@@ -90,7 +90,7 @@ export function generateTimelineData(locale: Locale = 'en'): TimelineItem[] {
                 group: schedule.id,
                 verses: entry.verses,
                 scheduleId: schedule.id,
-                style: `background-color: ${getScheduleBgColor(schedule.id)};`
+                style: `background-color: ${getGradientColor(getScheduleBgColor(schedule.id), i, maxEntries)};`
             });
 
            

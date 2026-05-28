@@ -8,6 +8,7 @@ import {
   type HistoricalEventCategory,
 } from './historicalEvents';
 import { localize, type Locale } from './i18n';
+import { getGradientColor } from './colorUtils';
 
 // ─── Timeline-item type for historical events ─────────────────────────────
 
@@ -44,6 +45,21 @@ function buildCategoryMap(): Map<string, HistoricalEventCategory> {
 export function generateHistoricalTimelineData(locale: Locale = 'en'): HistoricalTimelineItem[] {
   const categoryMap = buildCategoryMap();
   const items: HistoricalTimelineItem[] = [];
+
+  // Pre-compute chronological cycle indexes per category
+  const categoryCounters = new Map<string, number>();
+  const cycleIndices = new Map<string, number>();
+
+  const validEvents = historicalEvents.map(event => {
+    const time = (event.startDate || event.endDate) ? parseDateString((event.startDate || event.endDate)!).getTime() : 0;
+    return { event, time };
+  }).filter(e => e.time !== 0).sort((a, b) => a.time - b.time);
+
+  for (const { event } of validEvents) {
+    const count = categoryCounters.get(event.categoryId) ?? 0;
+    cycleIndices.set(event.id, count);
+    categoryCounters.set(event.categoryId, count + 1);
+  }
 
   for (const event of historicalEvents) {
     const category = categoryMap.get(event.categoryId);
@@ -92,6 +108,10 @@ export function generateHistoricalTimelineData(locale: Locale = 'en'): Historica
       endDate = undefined;
     }
 
+    const cycleIdx = cycleIndices.get(event.id) ?? 0;
+    const totalInCategory = categoryCounters.get(event.categoryId) ?? 1;
+    const itemColor = getGradientColor(category.color, cycleIdx, totalInCategory);
+
     const item: HistoricalTimelineItem = {
       id: `hist-${event.id}`,
       start: startDate,
@@ -102,8 +122,8 @@ export function generateHistoricalTimelineData(locale: Locale = 'en'): Historica
       title: displayDesc,
       className: `hist-item hist-${event.categoryId}`,
       style: itemType === 'point'
-        ? `color: ${category.color}; border-color: ${category.color};`
-        : `background-color: ${category.color}; border-color: ${category.color};`,
+        ? `color: ${itemColor}; border-color: ${itemColor};`
+        : `background-color: ${itemColor}; border-color: ${itemColor};`,
       _event: event,
     };
 
