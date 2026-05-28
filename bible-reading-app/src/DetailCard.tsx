@@ -8,6 +8,7 @@ import { schedules } from './config';
 import { useLocale } from './LocaleContext';
 import { localize, getBookName, renderHDate } from './i18n';
 import { gematriya } from '@hebcal/hdate';
+import { HDate } from '@hebcal/core';
 
 export type SelectedItem =
   | { kind: 'reading'; data: TimelineItem }
@@ -236,10 +237,60 @@ function ReadingDetail({ item, locale }: { item: TimelineItem; locale: 'en' | 'h
 
 // ── Historical event detail ─────────────────────────────────────────────────
 
+function getHistoricalYearInfo(dateString: string | undefined, dateValue: Date, locale: 'en' | 'he') {
+  if (!dateString) return null;
+  const s = dateString.trim();
+  const bceMatch = s.match(/^(\d+)\s*(?:BCE|BC)$/i);
+  const ceMatch = s.match(/^(\d+)\s*(?:CE|AD)$/i);
+  const bareYearMatch = s.match(/^(\d+)$/);
+
+  if (bceMatch || ceMatch || bareYearMatch) {
+    let hebYear: number;
+    const utcYear = dateValue.getUTCFullYear();
+    const utcMonth = dateValue.getUTCMonth();
+    const utcDate = dateValue.getUTCDate();
+
+    if (bareYearMatch) {
+      hebYear = parseInt(bareYearMatch[1], 10);
+    } else {
+      const localDate = new Date(utcYear, utcMonth, utcDate);
+      if (utcYear < 100) localDate.setFullYear(utcYear);
+      const hd = new HDate(localDate);
+      hebYear = hd.getFullYear();
+    }
+
+    const hebYearStr = locale === 'he' ? gematriya(hebYear) : hebYear.toString();
+    const gregYearStr = utcYear <= 0
+      ? (locale === 'he' ? `${1 - utcYear} לפנה״ס` : `${1 - utcYear} BCE`)
+      : (locale === 'he' ? `${utcYear} לספירה` : `${utcYear} CE`);
+
+    return { hebYearStr, gregYearStr };
+  }
+  return null;
+}
+
+function renderHistoricalDates(startStr: string | undefined, startDate: Date, endStr: string | undefined, endDate: Date | undefined, locale: 'en' | 'he'): string {
+  const startYear = getHistoricalYearInfo(startStr, startDate, locale);
+  const endYear = endDate ? getHistoricalYearInfo(endStr, endDate, locale) : null;
+
+  if (startYear && endYear) {
+    return `${startYear.hebYearStr}-${endYear.hebYearStr} (${startYear.gregYearStr} - ${endYear.gregYearStr})`;
+  }
+
+  const startRender = startYear ? `${startYear.hebYearStr} (${startYear.gregYearStr})` : renderHDate(startDate, locale);
+  if (endDate) {
+    const endRender = endYear ? `${endYear.hebYearStr} (${endYear.gregYearStr})` : renderHDate(endDate, locale);
+    return `${startRender} — ${endRender}`;
+  }
+  return startRender;
+}
+
 function HistoricalDetail({ item, locale }: { item: HistoricalTimelineItem; locale: 'en' | 'he' }) {
   const ev = item._event;
   const category = historicalEventCategories.find((c) => c.id === ev.categoryId);
   const pillClass = `detail-card-tag pill-${ev.categoryId}`;
+
+  const startStr = ev.startDate || ev.endDate;
 
   return (
     <>
@@ -247,8 +298,7 @@ function HistoricalDetail({ item, locale }: { item: HistoricalTimelineItem; loca
         <div>
           <h3 className="detail-card-title">{localize(ev.name, ev.nameHe, locale)}</h3>
           <div className="detail-card-dates">
-            {renderHDate(item.start, locale)}
-            {item.end ? ` — ${renderHDate(item.end, locale)}` : ''}
+            {renderHistoricalDates(startStr, item.start, ev.endDate, item.end, locale)}
           </div>
         </div>
         {category && (
