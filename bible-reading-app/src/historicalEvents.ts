@@ -75,6 +75,8 @@ export interface HistoricalEvent {
   descriptionHe?: string;
   /** Optional Wikipedia or external link shown in the detail card */
   link?: string;
+  /** Optional Hebrew Wikipedia or external link shown in the detail card when locale is 'he' */
+  linkHe?: string;
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -243,6 +245,7 @@ interface CsvEventRow {
   description: string;
   descriptionHe: string;
   link: string;
+  linkHe: string;
 }
 
 function fetchCsvSync(filePath: string): string {
@@ -272,6 +275,7 @@ function loadEventsFromCsv(category: HistoricalEventCategory): HistoricalEvent[]
     description: row.description?.trim() || undefined,
     descriptionHe: row.descriptionHe?.trim() || undefined,
     link: row.link?.trim() || undefined,
+    linkHe: row.linkHe?.trim() || undefined,
   }));
 }
 
