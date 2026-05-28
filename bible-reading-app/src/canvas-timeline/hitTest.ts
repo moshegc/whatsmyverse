@@ -48,8 +48,10 @@ export function hitTest(
       if (Math.abs(x - cx) <= POINT_HIT_RADIUS_PX) return item;
     }
 
-    // Pass 2: range items
-    for (const { item, row, rowHeight } of track.renderedItems) {
+    // Pass 2: range items — iterate in reverse draw order so the topmost-drawn
+    // (shortest, drawn last) item wins when items overlap at the same pixel.
+    for (let i = track.renderedItems.length - 1; i >= 0; i--) {
+      const { item, row, rowHeight } = track.renderedItems[i];
       if (!item.end) continue; // skip point items in this pass
       const rowTop = track.y + row * rowHeight;
       if (y < rowTop || y >= rowTop + rowHeight) continue;

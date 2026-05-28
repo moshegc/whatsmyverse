@@ -7,11 +7,11 @@ import Papa from 'papaparse';
 
 /**
  * A category groups related historical events on the timeline.
- * Each category becomes its own row (vis-timeline "group") displayed
+ * Each category becomes its own row (CanvasTimeline "group") displayed
  * above the reading-schedule rows.
  */
 export interface HistoricalEventCategory {
-  /** Unique key used as the vis-timeline group id */
+  /** Unique key used as the CanvasTimeline group id */
   id: string;
   /** Display name shown in the timeline sidebar */
   name: string;
@@ -196,11 +196,19 @@ export const historicalEventCategories: HistoricalEventCategory[] = [
     csvFile: '/data/history/bible-books.csv',
   },
   {
+    id: 'land-of-israel',
+    name: 'Rulers of the Land of Israel',
+    nameHe: 'שליטי ארץ ישראל',
+    color: '#27ae60',
+    order: 40,
+    csvFile: '/data/history/land-of-israel.csv'    
+  },
+  {
     id: 'jewish-exiles',
     name: 'Exiles & Expulsions',
     nameHe: 'גלויות וגירושים',
     color: '#ca2323',
-    order: 40,
+    order: 50,
     csvFile: '/data/history/exiles.csv',
     stacked: true,
   },
@@ -209,7 +217,7 @@ export const historicalEventCategories: HistoricalEventCategory[] = [
     name: 'Pogroms & Persecutions',
     nameHe: 'פוגרומים ורדיפות',
     color: '#8b1a1a',
-    order: 50,
+    order: 60,
     csvFile: '/data/history/pogroms.csv',
     stacked: false,
   },
@@ -218,17 +226,9 @@ export const historicalEventCategories: HistoricalEventCategory[] = [
     name: 'World History',
     nameHe: 'היסטוריה עולמית',
     color: '#e67e22',
-    order: 55,
+    order: 70,
     csvFile: '/data/history/global-events.csv',
     stacked: true,
-  },
-  {
-    id: 'land-of-israel',
-    name: 'Rulers of the Land of Israel',
-    nameHe: 'שליטי ארץ ישראל',
-    color: '#27ae60',
-    order: 60,
-    csvFile: '/data/history/land-of-israel.csv'    
   }  
   // Add more categories by creating a CSV and adding an entry here.
   // Keep `order` below 100 so they stay above the reading-schedule rows.

@@ -39,7 +39,7 @@ function buildCategoryMap(): Map<string, HistoricalEventCategory> {
 }
 
 /**
- * Convert every entry in `historicalEvents` into a vis-timeline item.
+ * Convert every entry in `historicalEvents` into a CanvasTimeline item.
  * Items with an `endDate` become "range" bars; those without become "point" markers.
  */
 export function generateHistoricalTimelineData(locale: Locale = 'en'): HistoricalTimelineItem[] {

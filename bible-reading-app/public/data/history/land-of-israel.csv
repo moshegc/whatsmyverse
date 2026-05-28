@@ -1,7 +1,7 @@
 id,name,nameHe,startDate,endDate,description,descriptionHe,link,linkHe
-land-shem,Sons of Shem,בני שם,1757,1996,The descendants of Shem who settled in the region after the flood.,צאצאיו של שם שהתיישבו באזור לאחר המבול.,,
-land-cnaan,Cananites,כנענים,1996,2595,The Canaanite peoples who inhabited the land before the Israelite conquest.,עמי כנען שאכלסו את הארץ לפני כיבושה על ידי בני ישראל.,,
-land-israelites,Israelites,בני ישראל,2595,3338,The period of the united and divided Israelite monarchies.,תקופת המלוכה הישראלית המאוחדת והמפוצלת.,,
+land-shem,Sons of Shem,בני שם,1657,1996,The descendants of Shem who settled in the region after the flood.,צאצאיו של שם שהתיישבו באזור לאחר המבול.,,
+land-cnaan,Cananites,כנענים,1996,2495,The Canaanite peoples who inhabited the land before the Israelite conquest.,עמי כנען שאכלסו את הארץ לפני כיבושה על ידי בני ישראל.,,
+land-israelites,Israelites,בני ישראל,2495,3338,The period of the united and divided Israelite monarchies.,תקופת המלוכה הישראלית המאוחדת והמפוצלת.,,
 land-judea,Judeah,יהודה,3490,3622,The era of the Kingdom of Judah and the Jewish presence during the Second Temple period.,תקופת ממלכת יהודה והנוכחות היהודית בימי בית שני.,,
 land-hasmonean,Hasmoneans,מלכות חשמונאים,3622,3725,The independent Jewish kingdom established by the Maccabees.,הממלכה היהודית העצמאית שהוקמה על ידי המכבים.,,
 land-herod,Herodian,שושלת הורדוס,3725,3828,The rule of the Herodian dynasty as client kings under the Roman Empire.,שלטון שושלת הורדוס כמלכי חסות תחת האימפריה הרומית.,,

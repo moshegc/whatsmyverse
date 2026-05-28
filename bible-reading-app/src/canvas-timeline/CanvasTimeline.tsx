@@ -1,6 +1,6 @@
 // src/canvas-timeline/CanvasTimeline.tsx
 //
-// Canvas-based timeline component that replaces vis-timeline.
+// Canvas-based timeline component inspired by vis-timeline but with custom rendering and interaction logic.
 // Uses a single <canvas> for the track area and a sticky axis canvas,
 // borrowing Perfetto's coordinate-transform and zoom/pan patterns.
 
