@@ -36,7 +36,7 @@ const DetailCard = forwardRef<DetailCardHandle, DetailCardProps>(({ item, onClos
     const card = cardRef.current;
     if (!card) { onClose(); return; }
 
-    const isMobile = window.innerWidth <= 767;
+    const isMobile = window.innerWidth <= 767 || window.matchMedia('(orientation: landscape) and (max-height: 500px)').matches;
     if (isMobile) {
       // Cancel the CSS entry animation (and any fill) so it doesn't override
       // the JS exit transition via the animation cascade layer.
@@ -82,7 +82,7 @@ const DetailCard = forwardRef<DetailCardHandle, DetailCardProps>(({ item, onClos
 
       const card = cardRef.current;
       if (!card) return;
-      const isMobile = window.innerWidth <= 767;
+      const isMobile = window.innerWidth <= 767 || window.matchMedia('(orientation: landscape) and (max-height: 500px)').matches;
       card.style.transition = 'none';
       card.style.transform = isMobile
         ? `translateY(${offset}px)`
@@ -108,7 +108,7 @@ const DetailCard = forwardRef<DetailCardHandle, DetailCardProps>(({ item, onClos
         startClose(offset);
       } else {
         // Snap back with a spring feel
-        const isMobile = window.innerWidth <= 767;
+        const isMobile = window.innerWidth <= 767 || window.matchMedia('(orientation: landscape) and (max-height: 500px)').matches;
         // Force a reflow so the browser sees the current (dragged) transform
         // before we apply the transition, ensuring it actually animates.
         void card.offsetHeight;
@@ -195,7 +195,7 @@ function ReadingDetail({ item, locale }: { item: TimelineItem; locale: 'en' | 'h
 
   return (
     <>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12, flexShrink: 0 }}>
         <div>
           <h3 className="detail-card-title">{titleText}</h3>
           <div className="detail-card-dates">
@@ -210,7 +210,7 @@ function ReadingDetail({ item, locale }: { item: TimelineItem; locale: 'en' | 'h
       </div>
 
       {/* Verses */}
-      <div style={{ maxHeight: 200, overflowY: 'auto' }}>
+      <div style={{ flex: 1, overflowY: 'auto', minHeight: 0 }}>
         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
           <tbody>
             {item.verses.map((v, i) => (
@@ -294,7 +294,7 @@ function HistoricalDetail({ item, locale }: { item: HistoricalTimelineItem; loca
 
   return (
     <>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12, flexShrink: 0 }}>
         <div>
           <h3 className="detail-card-title">{localize(ev.name, ev.nameHe, locale)}</h3>
           <div className="detail-card-dates">
@@ -308,22 +308,24 @@ function HistoricalDetail({ item, locale }: { item: HistoricalTimelineItem; loca
         )}
       </div>
 
-      {(ev.description || ev.descriptionHe) && (
-        <p className="detail-card-description">
-          {localize(ev.description || '', ev.descriptionHe, locale)}
-        </p>
-      )}
-      {(locale === 'he' && ev.linkHe ? ev.linkHe : ev.link) && (
-        <a
-          href={locale === 'he' && ev.linkHe ? ev.linkHe : ev.link}
-          target="_blank"
-          rel="noopener noreferrer"
-          style={{ fontSize: '0.8rem', color: 'var(--color-primary, #1a365d)', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 4, marginTop: 8, opacity: 0.75 }}
-        >
-          <span className="material-symbols-outlined" style={{ fontSize: 14 }}>open_in_new</span>
-          {locale === 'he' ? 'ויקיפדיה' : 'Wikipedia'}
-        </a>
-      )}
+      <div style={{ flex: 1, overflowY: 'auto', minHeight: 0 }}>
+        {(ev.description || ev.descriptionHe) && (
+          <p className="detail-card-description" style={{ marginTop: 0 }}>
+            {localize(ev.description || '', ev.descriptionHe, locale)}
+          </p>
+        )}
+        {(locale === 'he' && ev.linkHe ? ev.linkHe : ev.link) && (
+          <a
+            href={locale === 'he' && ev.linkHe ? ev.linkHe : ev.link}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ fontSize: '0.8rem', color: 'var(--color-primary, #1a365d)', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 4, marginTop: 8, opacity: 0.75 }}
+          >
+            <span className="material-symbols-outlined" style={{ fontSize: 14 }}>open_in_new</span>
+            {locale === 'he' ? 'ויקיפדיה' : 'Wikipedia'}
+          </a>
+        )}
+      </div>
     </>
   );
 }

@@ -41,7 +41,7 @@ const Sidebar = ({
   const { locale } = useLocale();
 
   // On mobile, always show expanded content regardless of desktop collapsed state
-  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+  const isMobile = typeof window !== 'undefined' && (window.innerWidth < 768 || window.matchMedia('(orientation: landscape) and (max-height: 500px)').matches);
   const effectiveCollapsed = isMobile ? false : collapsed;
 
   const sidebarClass = [

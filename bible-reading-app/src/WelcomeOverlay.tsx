@@ -100,7 +100,7 @@ function WelcomeOverlay({ onDismiss }: WelcomeOverlayProps) {
         // Stop propagation so backdrop clicks don't also dismiss the welcome overlay
         <div onClick={(e) => e.stopPropagation()}>
           {(() => {
-            const isMobile = window.innerWidth <= 767;
+            const isMobile = window.innerWidth <= 767 || window.matchMedia('(orientation: landscape) and (max-height: 500px)').matches;
             const { title: modalTitle, body: modalBody } =
               activeModal === 'help'
                 ? getHelpContent(locale, isMobile)

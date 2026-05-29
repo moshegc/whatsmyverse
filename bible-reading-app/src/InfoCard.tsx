@@ -36,7 +36,7 @@ function InfoCard({ title, body, onClose, toggle, accentColor }: InfoCardProps) 
     const card = cardRef.current;
     if (!card) { onClose(); return; }
 
-    const isMobile = window.innerWidth <= 767;
+    const isMobile = window.innerWidth <= 767 || window.matchMedia('(orientation: landscape) and (max-height: 500px)').matches;
     if (isMobile) {
       card.style.animation = 'none';
       card.style.transform = `translateY(${currentOffset}px)`;
@@ -75,7 +75,7 @@ function InfoCard({ title, body, onClose, toggle, accentColor }: InfoCardProps) 
 
       const card = cardRef.current;
       if (!card) return;
-      const isMobile = window.innerWidth <= 767;
+      const isMobile = window.innerWidth <= 767 || window.matchMedia('(orientation: landscape) and (max-height: 500px)').matches;
       card.style.transition = 'none';
       card.style.transform = isMobile
         ? `translateY(${offset}px)`
@@ -101,7 +101,7 @@ function InfoCard({ title, body, onClose, toggle, accentColor }: InfoCardProps) 
         startClose(offset);
       } else {
         void card.offsetHeight;
-        const isMobile = window.innerWidth <= 767;
+        const isMobile = window.innerWidth <= 767 || window.matchMedia('(orientation: landscape) and (max-height: 500px)').matches;
         card.style.transition = 'transform 0.22s cubic-bezier(0.34,1.56,0.64,1)';
         card.style.transform = isMobile ? 'translateY(0)' : 'translate(-50%, -50%)';
       }
@@ -166,7 +166,7 @@ function InfoCard({ title, body, onClose, toggle, accentColor }: InfoCardProps) 
 
       <div className="detail-card-body">
         {/* Title row with optional toggle */}
-        <div className="info-card-header">
+        <div className="info-card-header" style={{ flexShrink: 0 }}>
           <h3
             className="detail-card-title info-card-title"
             style={accentColor ? { color: accentColor } : undefined}
@@ -192,7 +192,7 @@ function InfoCard({ title, body, onClose, toggle, accentColor }: InfoCardProps) 
         </div>
 
         {/* Body text — rendered as Markdown */}
-        <div className="info-card-body-text">
+        <div className="info-card-body-text" style={{ flex: 1, overflowY: 'auto', minHeight: 0 }}>
           <ReactMarkdown
             components={{
               // Open all links in a new tab safely

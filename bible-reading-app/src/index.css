@@ -130,7 +130,7 @@ body {
   padding-top: var(--safe-area-inset-top);
 }
 
-@media (max-width: 767px) {
+@media (max-width: 767px), (orientation: landscape) and (max-height: 500px) {
   .header-bar {
     height: calc(56px + var(--safe-area-inset-top));
     padding-left: calc(16px + var(--safe-area-inset-left));
@@ -201,7 +201,7 @@ body {
 .hamburger-btn:hover {
   background: rgba(0,0,0,0.04);
 }
-@media (max-width: 767px) {
+@media (max-width: 767px), (orientation: landscape) and (max-height: 500px) {
   .hamburger-btn {
     display: flex;
   }
@@ -382,7 +382,7 @@ body {
 }
 
 /* ── Mobile Sidebar Overlay ──────────────────────────────────────────────── */
-@media (max-width: 767px) {
+@media (max-width: 767px), (orientation: landscape) and (max-height: 500px) {
   .timeline-canvas {
     margin-left: 0 !important;
     margin-right: 0 !important;
@@ -425,7 +425,7 @@ body {
   }
 }
 
-@media (min-width: 768px) {
+@media (min-width: 768px) and (min-height: 501px) {
   .sidebar-overlay {
     display: none !important;
   }
@@ -511,9 +511,10 @@ body {
 }
 
 .detail-card-body {
-  padding: 16px 20px 20px;
+  padding: 8px 20px 8px;
   max-height: 360px;
-  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
 }
 
 .detail-card-drag-header {
@@ -647,7 +648,7 @@ body {
   margin-right: 0;
   margin-left: 30px;
 }
-@media (max-width: 767px) {
+@media (max-width: 767px), (orientation: landscape) and (max-height: 500px) {
   .detail-card-tag {
     margin-right: auto;
     margin-left: auto;
@@ -668,7 +669,7 @@ body {
 }
 
 /* ── Mobile Bottom Sheet ─────────────────────────────────────────────────── */
-@media (max-width: 767px) {
+@media (max-width: 767px), (orientation: landscape) and (max-height: 500px) {
   .detail-card {
     position: fixed;
     bottom: 0;
@@ -733,7 +734,7 @@ body {
 }
 
 /* ── Mobile Touch Targets ────────────────────────────────────────────────── */
-@media (max-width: 767px) {
+@media (max-width: 767px), (orientation: landscape) and (max-height: 500px) {
   .vis-item.vis-range {
     min-height: 32px !important;
   }
@@ -747,8 +748,7 @@ body {
   /* Detail card: bottom sheet covering 80% of the (small) landscape height */
   .detail-card {
     position: fixed;
-    bottom: 0;
-    left: 0;    
+    bottom: 0;      
     top: auto;
     transform: none;
     width: 100%;
@@ -757,17 +757,22 @@ body {
     border-radius: var(--radius-lg) var(--radius-lg) 0 0;
     box-shadow: 0 -10px 40px rgba(0,0,0,0.1);
     border-top: 1px solid rgba(255,255,255,0.4);
-    animation: sheetSlideUp 0.3s ease-out;
-    padding-top: 12px;
-    padding-bottom: calc(24px + var(--safe-area-inset-bottom));
-    padding-left: calc(20px + var(--safe-area-inset-left));
-    padding-right: calc(20px + var(--safe-area-inset-right));
+    animation: sheetSlideUp 0.3s ease-out;    
+    padding-bottom: calc(12px + var(--safe-area-inset-bottom));
+    padding-left: calc(var(--safe-area-inset-left));
+    padding-right: calc(var(--safe-area-inset-right));
   }
   .detail-card-close {
     display: none;
   }
   .bottom-sheet-handle {
     display: block !important;
+  }
+
+  .detail-card-body {
+    max-height: calc(80vh - 80px);
+    max-height: calc(80dvh - 80px);
+    padding-bottom: 12px;
   }
 
   /* Header auto-hide: collapses to 0 when scrolling down */
@@ -904,7 +909,7 @@ body {
   background: rgba(43, 45, 66, 0.12);
 }
 
-@media (max-width: 767px) {
+@media (max-width: 767px), (orientation: landscape) and (max-height: 500px) {
   .welcome-card {
     padding: 28px 20px 24px;
   }
@@ -1072,7 +1077,7 @@ body {
 }
 
 /* ── Desktop Font Size Overrides (+2px across content) ───────────────────── */
-@media (min-width: 768px) {
+@media (min-width: 768px) and (min-height: 501px) {
   .header-title                              { font-size: 22px; }
   .group-row-name                            { font-size: 15px; }
   .group-row-dates                           { font-size: 13px; }
