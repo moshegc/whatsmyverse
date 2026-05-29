@@ -97,12 +97,20 @@ function applyZOrderAndOverlapOutlines(
 
 // ── Track layout computation ──────────────────────────────────────────────────
 
-function computeTrackLayouts(
+interface GroupBaseData {
+  groupId: string;
+  label: string;
+  color: string;
+  expandedHeight: number;
+  expandedRowHeight: number;
+  expandedRenderedItems: RenderedItemEntry[];
+}
+
+function computeAllGroupsData(
   readingItems: TimelineItem[],
   historicalItems: HistoricalTimelineItem[],
-  collapsedGroups: Set<string>,
   locale: Locale,
-): TrackLayout[] {
+): GroupBaseData[] {
   const allGroups = [
     ...historicalEventCategories.map((cat) => ({
       id: cat.id,
@@ -132,39 +140,56 @@ function computeTrackLayouts(
     else itemsByGroup.set(item.group, [item]);
   }
 
-  let y = 0;
-  const layouts: TrackLayout[] = [];
+  const groupsData: GroupBaseData[] = [];
 
   for (const group of allGroups) {
-    const isCollapsed = collapsedGroups.has(group.id);
-
     let renderedItems: RenderedItemEntry[];
     let rowHeight: number;
     let height: number;
 
-    if (isCollapsed) {
-      // Keep the group visible in the shell as a compact stub so it can be re-enabled
-      renderedItems = [];
-      rowHeight = COLLAPSED_TRACK_HEIGHT;
-      height = COLLAPSED_TRACK_HEIGHT;
+    const groupItems = itemsByGroup.get(group.id) ?? [];
+    if (group.stacked) {
+      rowHeight = STACKED_ROW_HEIGHT;
+      const { stacked, maxRows } = stackItems(groupItems, rowHeight, group.subGroupOrder);
+      renderedItems = stacked;
+      height = Math.max(MIN_TRACK_HEIGHT, maxRows * rowHeight);
     } else {
-      const groupItems = itemsByGroup.get(group.id) ?? [];
-      if (group.stacked) {
-        rowHeight = STACKED_ROW_HEIGHT;
-        const { stacked, maxRows } = stackItems(groupItems, rowHeight, group.subGroupOrder);
-        renderedItems = stacked;
-        height = Math.max(MIN_TRACK_HEIGHT, maxRows * rowHeight);
-      } else {
-        rowHeight = TRACK_ROW_HEIGHT;
-        renderedItems = applyZOrderAndOverlapOutlines(
-          groupItems.map((item) => ({ item, row: 0, rowHeight })),
-        );
-        height = Math.max(MIN_TRACK_HEIGHT, rowHeight);
-      }
+      rowHeight = TRACK_ROW_HEIGHT;
+      renderedItems = applyZOrderAndOverlapOutlines(
+        groupItems.map((item) => ({ item, row: 0, rowHeight })),
+      );
+      height = Math.max(MIN_TRACK_HEIGHT, rowHeight);
     }
 
-    layouts.push({
+    groupsData.push({
       groupId: group.id,
+      label: group.label,
+      color: group.color,
+      expandedHeight: height,
+      expandedRowHeight: rowHeight,
+      expandedRenderedItems: renderedItems,
+    });
+  }
+
+  return groupsData;
+}
+
+function applyCollapsedState(
+  groupsData: GroupBaseData[],
+  collapsedGroups: Set<string>
+): TrackLayout[] {
+  let y = 0;
+  const layouts: TrackLayout[] = [];
+
+  for (const group of groupsData) {
+    const isCollapsed = collapsedGroups.has(group.groupId);
+
+    const height = isCollapsed ? COLLAPSED_TRACK_HEIGHT : group.expandedHeight;
+    const rowHeight = isCollapsed ? COLLAPSED_TRACK_HEIGHT : group.expandedRowHeight;
+    const renderedItems = isCollapsed ? [] : group.expandedRenderedItems;
+
+    layouts.push({
+      groupId: group.groupId,
       label: group.label,
       color: group.color,
       y,
@@ -320,19 +345,21 @@ const CanvasTimeline = forwardRef<CanvasTimelineHandle, CanvasTimelineProps>(
   }, [isShellExpanded]);
 
   // ── Data ────────────────────────────────────────────────────────────────────
-  // Pre-compute track layouts for BOTH locales so that switching between English
+  // Pre-compute group contents for BOTH locales so that switching between English
   // and Hebrew is an O(1) reference swap instead of re-running the expensive
-  // overlap-detection pass.  Only recomputed when the underlying data changes
-  // (collapsedGroups), not on every locale toggle.
-  const allTrackLayouts = useMemo<Record<string, TrackLayout[]>>(
+  // stacking and overlap-detection pass. Only recomputed on mount or if data generation changes.
+  const allGroupsData = useMemo<Record<string, GroupBaseData[]>>(
     () => ({
-      en: computeTrackLayouts(generateTimelineData('en'), generateHistoricalTimelineData('en'), collapsedGroups, 'en'),
-      he: computeTrackLayouts(generateTimelineData('he'), generateHistoricalTimelineData('he'), collapsedGroups, 'he'),
+      en: computeAllGroupsData(generateTimelineData('en'), generateHistoricalTimelineData('en'), 'en'),
+      he: computeAllGroupsData(generateTimelineData('he'), generateHistoricalTimelineData('he'), 'he'),
     }),
-    [collapsedGroups],
+    [],
   );
 
-  const trackLayouts = allTrackLayouts[locale] ?? allTrackLayouts['en'];
+  const trackLayouts = useMemo(() => {
+    const baseData = allGroupsData[locale] ?? allGroupsData['en'];
+    return applyCollapsedState(baseData, collapsedGroups);
+  }, [allGroupsData, locale, collapsedGroups]);
 
   const totalTrackHeight = useMemo(() => {
     if (trackLayouts.length === 0) return MIN_TRACK_HEIGHT;
