@@ -8,12 +8,15 @@ import { HDate } from '@hebcal/core';
 import { gematriya } from '@hebcal/hdate';
 import type { HebrewTimeScale } from './HebrewTimeScale';
 import { type Locale, gematriyaYear } from '../i18n';
+import { YEAR_6000_MS } from './timelineState';
 
 const ONE_DAY_MS = 1_000 * 60 * 60 * 24;
 const ONE_YEAR_MS = ONE_DAY_MS * 365.25;
 
 /** Height of the context-band row at the top of the axis strip (sub-year mode and future year-mode bands). */
 const TOP_BAND_H = 16;
+
+const MAX_TICK_YEAR = 6001;
 
 // ── Year-mode tick types ─────────────────────────────────────────────────────
 
@@ -79,7 +82,7 @@ function computeYearTicks(scale: HebrewTimeScale): YearTick[] {
   const ticks: YearTick[] = [];
   for (
     let year = Math.max(1, firstTickYear);
-    year <= Math.min(6100, lastTickYear);
+    year <= Math.min(MAX_TICK_YEAR, lastTickYear);
     year += interval
   ) {
     let ms: number;
@@ -148,12 +151,12 @@ export function computeYearContextBands(scale: HebrewTimeScale, locale: Locale):
   const lastBandEnd = Math.ceil(startHYear + visibleYears + groupSize);
 
   const bands: ContextBand[] = [];
-  for (let year = firstBandStart; year <= Math.min(6100, lastBandEnd); year += groupSize) {
+  for (let year = firstBandStart; year <= Math.min(MAX_TICK_YEAR, lastBandEnd); year += groupSize) {
     let startMs: number;
     let endMs: number;
     try {
       startMs = new HDate(1, 7, Math.max(1, year)).greg().getTime();
-      endMs = new HDate(1, 7, Math.min(6100, year + groupSize)).greg().getTime();
+      endMs = new HDate(1, 7, Math.min(MAX_TICK_YEAR, year + groupSize)).greg().getTime();
     } catch {
       continue;
     }
@@ -236,7 +239,7 @@ export function computeYearBands(scale: HebrewTimeScale, locale: Locale): Contex
   } catch {
     startHYear = 1;
   }
-  const endHYear = Math.min(6100, startHYear + 4);
+  const endHYear = Math.min(MAX_TICK_YEAR, startHYear + 4);
 
   const bands: ContextBand[] = [];
   for (let year = startHYear; year <= endHYear; year++) {
@@ -270,7 +273,7 @@ export function computeMonthBands(scale: HebrewTimeScale, locale: Locale): Conte
   } catch {
     return [];
   }
-  const endYear = Math.min(6100, startYear + 2);
+  const endYear = Math.min(MAX_TICK_YEAR, startYear + 2);
 
   const bands: ContextBand[] = [];
   for (let y = startYear; y <= endYear; y++) {
@@ -530,6 +533,17 @@ export function drawTimeAxis(
   // ── Background ────────────────────────────────────────────────────────────
   ctx.fillStyle = '#f9f9f9';
   ctx.fillRect(0, 0, canvasWidth, axisHeight);
+
+  // Gray out area past year 6000
+  if (scale.visibleEnd > YEAR_6000_MS) {
+    const x6000 = scale.timeToPx(YEAR_6000_MS);
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.04)';
+    if (isRtl) {
+      ctx.fillRect(0, 0, x6000, axisHeight);
+    } else {
+      ctx.fillRect(x6000, 0, canvasWidth - x6000, axisHeight);
+    }
+  }
 
   // Bottom border
   ctx.strokeStyle = '#d0d0d0';

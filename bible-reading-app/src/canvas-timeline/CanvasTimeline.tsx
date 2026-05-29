@@ -17,6 +17,7 @@ import { HebrewTimeScale } from './HebrewTimeScale';
 import {
   TIMELINE_MIN_MS,
   TIMELINE_MAX_MS,
+  YEAR_6000_MS,
   INITIAL_WINDOW,
   zoomWindow,
   panWindow,
@@ -452,6 +453,17 @@ const CanvasTimeline = forwardRef<CanvasTimelineHandle, CanvasTimelineProps>(
     if (tracksCtx) {
       tracksCtx.fillStyle = '#fff';
       tracksCtx.fillRect(0, 0, canvasWidth, totalTrackHeight);
+
+      // Gray out area past year 6000
+      if (scale.visibleEnd > YEAR_6000_MS) {
+        const x6000 = scale.timeToPx(YEAR_6000_MS);
+        tracksCtx.fillStyle = 'rgba(0, 0, 0, 0.04)';
+        if (isRtl) {
+          tracksCtx.fillRect(0, 0, x6000, totalTrackHeight);
+        } else {
+          tracksCtx.fillRect(x6000, 0, canvasWidth - x6000, totalTrackHeight);
+        }
+      }
 
       // Grid lines drawn right after the white canvas clear, before tracks.
       // drawTrackBackground no longer re-fills white, so lines remain visible.

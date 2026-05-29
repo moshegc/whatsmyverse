@@ -10,11 +10,13 @@ const ONE_DAY_MS = 1_000 * 60 * 60 * 24;
 const ONE_YEAR_MS = ONE_DAY_MS * 365.25;
 
 // The absolute bounds of the timeline: 1 year before Hebrew year 1 through
-// 1 year after Hebrew year 6000.
+// 250 years after Hebrew year 6000.
 export const TIMELINE_MIN_MS: number =
   new HDate(1, 7, 1).greg().getTime() - ONE_YEAR_MS;
+export const YEAR_6000_MS: number = new HDate(1, 7, 6000).greg().getTime();
+
 export const TIMELINE_MAX_MS: number =
-  new HDate(1, 7, 6000).greg().getTime() + ONE_YEAR_MS;
+  YEAR_6000_MS + ONE_YEAR_MS * 250;
 
 export const MIN_ZOOM_MS = 3 * ONE_DAY_MS;
 

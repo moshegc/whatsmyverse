@@ -232,12 +232,13 @@ function drawOngoingItem(
     ctx.restore();
   }
 
+  // LTR: future is rightward (+), RTL: future is leftward (-)
+  const extend = scale.isRtl ? -ONGOING_EXTENSION_PX : ONGOING_EXTENSION_PX;
+  
   // Gradient extension from nowX in the future direction (pixel-space, zoom-independent)
   const nowX = scale.timeToPx(nowMs);
   const clampedNowX = Math.min(trackRight, Math.max(trackLeft, nowX));
-
-  // LTR: future is rightward (+), RTL: future is leftward (-)
-  const extend = scale.isRtl ? -ONGOING_EXTENSION_PX : ONGOING_EXTENSION_PX;
+  
   const gradEnd = clampedNowX + extend;
   const clampedGradEnd = scale.isRtl
     ? Math.max(trackLeft, gradEnd)
@@ -253,7 +254,7 @@ function drawOngoingItem(
       ? [clampedNowX, clampedGradEnd]   // RTL: nowX is the right/opaque end
       : [clampedNowX, clampedGradEnd];  // LTR: nowX is the left/opaque end
     const grad = ctx.createLinearGradient(gradFrom, 0, gradTo, 0);
-    grad.addColorStop(0, fillColor + 'aa'); // ~67% opacity at transition point
+    grad.addColorStop(0, fillColor + 'DD'); // ~85% opacity at transition point
     grad.addColorStop(1, fillColor + '00'); // transparent at tail end
 
     ctx.save();
