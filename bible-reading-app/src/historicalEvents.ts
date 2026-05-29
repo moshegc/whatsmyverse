@@ -35,6 +35,10 @@ export interface HistoricalEventCategory {
    * overlapping ranges are all visible.  Default false (single row).
    */
   stacked?: boolean;
+  /**
+   * When stacked is true, specify a custom order for sub groups inside this category.
+   */
+  subGroupOrder?: string[];
 }
 
 /**
@@ -231,6 +235,18 @@ export const historicalEventCategories: HistoricalEventCategory[] = [
     order: 70,
     csvFile: '/data/history/global-events.csv',
     stacked: true,
+    subGroupOrder: [
+      'egypt',
+      'mesopotamia',
+      'greece',
+      'rome',
+      'religion',
+      'europe',
+      'asia',
+      'america',
+      'world',
+      'default',
+    ],
   }  
   // Add more categories by creating a CSV and adding an entry here.
   // Keep `order` below 100 so they stay above the reading-schedule rows.

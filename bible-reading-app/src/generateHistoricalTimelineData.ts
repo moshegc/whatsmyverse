@@ -18,6 +18,8 @@ export interface HistoricalTimelineItem {
   end?: Date;
   content: string;
   group: string;
+  /** Optional sub-group used to keep items (like civilizations) on separate rows when stacked */
+  subGroup?: string;
   /** range: bar with defined end | point: diamond marker | ongoing: bar ending at today + gradient */
   type: 'range' | 'point' | 'ongoing';
   title: string;        // tooltip on hover
@@ -134,6 +136,7 @@ export function generateHistoricalTimelineData(locale: Locale = 'en'): Historica
       end: endDate,
       content: displayName,
       group: event.categoryId,
+      subGroup: event.regionId,
       type: itemType,
       title: displayDesc,
       className: `hist-item hist-${event.categoryId} ${event.regionId ? 'hist-region-' + event.regionId : ''}`.trim(),

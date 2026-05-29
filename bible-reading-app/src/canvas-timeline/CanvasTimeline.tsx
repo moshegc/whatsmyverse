@@ -110,6 +110,7 @@ function computeTrackLayouts(
       color: cat.color,
       order: cat.order,
       stacked: cat.stacked ?? false,
+      subGroupOrder: cat.subGroupOrder,
     })),
     ...schedules.map((s, idx) => ({
       id: s.id,
@@ -117,6 +118,7 @@ function computeTrackLayouts(
       color: generateColorFromString(s.id),
       order: 100 + idx,
       stacked: false,
+      subGroupOrder: undefined,
     })),
   ].sort((a, b) => a.order - b.order);
 
@@ -149,7 +151,7 @@ function computeTrackLayouts(
       const groupItems = itemsByGroup.get(group.id) ?? [];
       if (group.stacked) {
         rowHeight = STACKED_ROW_HEIGHT;
-        const { stacked, maxRows } = stackItems(groupItems, rowHeight);
+        const { stacked, maxRows } = stackItems(groupItems, rowHeight, group.subGroupOrder);
         renderedItems = stacked;
         height = Math.max(MIN_TRACK_HEIGHT, maxRows * rowHeight);
       } else {
