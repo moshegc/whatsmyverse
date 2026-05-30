@@ -6,7 +6,7 @@ import type { HistoricalTimelineItem } from './generateHistoricalTimelineData';
 import { historicalEventCategories } from './historicalEvents';
 import { schedules } from './config';
 import { useLocale } from './LocaleContext';
-import { localize, getBookName, renderHDate } from './i18n';
+import { localize, getBookName } from './i18n';
 import { gematriya } from '@hebcal/hdate';
 import { HDate } from '@hebcal/core';
 
@@ -21,6 +21,112 @@ interface DetailCardProps {
 
 export interface DetailCardHandle {
   startClose: () => void;
+}
+
+function getHistoricalYearInfo(dateString: string | undefined, dateValue: Date, locale: 'en' | 'he') {
+  if (!dateString) return null;
+  const s = dateString.trim();
+  const bceMatch = s.match(/^(\d+)\s*(?:BCE|BC)$/i);
+  const ceMatch = s.match(/^(\d+)\s*(?:CE|AD)$/i);
+  const bareYearMatch = s.match(/^(\d+)$/);
+
+  if (bceMatch || ceMatch || bareYearMatch) {
+    let hebYear: number;
+    const utcYear = dateValue.getUTCFullYear();
+    const utcMonth = dateValue.getUTCMonth();
+    const utcDate = dateValue.getUTCDate();
+
+    if (bareYearMatch) {
+      hebYear = parseInt(bareYearMatch[1], 10);
+    } else {
+      const localDate = new Date(utcYear, utcMonth, utcDate);
+      if (utcYear < 100) localDate.setFullYear(utcYear);
+      const hd = new HDate(localDate);
+      hebYear = hd.getFullYear();
+    }
+
+    const hebYearStr = locale === 'he' ? gematriya(hebYear) + ' (' + hebYear.toString() + ')' : hebYear.toString();
+    const gregYearStr = utcYear <= 0
+      ? (locale === 'he' ? `${1 - utcYear} לפנה״ס` : `${1 - utcYear} BCE`)
+      : (locale === 'he' ? `${utcYear} לספירה` : `${utcYear} CE`);
+
+    return { hebYearStr, gregYearStr };
+  }
+  return null;
+}
+
+function DualDateDisplay({
+  startDate,
+  endDate,
+  startStr,
+  endStr,
+  locale
+}: {
+  startDate: Date;
+  endDate?: Date;
+  startStr?: string;
+  endStr?: string;
+  locale: 'en' | 'he';
+}) {
+  let hebLine = '';
+  let ceLine = '';
+
+  const getHebDateStr = (date: Date) => {
+    const hd = new HDate(date);
+    return locale === 'he' ? hd.renderGematriya() + ' (' + hd.yy + ')' : hd.render();
+  };
+
+  const getCEDateStr = (date: Date) => {
+    const formatted = new Intl.DateTimeFormat(locale === 'he' ? 'he-IL' : 'en-US', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric'
+    }).format(date);
+    const utcYear = date.getUTCFullYear();
+    const suffix = utcYear <= 0
+      ? (locale === 'he' ? 'לפנה״ס' : 'BCE')
+      : (locale === 'he' ? 'לספירה' : 'CE');
+    return `${formatted} ${suffix}`;
+  };
+
+  const startYear = getHistoricalYearInfo(startStr, startDate, locale);
+  const endYear = endDate ? getHistoricalYearInfo(endStr, endDate, locale) : null;
+
+  if (startYear && endYear) {
+    hebLine = `${startYear.hebYearStr} - ${endYear.hebYearStr}`;
+    ceLine = `${startYear.gregYearStr} - ${endYear.gregYearStr}`;
+  } else if (startYear && !endDate) {
+    hebLine = startYear.hebYearStr;
+    ceLine = startYear.gregYearStr;
+  } else if (startYear && endDate) {
+    hebLine = `${startYear.hebYearStr} — ${getHebDateStr(endDate)}`;
+    ceLine = `${startYear.gregYearStr} — ${getCEDateStr(endDate)}`;
+  } else {
+    // Full dates
+    if (endDate) {
+        if (startDate.getTime() === endDate.getTime()) {
+           hebLine = getHebDateStr(startDate);
+           ceLine = getCEDateStr(startDate);
+        } else {
+           hebLine = `${getHebDateStr(startDate)} — ${getHebDateStr(endDate)}`;
+           ceLine = `${getCEDateStr(startDate)} — ${getCEDateStr(endDate)}`;
+        }
+    } else {
+      hebLine = getHebDateStr(startDate);
+      ceLine = getCEDateStr(startDate);
+    }
+  }
+
+  return (
+    <div className="detail-card-dates" style={{ display: 'flex', flexDirection: 'column', gap: '4px', textAlign: locale === 'he' ? 'right' : 'left' }}>
+      <span style={{ fontWeight: 600, fontSize: '1.05em', color: 'var(--color-primary, #1a365d)' }}>
+        {hebLine}
+      </span>
+      <span style={{ fontSize: '0.9em', opacity: 0.8 }}>
+        {ceLine}
+      </span>
+    </div>
+  );
 }
 
 const DetailCard = forwardRef<DetailCardHandle, DetailCardProps>(({ item, onClose }, ref) => {
@@ -198,9 +304,7 @@ function ReadingDetail({ item, locale }: { item: TimelineItem; locale: 'en' | 'h
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12, flexShrink: 0 }}>
         <div>
           <h3 className="detail-card-title">{titleText}</h3>
-          <div className="detail-card-dates">
-            {renderHDate(item.start, locale)} <br /> {renderHDate(item.end, locale)}
-          </div>
+          <DualDateDisplay startDate={item.start} endDate={item.end} locale={locale} />
         </div>
         {schedule && (
           <span className="detail-card-tag" style={{ background: 'rgba(26,54,93,0.08)', color: 'var(--color-primary)' }}>
@@ -237,54 +341,6 @@ function ReadingDetail({ item, locale }: { item: TimelineItem; locale: 'en' | 'h
 
 // ── Historical event detail ─────────────────────────────────────────────────
 
-function getHistoricalYearInfo(dateString: string | undefined, dateValue: Date, locale: 'en' | 'he') {
-  if (!dateString) return null;
-  const s = dateString.trim();
-  const bceMatch = s.match(/^(\d+)\s*(?:BCE|BC)$/i);
-  const ceMatch = s.match(/^(\d+)\s*(?:CE|AD)$/i);
-  const bareYearMatch = s.match(/^(\d+)$/);
-
-  if (bceMatch || ceMatch || bareYearMatch) {
-    let hebYear: number;
-    const utcYear = dateValue.getUTCFullYear();
-    const utcMonth = dateValue.getUTCMonth();
-    const utcDate = dateValue.getUTCDate();
-
-    if (bareYearMatch) {
-      hebYear = parseInt(bareYearMatch[1], 10);
-    } else {
-      const localDate = new Date(utcYear, utcMonth, utcDate);
-      if (utcYear < 100) localDate.setFullYear(utcYear);
-      const hd = new HDate(localDate);
-      hebYear = hd.getFullYear();
-    }
-
-    const hebYearStr = locale === 'he' ? gematriya(hebYear) : hebYear.toString();
-    const gregYearStr = utcYear <= 0
-      ? (locale === 'he' ? `${1 - utcYear} לפנה״ס` : `${1 - utcYear} BCE`)
-      : (locale === 'he' ? `${utcYear} לספירה` : `${utcYear} CE`);
-
-    return { hebYearStr, gregYearStr };
-  }
-  return null;
-}
-
-function renderHistoricalDates(startStr: string | undefined, startDate: Date, endStr: string | undefined, endDate: Date | undefined, locale: 'en' | 'he'): string {
-  const startYear = getHistoricalYearInfo(startStr, startDate, locale);
-  const endYear = endDate ? getHistoricalYearInfo(endStr, endDate, locale) : null;
-
-  if (startYear && endYear) {
-    return `${startYear.hebYearStr}-${endYear.hebYearStr} (${startYear.gregYearStr} - ${endYear.gregYearStr})`;
-  }
-
-  const startRender = startYear ? `${startYear.hebYearStr} (${startYear.gregYearStr})` : renderHDate(startDate, locale);
-  if (endDate) {
-    const endRender = endYear ? `${endYear.hebYearStr} (${endYear.gregYearStr})` : renderHDate(endDate, locale);
-    return `${startRender} — ${endRender}`;
-  }
-  return startRender;
-}
-
 function HistoricalDetail({ item, locale }: { item: HistoricalTimelineItem; locale: 'en' | 'he' }) {
   const ev = item._event;
   const category = historicalEventCategories.find((c) => c.id === ev.categoryId);
@@ -297,9 +353,7 @@ function HistoricalDetail({ item, locale }: { item: HistoricalTimelineItem; loca
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12, flexShrink: 0 }}>
         <div>
           <h3 className="detail-card-title">{localize(ev.name, ev.nameHe, locale)}</h3>
-          <div className="detail-card-dates">
-            {renderHistoricalDates(startStr, item.start, ev.endDate, item.end, locale)}
-          </div>
+          <DualDateDisplay startDate={item.start} endDate={item.end} startStr={startStr} endStr={ev.endDate} locale={locale} />
         </div>
         {category && (
           <span className={pillClass}>
