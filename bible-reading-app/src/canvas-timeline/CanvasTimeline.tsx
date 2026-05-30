@@ -269,6 +269,7 @@ const CanvasTimeline = forwardRef<CanvasTimelineHandle, CanvasTimelineProps>(
   const pinchPrevDistRef = useRef(0);
   // True when the gesture started over the detail card — skip timeline pan/zoom
   const touchOverCardRef = useRef(false);
+  const pinchSessionRef = useRef(false);
 
   // Mouse drag state (desktop pan)
   const mouseDragRef = useRef<{ startX: number; startWindow: VisibleWindow } | null>(null);
@@ -567,6 +568,10 @@ const CanvasTimeline = forwardRef<CanvasTimelineHandle, CanvasTimelineProps>(
         : null;
       touchOverCardRef.current = !!(target?.closest('.detail-card'));
 
+      if (e.touches.length === 1) {
+        pinchSessionRef.current = false;
+      }
+
       touchStartsRef.current = Array.from(e.touches).map((t) => ({
         identifier: t.identifier,
         clientX: t.clientX,
@@ -574,6 +579,9 @@ const CanvasTimeline = forwardRef<CanvasTimelineHandle, CanvasTimelineProps>(
       }));
       touchWindowRef.current = { ...windowRef.current };
       touchDirectionRef.current = null;
+      if (e.touches.length >= 2) {
+        pinchSessionRef.current = true;
+      }
       if (e.touches.length === 2) {
         const dx = e.touches[0].clientX - e.touches[1].clientX;
         const dy = e.touches[0].clientY - e.touches[1].clientY;
@@ -593,6 +601,8 @@ const CanvasTimeline = forwardRef<CanvasTimelineHandle, CanvasTimelineProps>(
       if (trackAreaWidth <= 0) return;
 
       if (e.touches.length === 1) {
+        if (pinchSessionRef.current) return;
+
         const touch = e.touches[0];
         const start = touchStartsRef.current.find(
           (t) => t.identifier === touch.identifier,
@@ -652,6 +662,7 @@ const CanvasTimeline = forwardRef<CanvasTimelineHandle, CanvasTimelineProps>(
       if (e.touches.length === 0) {
         touchDirectionRef.current = null;
         touchOverCardRef.current = false;
+        pinchSessionRef.current = false;
       }
     };
 

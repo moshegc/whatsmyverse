@@ -497,20 +497,32 @@ function drawAxisShell(
   ctx.lineTo(borderX, axisHeight);
   ctx.stroke();
 
-  // Hamburger / burger button icon (≡)
-  const lineW = Math.min(14, shellWidth - 6);
+  // Collapse / expand icon
+  const isExpanded = shellWidth >= 60;
+  const pointLeft = isRtl ? !isExpanded : isExpanded;
+
+  const iconW = 6;
+  const iconH = 10;
   const cx = shellX + shellWidth / 2;
   // Centre in the lower tick-label zone (below the context band separator)
   const cy = TOP_BAND_H + (axisHeight - TOP_BAND_H) / 2;
+  
   ctx.strokeStyle = '#666';
   ctx.lineWidth = 1.5;
   ctx.lineCap = 'round';
-  for (const offset of [-4, 0, 4]) {
-    ctx.beginPath();
-    ctx.moveTo(cx - lineW / 2, cy + offset);
-    ctx.lineTo(cx + lineW / 2, cy + offset);
-    ctx.stroke();
+  ctx.lineJoin = 'round';
+  
+  ctx.beginPath();
+  if (pointLeft) {
+    ctx.moveTo(cx + iconW / 2, cy - iconH / 2);
+    ctx.lineTo(cx - iconW / 2, cy);
+    ctx.lineTo(cx + iconW / 2, cy + iconH / 2);
+  } else {
+    ctx.moveTo(cx - iconW / 2, cy - iconH / 2);
+    ctx.lineTo(cx + iconW / 2, cy);
+    ctx.lineTo(cx - iconW / 2, cy + iconH / 2);
   }
+  ctx.stroke();
 }
 
 // ── Public entry point ───────────────────────────────────────────────────────
