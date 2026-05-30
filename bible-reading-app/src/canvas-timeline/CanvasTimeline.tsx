@@ -312,6 +312,31 @@ const CanvasTimeline = forwardRef<CanvasTimelineHandle, CanvasTimelineProps>(
     onZoomChange?.(fullyOut);
   }, [onZoomChange]);
 
+  const [flashEdge, setFlashEdge] = useState<'left' | 'right' | null>(null);
+  const flashTimeoutRef = useRef<number | null>(null);
+
+  const triggerEdgeFlash = useCallback((edge: 'left' | 'right') => {
+    setFlashEdge(edge);
+    if (flashTimeoutRef.current) window.clearTimeout(flashTimeoutRef.current);
+    flashTimeoutRef.current = window.setTimeout(() => setFlashEdge(null), 300);
+  }, []);
+
+  const handlePan = useCallback((baseWindow: VisibleWindow, deltaMs: number) => {
+    const newWin = panWindow(baseWindow, deltaMs);
+    const desiredStart = baseWindow.start + deltaMs;
+    const duration = baseWindow.end - baseWindow.start;
+
+    if (newWin.start === windowRef.current.start) {
+      if (desiredStart < TIMELINE_MIN_MS && windowRef.current.start === TIMELINE_MIN_MS) {
+        triggerEdgeFlash(locale === 'he' ? 'right' : 'left');
+      } else if (desiredStart + duration > TIMELINE_MAX_MS && windowRef.current.end === TIMELINE_MAX_MS) {
+        triggerEdgeFlash(locale === 'he' ? 'left' : 'right');
+      }
+    }
+    
+    setVisibleWindow(newWin);
+  }, [locale, triggerEdgeFlash, setVisibleWindow]);
+
   // ── Shell expand/collapse animation ────────────────────────────────────────
   useEffect(() => {
     const target = isShellExpanded ? SHELL_WIDTH : COLLAPSED_SHELL_WIDTH;
@@ -546,14 +571,14 @@ const CanvasTimeline = forwardRef<CanvasTimelineHandle, CanvasTimelineProps>(
         e.preventDefault();
         const msPerPx = (windowRef.current.end - windowRef.current.start) / trackAreaWidth;
         const deltaMs = e.deltaX * msPerPx * (isRtl ? -1 : 1);
-        setVisibleWindow(panWindow(windowRef.current, deltaMs));
+        handlePan(windowRef.current, deltaMs);
       }
       // Pure vertical scroll: let the scroll container handle it naturally
     };
 
     el.addEventListener('wheel', onWheel, { passive: false });
     return () => el.removeEventListener('wheel', onWheel);
-  }, [locale, setVisibleWindow]);
+  }, [locale, setVisibleWindow, handlePan]);
 
   // ── Touch event handlers (mobile pan & pinch-zoom) ──────────────────────────
   useEffect(() => {
@@ -627,7 +652,7 @@ const CanvasTimeline = forwardRef<CanvasTimelineHandle, CanvasTimelineProps>(
             trackAreaWidth;
           const sign = isRtl ? 1 : -1;
           const deltaMs = sign * dx * msPerPx;
-          setVisibleWindow(panWindow(touchWindowRef.current, deltaMs));
+          handlePan(touchWindowRef.current, deltaMs);
         }
         // vertical: let the scroll container handle natively
       } else if (e.touches.length === 2) {
@@ -676,7 +701,7 @@ const CanvasTimeline = forwardRef<CanvasTimelineHandle, CanvasTimelineProps>(
       el.removeEventListener('touchend', onTouchEnd);
       el.removeEventListener('touchcancel', onTouchEnd);
     };
-  }, [locale, setVisibleWindow]);
+  }, [locale, setVisibleWindow, handlePan]);
 
   // ── Mouse drag handlers (desktop pan) ───────────────────────────────────────
   useEffect(() => {
@@ -705,7 +730,7 @@ const CanvasTimeline = forwardRef<CanvasTimelineHandle, CanvasTimelineProps>(
       const msPerPx = (drag.startWindow.end - drag.startWindow.start) / trackAreaWidth;
       const sign = isRtl ? 1 : -1;
       const deltaMs = sign * dx * msPerPx;
-      setVisibleWindow(panWindow(drag.startWindow, deltaMs));
+      handlePan(drag.startWindow, deltaMs);
     };
 
     const onMouseUp = () => {
@@ -722,7 +747,7 @@ const CanvasTimeline = forwardRef<CanvasTimelineHandle, CanvasTimelineProps>(
       window.removeEventListener('mousemove', onMouseMove);
       window.removeEventListener('mouseup', onMouseUp);
     };
-  }, [locale, setVisibleWindow]);
+  }, [locale, setVisibleWindow, handlePan]);
 
   // ── Click → hit test + shell toggle ─────────────────────────────────────────
   const handleClick = useCallback((e: React.MouseEvent) => {
@@ -921,6 +946,36 @@ const CanvasTimeline = forwardRef<CanvasTimelineHandle, CanvasTimelineProps>(
       {selectedItem && (
         <DetailCard ref={detailCardRef} item={selectedItem} onClose={handleCloseDetail} />
       )}
+
+      {/* ── Edge Flash Indicators ── */}
+      <div
+        style={{
+          position: 'absolute',
+          top: AXIS_HEIGHT,
+          bottom: 0,
+          left: locale === 'he' ? 0 : animatedShellWidth + SECTION_COL_WIDTH,
+          width: 24,
+          background: 'linear-gradient(to right, rgba(220, 53, 69, 0.4), transparent)',
+          opacity: flashEdge === 'left' ? 1 : 0,
+          transition: 'opacity 0.3s ease-out',
+          pointerEvents: 'none',
+          zIndex: 10,
+        }}
+      />
+      <div
+        style={{
+          position: 'absolute',
+          top: AXIS_HEIGHT,
+          bottom: 0,
+          right: locale === 'he' ? animatedShellWidth + SECTION_COL_WIDTH : 0,
+          width: 24,
+          background: 'linear-gradient(to left, rgba(220, 53, 69, 0.4), transparent)',
+          opacity: flashEdge === 'right' ? 1 : 0,
+          transition: 'opacity 0.3s ease-out',
+          pointerEvents: 'none',
+          zIndex: 10,
+        }}
+      />
       </div>
     </div>
   );
