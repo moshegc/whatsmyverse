@@ -13,23 +13,29 @@ const SESSION_KEY = 'welcomeSeen';
 
 interface WelcomeOverlayProps {
   onDismiss: () => void;
+  onStartTutorial: () => void;
 }
 
-function WelcomeOverlay({ onDismiss }: WelcomeOverlayProps) {
+function WelcomeOverlay({ onDismiss, onStartTutorial }: WelcomeOverlayProps) {
   const { locale } = useLocale();
-  const { title, body, cta } = getWelcomeContent(locale);
+  const { title, body, cta, skip } = getWelcomeContent(locale);
   const cardRef = useRef<HTMLDivElement>(null);
   const [activeModal, setActiveModal] = useState<'help' | 'about' | null>(null);
 
-  const handleDismiss = () => {
+  const handleSkip = () => {
     sessionStorage.setItem(SESSION_KEY, '1');
     onDismiss();
+  };
+
+  const handleStartTutorial = () => {
+    sessionStorage.setItem(SESSION_KEY, '1');
+    onStartTutorial();
   };
 
   // Close on Escape key
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') handleDismiss();
+      if (e.key === 'Escape') handleSkip();
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
@@ -39,7 +45,7 @@ function WelcomeOverlay({ onDismiss }: WelcomeOverlayProps) {
   return (
     <div
       className="welcome-overlay"
-      onClick={handleDismiss}
+      onClick={handleSkip}
       role="dialog"
       aria-modal="true"
       aria-label={title}
@@ -71,12 +77,18 @@ function WelcomeOverlay({ onDismiss }: WelcomeOverlayProps) {
           </ReactMarkdown>
         </div>
 
-        <button className="welcome-cta" onClick={handleDismiss}>
-          {cta}
-          <span className="material-symbols-outlined" style={{ fontSize: 18, marginInlineStart: 6 }}>
-            {locale === 'he' ? 'arrow_back' : 'arrow_forward'}
-          </span>
-        </button>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
+          <button className="welcome-cta" onClick={handleStartTutorial}>
+            {cta}
+            <span className="material-symbols-outlined" style={{ fontSize: 18, marginInlineStart: 6 }}>
+              {locale === 'he' ? 'arrow_back' : 'arrow_forward'}
+            </span>
+          </button>
+
+          <button className="welcome-skip" onClick={handleSkip} style={{ margin: 0 }}>
+            {skip}
+          </button>
+        </div>
 
         <div className="welcome-footer-actions">
           <button

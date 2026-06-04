@@ -878,6 +878,21 @@ body {
   transform: none;
 }
 
+.welcome-skip {
+  display: block;
+  margin: 12px auto 0;
+  background: none;
+  border: none;
+  color: #666;
+  font-size: 13px;
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 4px 8px;
+}
+.welcome-skip:hover {
+  color: #333;
+}
+
 .welcome-footer-actions {
   display: flex;
   align-items: center;

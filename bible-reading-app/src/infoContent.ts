@@ -27,6 +27,16 @@ interface WelcomeContent {
   title: BilingualText;
   body: BilingualText;
   cta: BilingualText;
+  skip: BilingualText;
+}
+
+interface TutorialContent {
+  next: BilingualText;
+  done: BilingualText;
+  step1Title: BilingualText;
+  step1Body: BilingualText;
+  step2Title: BilingualText;
+  step2Body: BilingualText;
 }
 
 interface HelpContent {
@@ -55,6 +65,25 @@ export const welcomeContent: WelcomeContent = {
     en: 'Get started',
     he: 'בואו נתחיל',
   },
+  skip: {
+    en: 'Skip tutorial',
+    he: 'דלג על המדריך',
+  },
+};
+
+export const tutorialContent: TutorialContent = {
+  next: { en: 'Next', he: 'הבא' },
+  done: { en: 'Done', he: 'סיום' },
+  step1Title: { en: 'Event Area', he: 'אזור האירועים' },
+  step1Body: {
+    en: '• **Pinch zoom and scroll** to navigate through time.\n\n• **Click on any event** for detailed information.\n\n• Singular events are shown as diamonds, while spanning events are bars.',
+    he: '• **צבוט או גלול** כדי לנווט בזמן.\n\n• **לחץ על כל אירוע** לקבלת מידע מפורט.\n\n• אירועים נקודתיים מוצגים כמעוינים, ואירועים מתמשכים כפסים.'
+  },
+  step2Title: { en: 'Track Headers', he: 'כותרות הפסים' },
+  step2Body: {
+    en: '• **Click on a header name** for information about the category.\n\n• **Click the caret (&lt; &gt;)** to show/hide the track headers.\n\n• **Click on a track circle** to show/hide the track.',
+    he: '• **לחץ על שם הכותרת** למידע על הקטגוריה.\n\n• **לחץ על הסימן (&lt; &gt;)** כדי להציג/להסתיר את כותרות הפסים.\n\n• **לחץ על המעגל של כותרת שורה** כדי להציג/להסתיר את השורה.'
+  }
 };
 
 // ── Section info ─────────────────────────────────────────────────────────────
@@ -229,11 +258,31 @@ export function getWelcomeContent(locale: Locale): {
   title: string;
   body: string;
   cta: string;
+  skip: string;
 } {
   return {
     title: welcomeContent.title[locale],
     body: welcomeContent.body[locale],
     cta: welcomeContent.cta[locale],
+    skip: welcomeContent.skip[locale],
+  };
+}
+
+export function getTutorialContent(locale: Locale): {
+  next: string;
+  done: string;
+  step1Title: string;
+  step1Body: string;
+  step2Title: string;
+  step2Body: string;
+} {
+  return {
+    next: tutorialContent.next[locale],
+    done: tutorialContent.done[locale],
+    step1Title: tutorialContent.step1Title[locale],
+    step1Body: tutorialContent.step1Body[locale],
+    step2Title: tutorialContent.step2Title[locale],
+    step2Body: tutorialContent.step2Body[locale],
   };
 }
 

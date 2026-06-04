@@ -6,6 +6,7 @@ import HeaderBar from './HeaderBar';
 import { useLocale } from './LocaleContext';
 import InfoCard from './InfoCard';
 import WelcomeOverlay, { shouldShowWelcome } from './WelcomeOverlay';
+import TutorialOverlay from './TutorialOverlay';
 import { getSeriesInfo, getSectionInfo } from './infoContent';
 import { historicalEventCategories } from './historicalEvents';
 import { schedules } from './config';
@@ -18,6 +19,7 @@ function App() {
   const [headerVisible, setHeaderVisible] = useState(true);
   const [isZoomedOut, setIsZoomedOut] = useState(true);
   const [showWelcome, setShowWelcome] = useState(shouldShowWelcome);
+  const [showTutorial, setShowTutorial] = useState(false);
 
   type InfoCardState =
     | null
@@ -109,7 +111,16 @@ function App() {
           onSectionInfo={handleSectionInfo}
         />
       </div>
-      {showWelcome && <WelcomeOverlay onDismiss={() => setShowWelcome(false)} />}
+      {showWelcome && (
+        <WelcomeOverlay
+          onDismiss={() => setShowWelcome(false)}
+          onStartTutorial={() => {
+            setShowWelcome(false);
+            setShowTutorial(true);
+          }}
+        />
+      )}
+      {showTutorial && <TutorialOverlay onFinish={() => setShowTutorial(false)} />}
       {infoCard && infoCardProps && (
         <InfoCard
           key={infoCard.kind === 'series' ? infoCard.groupId : infoCard.section}
