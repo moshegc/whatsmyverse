@@ -54,7 +54,7 @@ interface ContextBand {
 
 function niceYearInterval(visibleYears: number, trackWidth: number): number {
   // Aim for at least 40 px per tick so year labels don't bunch up.
-  const maxTicks = Math.max(3, Math.floor(trackWidth / 40));
+  const maxTicks = Math.max(3, Math.floor(trackWidth / 50));
   const candidates = [1, 2, 5, 10, 25, 50, 100, 250, 500, 1000, 2000, 3000];
   for (const c of candidates) {
     if (visibleYears / c <= maxTicks) return c;

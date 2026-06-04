@@ -26,7 +26,7 @@ import {
 import { stackItems } from './stackItems';
 import { hitTest } from './hitTest';
 import { drawTimeAxis, drawGridLines } from './drawTimeAxis';
-import { drawTrack, drawSeparator, drawSectionHeaderColumn } from './drawTrack';
+import { drawTrack, drawSeparator } from './drawTrack';
 import type { TrackLayout, RenderedItemEntry, AnyItem } from './types';
 import { generateTimelineData } from '../generateTimelineData';
 import { generateHistoricalTimelineData, type HistoricalTimelineItem } from '../generateHistoricalTimelineData';
@@ -511,20 +511,6 @@ const CanvasTimeline = forwardRef<CanvasTimelineHandle, CanvasTimelineProps>(
         schedules.some((s) => s.id === t.groupId),
       );     
 
-      // Draw section-header column (rotated labels)
-      const histLabel  = locale === 'he' ? 'היסטוריה' : 'History';
-      const verseLabel = locale === 'he' ? 'פסוקים'   : 'Verses';
-      drawSectionHeaderColumn(
-        tracksCtx,
-        firstScheduleTrack?.y ?? null,
-        totalTrackHeight,
-        canvasWidth,
-        isRtl,
-        SECTION_COL_WIDTH,
-        histLabel,
-        verseLabel,
-      );
-
       if (firstScheduleTrack) {       
         drawSeparator(
           tracksCtx,
@@ -878,6 +864,11 @@ const CanvasTimeline = forwardRef<CanvasTimelineHandle, CanvasTimelineProps>(
     setSelectedItem(null);
   }, []);
 
+  const firstScheduleTrack = trackLayouts.find((t) => schedules.some((s) => s.id === t.groupId));
+  const separatorY = firstScheduleTrack?.y ?? null;
+  const histLabel = locale === 'he' ? 'היסטוריה' : 'History';
+  const verseLabel = locale === 'he' ? 'פסוקים' : 'Verses';
+
   // ── Render ────────────────────────────────────────────────────────────────────
   return (
     <div
@@ -940,6 +931,102 @@ const CanvasTimeline = forwardRef<CanvasTimelineHandle, CanvasTimelineProps>(
             height: totalTrackHeight,
           }}
         />
+
+        {/* ── Section Header Overlay ── */}
+        <div
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: locale === 'he' ? undefined : 0,
+            right: locale === 'he' ? 0 : undefined,
+            width: SECTION_COL_WIDTH,
+            height: totalTrackHeight,
+            pointerEvents: 'none',
+            display: 'flex',
+            flexDirection: 'column',
+          }}
+        >
+          {/* History Section */}
+          <div
+            style={{
+              height: separatorY ?? totalTrackHeight,
+              backgroundColor: '#eef3fb',
+              borderRight: locale === 'he' ? 'none' : '1px solid #c0c8d8',
+              borderLeft: locale === 'he' ? '1px solid #c0c8d8' : 'none',
+              boxSizing: 'border-box',
+              position: 'relative',
+            }}
+          >
+            <div
+              style={{
+                position: 'sticky',
+                top: 0,
+                // Match the viewport height or container height so flex can center the item inside
+                // If container is smaller than viewport, it centers within container.
+                // If container is larger, it sticks to viewport and centers within viewport height.
+                height: '100%',
+                maxHeight: '100vh',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                overflow: 'visible',
+              }}
+            >
+              <span
+                style={{
+                  transform: locale === 'he' ? 'rotate(90deg)' : 'rotate(-90deg)',
+                  whiteSpace: 'nowrap',
+                  color: '#555',
+                  fontWeight: 'bold',
+                  fontSize: 16,
+                  fontFamily: '-apple-system, Segoe UI, sans-serif',
+                }}
+              >
+                {histLabel}
+              </span>
+            </div>
+          </div>
+
+          {/* Verses Section */}
+          {separatorY !== null && (
+            <div
+              style={{
+                height: totalTrackHeight - separatorY,
+                backgroundColor: '#f3f9f0',
+                borderRight: locale === 'he' ? 'none' : '1px solid #c0c8d8',
+                borderLeft: locale === 'he' ? '1px solid #c0c8d8' : 'none',
+                boxSizing: 'border-box',
+                position: 'relative',
+              }}
+            >
+              <div
+                style={{
+                  position: 'sticky',
+                  top: 0,
+                  height: '100%',
+                  maxHeight: '100vh',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  overflow: 'visible',
+                }}
+              >
+                <span
+                  style={{
+                    transform: locale === 'he' ? 'rotate(90deg)' : 'rotate(-90deg)',
+                    whiteSpace: 'nowrap',
+                    color: '#555',
+                    fontWeight: 'bold',
+                    fontSize: 16,
+                    fontFamily: '-apple-system, Segoe UI, sans-serif',
+                  }}
+                >
+                  {verseLabel}
+                </span>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* ── Detail card popup ── */}
