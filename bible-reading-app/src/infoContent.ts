@@ -37,6 +37,8 @@ interface TutorialContent {
   step1Body: BilingualText;
   step2Title: BilingualText;
   step2Body: BilingualText;
+  step3Title: BilingualText;
+  step3Body: BilingualText;
 }
 
 interface HelpContent {
@@ -82,7 +84,12 @@ export const tutorialContent: TutorialContent = {
   step2Title: { en: 'Track Headers', he: 'כותרות הפסים' },
   step2Body: {
     en: '• **Click on a header name** for information about the category.\n\n• **Click the caret (&lt; &gt;)** to show/hide the track headers.\n\n• **Click on a track circle** to show/hide the track.',
-    he: '• **לחץ על שם הכותרת** למידע על הקטגוריה.\n\n• **לחץ על הסימן (&lt; &gt;)** כדי להציג/להסתיר את כותרות הפסים.\n\n• **לחץ על המעגל של כותרת שורה** כדי להציג/להסתיר את השורה.'
+    he: '• **לחץ על שם הכותרת** למידע על הקטגוריה.\n\n• **לחץ על הסימן (&lt; &gt;)** כדי להציג/להסתיר את כותרות השורות.\n\n• **לחץ על המעגל של כותרת שורה** כדי להציג/להסתיר את השורה.'
+  },
+  step3Title: { en: 'Header Bar', he: 'סרגל הכלים' },
+  step3Body: {
+    en: '• `zoom_in` **Zoom In** to current millennia.\n\n• `zoom_out_map` **Zoom Out** to show all 6000 years.\n\n• `today` **Calendar** shows current date without zoom change.\n\n• **HE/EN** toggle English/Hebrew.\n\n• **Clicking on app name** will open the welcome screen.',
+    he: '• `zoom_in` **התמקד** באלף הנוכחי.\n\n• `zoom_out_map` **התרחק** כדי להציג את כל 6000 השנים.\n\n• `today` **לוח שנה** מציג את התאריך הנוכחי ללא שינוי בזום.\n\n• **HE/EN** מחליף בין עברית לאנגלית.\n\n• **לחיצה על שם האפליקציה** תפתח את מסך הפתיחה.'
   }
 };
 
@@ -275,6 +282,8 @@ export function getTutorialContent(locale: Locale): {
   step1Body: string;
   step2Title: string;
   step2Body: string;
+  step3Title: string;
+  step3Body: string;
 } {
   return {
     next: tutorialContent.next[locale],
@@ -283,6 +292,8 @@ export function getTutorialContent(locale: Locale): {
     step1Body: tutorialContent.step1Body[locale],
     step2Title: tutorialContent.step2Title[locale],
     step2Body: tutorialContent.step2Body[locale],
+    step3Title: tutorialContent.step3Title[locale],
+    step3Body: tutorialContent.step3Body[locale],
   };
 }
 
@@ -298,8 +309,8 @@ export const helpContent: HelpContent = {
     he: '**גרור** שמאלה או ימינה כדי לנוע בזמן. השתמש ב**גלגלת העכבר** (או בגלילה דו-אצבעית) כדי להתקרב ולהתרחק.\n\n**לחץ** על כל פס או מעוין כדי לפתוח כרטיס פרטים על אותו אירוע או דמות.\n\nהשתמש ב**סרגל הצד** כדי להציג או להסתיר שמות קטגוריות. **לחץ** על שם קטגוריה לתיאור.',
   },
   body_mobile: {
-    en: '**Swipe** left or right to move through time. Use a **pinch gesture** to zoom in and out.\n\n**Tap** any bar or diamond marker to open a detail card for that event or figure.\n\nTap the **☰ menu** button to open the sidebar, where you can show or hide category names. **Tap** on any category name for a description.',
-    he: '**החלק** שמאלה או ימינה כדי לנוע בזמן. השתמש ב**תנועת צביטה** כדי להתקרב ולהתרחק.\n\n**הקש** על כל פס או מעוין כדי לפתוח כרטיס פרטים על אותו אירוע או דמות.\n\nהקש על כפתור **תפריט ☰** כדי לפתוח את סרגל הצד, שם תוכל להציג או להסתיר שמות קטגוריות. **הקש** על שם קטגוריה לתיאור.',
+    en: '**Swipe** left or right to move through time. Use a **pinch gesture** to zoom in and out.\n\n**Tap** any bar or diamond marker to open a detail card for that event or figure.\n\nTap the **<** carret button to hide the sidebar. **Tap** on any category name for a description.',
+    he: '**החלק** שמאלה או ימינה כדי לנוע בזמן. השתמש ב**תנועת צביטה** כדי להתקרב ולהתרחק.\n\n**הקש** על כל פס או מעוין כדי לפתוח כרטיס פרטים על אותו אירוע או דמות.\n\nהקש על כפתור **<** כדי להסתיר את סרגל הצד. **הקש** על שם קטגוריה לתיאור.',
   },
 };
 

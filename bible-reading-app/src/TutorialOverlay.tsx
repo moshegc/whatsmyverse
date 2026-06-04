@@ -9,7 +9,7 @@ interface TutorialOverlayProps {
 
 export default function TutorialOverlay({ onFinish }: TutorialOverlayProps) {
   const { locale } = useLocale();
-  const [step, setStep] = useState<1 | 2>(1);
+  const [step, setStep] = useState<1 | 2 | 3>(1);
   const content = getTutorialContent(locale);
   const isRtl = locale === 'he';
 
@@ -20,6 +20,7 @@ export default function TutorialOverlay({ onFinish }: TutorialOverlayProps) {
   const getHighlightStyle = () => {
     // Step 1: highlight event area (the track area)
     // Step 2: highlight track headers (the shell area)
+    // Step 3: highlight header bar
     if (step === 1) {
       return {
         top: `${headerHeight + axisHeight}px`,
@@ -27,13 +28,21 @@ export default function TutorialOverlay({ onFinish }: TutorialOverlayProps) {
         left: isRtl ? 0 : `${shellWidth}px`,
         right: isRtl ? `${shellWidth}px` : 0,
       };
-    } else {
+    } else if (step === 2) {
       return {
         top: `${headerHeight}px`,
         bottom: 0,
         left: isRtl ? 'auto' : 0,
         right: isRtl ? 0 : 'auto',
         width: `${shellWidth}px`,
+      };
+    } else {
+      return {
+        top: 0,
+        bottom: 'auto',
+        left: 0,
+        right: 0,
+        height: `${headerHeight}px`,
       };
     }
   };
@@ -62,7 +71,7 @@ export default function TutorialOverlay({ onFinish }: TutorialOverlayProps) {
       } else {
         return { ...baseStyle, left: '24px' };
       }
-    } else {
+    } else if (step === 2) {
       // Step 2 (Track Headers): Opposite bottom corner
       // Opposite is right in LTR, left in RTL
       if (isRtl) {
@@ -70,12 +79,23 @@ export default function TutorialOverlay({ onFinish }: TutorialOverlayProps) {
       } else {
         return { ...baseStyle, right: '24px' };
       }
+    } else {
+      // Step 3 (Header): Top center
+      return {
+        ...baseStyle,
+        bottom: 'auto',
+        top: `${headerHeight + 24}px`,
+        left: '50%',
+        transform: 'translateX(-50%)',
+      };
     }
   };
 
   const handleNext = () => {
     if (step === 1) {
       setStep(2);
+    } else if (step === 2) {
+      setStep(3);
     } else {
       onFinish();
     }
@@ -89,7 +109,7 @@ export default function TutorialOverlay({ onFinish }: TutorialOverlayProps) {
           position: 'absolute',
           ...getHighlightStyle(),
           boxShadow: '0 0 0 9999px rgba(0, 0, 0, 0.55)',
-          borderRadius: step === 1 ? '0' : '0 8px 8px 0', // just visual polish
+          borderRadius: step === 1 ? '0' : step === 2 ? '0 8px 8px 0' : '0 0 8px 8px', // just visual polish
           pointerEvents: 'none',
           transition: 'all 0.3s ease-in-out',
         }}
@@ -102,11 +122,22 @@ export default function TutorialOverlay({ onFinish }: TutorialOverlayProps) {
         style={getDialogStyle()}
       >
         <h3 style={{ margin: 0, fontSize: '20px', color: 'var(--color-primary)' }}>
-          {step === 1 ? content.step1Title : content.step2Title}
+          {step === 1 ? content.step1Title : step === 2 ? content.step2Title : content.step3Title}
         </h3>
         <div className="tutorial-body" style={{ fontSize: '15px', lineHeight: 1.6, color: '#333' }}>
-          <ReactMarkdown>
-            {step === 1 ? content.step1Body : content.step2Body}
+          <ReactMarkdown
+            components={{
+              code(props) {
+                const {children, className, node, ...rest} = props;
+                return (
+                  <span className="material-symbols-outlined" style={{ verticalAlign: 'middle', fontSize: '1.2em' }} {...rest}>
+                    {children}
+                  </span>
+                );
+              }
+            }}
+          >
+            {step === 1 ? content.step1Body : step === 2 ? content.step2Body : content.step3Body}
           </ReactMarkdown>
         </div>
         <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '8px' }}>
@@ -126,7 +157,7 @@ export default function TutorialOverlay({ onFinish }: TutorialOverlayProps) {
             onMouseOver={(e) => (e.currentTarget.style.backgroundColor = '#2a4a7f')}
             onMouseOut={(e) => (e.currentTarget.style.backgroundColor = 'var(--color-primary)')}
           >
-            {step === 1 ? content.next : content.done}
+            {step === 3 ? content.done : content.next}
           </button>
         </div>
       </div>
