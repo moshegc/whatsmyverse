@@ -1,6 +1,6 @@
 // src/App.tsx
 
-import { useState, useCallback, useRef, useEffect } from 'react';
+import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import { CanvasTimeline, type CanvasTimelineHandle } from './canvas-timeline';
 import HeaderBar from './HeaderBar';
 import { useLocale } from './LocaleContext';
@@ -20,6 +20,7 @@ function App() {
   const [isZoomedOut, setIsZoomedOut] = useState(true);
   const [showWelcome, setShowWelcome] = useState(shouldShowWelcome);
   const [showTutorial, setShowTutorial] = useState(false);
+  const [tutorialStep, setTutorialStep] = useState(1);
 
   type InfoCardState =
     | null
@@ -94,6 +95,14 @@ function App() {
     };
   })();
 
+  const effectiveCollapsedGroups = useMemo(() => {
+    if (showTutorial && tutorialStep === 4) {
+      const historyIds = historicalEventCategories.map((c) => c.id);
+      return new Set([...collapsedGroups, ...historyIds]);
+    }
+    return collapsedGroups;
+  }, [collapsedGroups, showTutorial, tutorialStep]);
+
   return (
     <div
       style={{ height: '100%', width: '100%', display: 'flex', flexDirection: 'column' }}
@@ -103,7 +112,7 @@ function App() {
       <div className="main-content">
         <CanvasTimeline
           ref={canvasTimelineRef}
-          collapsedGroups={collapsedGroups}
+          collapsedGroups={effectiveCollapsedGroups}
           onToggleGroup={handleToggleGroup}
           onHeaderVisibilityChange={setHeaderVisible}
           onZoomChange={setIsZoomedOut}
@@ -117,10 +126,11 @@ function App() {
           onStartTutorial={() => {
             setShowWelcome(false);
             setShowTutorial(true);
+            setTutorialStep(1);
           }}
         />
       )}
-      {showTutorial && <TutorialOverlay onFinish={() => setShowTutorial(false)} />}
+      {showTutorial && <TutorialOverlay onFinish={() => setShowTutorial(false)} onStepChange={setTutorialStep} />}
       {infoCard && infoCardProps && (
         <InfoCard
           key={infoCard.kind === 'series' ? infoCard.groupId : infoCard.section}

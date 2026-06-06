@@ -39,6 +39,8 @@ interface TutorialContent {
   step2Body: BilingualText;
   step3Title: BilingualText;
   step3Body: BilingualText;
+  step4Title: BilingualText;
+  step4Body: BilingualText;
 }
 
 interface HelpContent {
@@ -90,6 +92,11 @@ export const tutorialContent: TutorialContent = {
   step3Body: {
     en: '• `zoom_in` **Zoom In** to current millennia.\n\n• `zoom_out_map` **Zoom Out** to show all 6000 years.\n\n• `today` **Calendar** shows current date without zoom change.\n\n• **HE/EN** toggle English/Hebrew.\n\n• **Clicking on app name** will open the welcome screen.',
     he: '• `zoom_in` **התמקד** באלף הנוכחי.\n\n• `zoom_out_map` **התרחק** כדי להציג את כל 6000 השנים.\n\n• `today` **לוח שנה** מציג את התאריך הנוכחי ללא שינוי בזום.\n\n• **HE/EN** מחליף בין עברית לאנגלית.\n\n• **לחיצה על שם האפליקציה** תפתח את מסך הפתיחה.'
+  },
+  step4Title: { en: 'Verses Area', he: 'אזור הפסוקים' },
+  step4Body: {
+    en: '• **Scroll down** to see Bible verses mapped to historical years.\n\n• **Click a verse** to read it.\n\n• Verses are shown aligned to their corresponding year in history.',
+    he: '• **גלול מטה** כדי לראות פסוקי תנ״ך ממופים לשנים היסטוריות.\n\n• **לחץ על פסוק** כדי לקרוא אותו.\n\n• הפסוקים מוצגים בקו אחד עם השנה התואמת להם בהיסטוריה.'
   }
 };
 
@@ -284,6 +291,8 @@ export function getTutorialContent(locale: Locale): {
   step2Body: string;
   step3Title: string;
   step3Body: string;
+  step4Title: string;
+  step4Body: string;
 } {
   return {
     next: tutorialContent.next[locale],
@@ -294,6 +303,8 @@ export function getTutorialContent(locale: Locale): {
     step2Body: tutorialContent.step2Body[locale],
     step3Title: tutorialContent.step3Title[locale],
     step3Body: tutorialContent.step3Body[locale],
+    step4Title: tutorialContent.step4Title[locale],
+    step4Body: tutorialContent.step4Body[locale],
   };
 }
 
