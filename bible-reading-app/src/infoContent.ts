@@ -41,6 +41,8 @@ interface TutorialContent {
   step3Body: BilingualText;
   step4Title: BilingualText;
   step4Body: BilingualText;
+  step5Title: BilingualText;
+  step5Body: BilingualText;
 }
 
 interface HelpContent {
@@ -97,6 +99,11 @@ export const tutorialContent: TutorialContent = {
   step4Body: {
     en: '• **Scroll down** to see Bible verses mapped to historical years.\n\n• **Click a verse** to read it.\n\n• Verses are shown aligned to their corresponding year in history.',
     he: '• **גלול מטה** כדי לראות פסוקי תנ״ך ממופים לשנים היסטוריות.\n\n• **לחץ על פסוק** כדי לקרוא אותו.\n\n• הפסוקים מוצגים בקו אחד עם השנה התואמת להם בהיסטוריה.'
+  },
+  step5Title: { en: 'Date Bar', he: 'סרגל התאריכים' },
+  step5Body: {
+    en: '• The **Gregorian date** is displayed on top.\n\n• The **Hebrew year** is displayed on the bottom as a number.',
+    he: '• ה**תאריך הלועזי** מוצג למעלה.\n\n• **השנה העברית** מוצגת למטה בגימטריה ובסוגריים כמספר.'
   }
 };
 
@@ -293,6 +300,8 @@ export function getTutorialContent(locale: Locale): {
   step3Body: string;
   step4Title: string;
   step4Body: string;
+  step5Title: string;
+  step5Body: string;
 } {
   return {
     next: tutorialContent.next[locale],
@@ -305,6 +314,8 @@ export function getTutorialContent(locale: Locale): {
     step3Body: tutorialContent.step3Body[locale],
     step4Title: tutorialContent.step4Title[locale],
     step4Body: tutorialContent.step4Body[locale],
+    step5Title: tutorialContent.step5Title[locale],
+    step5Body: tutorialContent.step5Body[locale],
   };
 }
 

@@ -11,7 +11,7 @@ interface TutorialOverlayProps {
 
 export default function TutorialOverlay({ onFinish, onStepChange }: TutorialOverlayProps) {
   const { locale } = useLocale();
-  const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
+  const [step, setStep] = useState<1 | 2 | 3 | 4 | 5>(1);
   const content = getTutorialContent(locale);
   const isRtl = locale === 'he';
 
@@ -67,6 +67,14 @@ export default function TutorialOverlay({ onFinish, onStepChange }: TutorialOver
         bottom: 0,
         left: 0,
         right: 0,
+      };
+    } else if (step === 5) {
+      return {
+        top: `${headerHeight}px`,
+        bottom: 'auto',
+        left: isRtl ? 0 : `${shellWidth}px`,
+        right: isRtl ? `${shellWidth}px` : 0,
+        height: `${axisHeight}px`,
       };
     } else if (step === 2) {
       return {
@@ -125,6 +133,23 @@ export default function TutorialOverlay({ onFinish, onStepChange }: TutorialOver
       } else {
         return { ...baseStyle, right: '24px' };
       }
+    } else if (step === 5) {
+      // Step 5 (Date Bar): Top right, just below the date bar
+      if (isRtl) {
+        return {
+          ...baseStyle,
+          bottom: 'auto',
+          top: `${headerHeight + 24}px`,
+          right: '24px',
+        };
+      } else {
+        return {
+          ...baseStyle,
+          bottom: 'auto',
+          top: `${headerHeight + 24}px`,
+          left: '24px',
+        };
+      }
     } else {
       // Step 3 (Header): Top center
       return {
@@ -153,6 +178,8 @@ export default function TutorialOverlay({ onFinish, onStepChange }: TutorialOver
       setStep(3);
     } else if (step === 3) {
       setStep(4);
+    } else if (step === 4) {
+      setStep(5);
     } else {
       onFinish();
     }
@@ -166,7 +193,7 @@ export default function TutorialOverlay({ onFinish, onStepChange }: TutorialOver
           position: 'absolute',
           ...getHighlightStyle(),
           boxShadow: '0 0 0 9999px rgba(0, 0, 0, 0.55)',
-          borderRadius: step === 1 || step === 4 ? '0' : step === 2 ? '0 8px 8px 0' : '0 0 8px 8px', // just visual polish
+          borderRadius: step === 1 || step === 4 || step === 5 ? '0' : step === 2 ? '0 8px 8px 0' : '0 0 8px 8px', // just visual polish
           pointerEvents: 'none',
           transition: 'all 0.3s ease-in-out',
         }}
@@ -179,7 +206,7 @@ export default function TutorialOverlay({ onFinish, onStepChange }: TutorialOver
         style={getDialogStyle()}
       >
         <h3 style={{ margin: 0, fontSize: '20px', color: 'var(--color-primary)', flexShrink: 0 }}>
-          {step === 1 ? content.step1Title : step === 2 ? content.step2Title : step === 3 ? content.step3Title : content.step4Title}
+          {step === 1 ? content.step1Title : step === 2 ? content.step2Title : step === 3 ? content.step3Title : step === 4 ? content.step4Title : content.step5Title}
         </h3>
         <div 
           className="tutorial-body" 
@@ -199,7 +226,7 @@ export default function TutorialOverlay({ onFinish, onStepChange }: TutorialOver
               }
             }}
           >
-            {step === 1 ? content.step1Body : step === 2 ? content.step2Body : step === 3 ? content.step3Body : content.step4Body}
+            {step === 1 ? content.step1Body : step === 2 ? content.step2Body : step === 3 ? content.step3Body : step === 4 ? content.step4Body : content.step5Body}
           </ReactMarkdown>
         </div>
         <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '8px', flexShrink: 0 }}>
@@ -219,7 +246,7 @@ export default function TutorialOverlay({ onFinish, onStepChange }: TutorialOver
             onMouseOver={(e) => (e.currentTarget.style.backgroundColor = '#2a4a7f')}
             onMouseOut={(e) => (e.currentTarget.style.backgroundColor = 'var(--color-primary)')}
           >
-            {step === 4 && isAtBottom ? content.done : content.next}
+            {step === 5 && isAtBottom ? content.done : content.next}
           </button>
         </div>
       </div>
