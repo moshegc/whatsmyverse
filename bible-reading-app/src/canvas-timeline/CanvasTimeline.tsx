@@ -273,6 +273,7 @@ const CanvasTimeline = forwardRef<CanvasTimelineHandle, CanvasTimelineProps>(
 
   // Mouse drag state (desktop pan)
   const mouseDragRef = useRef<{ startX: number; startWindow: VisibleWindow } | null>(null);
+  const isDraggingRef = useRef(false);
 
   // ── State ──────────────────────────────────────────────────────────────────
   const [visibleWindow, setVisibleWindowState] = useState<VisibleWindow>(INITIAL_WINDOW);
@@ -700,6 +701,7 @@ const CanvasTimeline = forwardRef<CanvasTimelineHandle, CanvasTimelineProps>(
       const target = document.elementFromPoint(e.clientX, e.clientY);
       if (target?.closest('.detail-card')) return;
       mouseDragRef.current = { startX: e.clientX, startWindow: { ...windowRef.current } };
+      isDraggingRef.current = false;
       el.style.cursor = 'grabbing';
       e.preventDefault();
     };
@@ -707,12 +709,18 @@ const CanvasTimeline = forwardRef<CanvasTimelineHandle, CanvasTimelineProps>(
     const onMouseMove = (e: MouseEvent) => {
       const drag = mouseDragRef.current;
       if (!drag) return;
+      
+      const dx = e.clientX - drag.startX;
+      if (Math.abs(dx) > 3) {
+        isDraggingRef.current = true;
+      }
+
       const isRtl = locale === 'he';
       const sw = animatedShellWidthRef.current;
       const totalSw = sw + SECTION_COL_WIDTH;
       const trackAreaWidth = el.clientWidth - totalSw;
       if (trackAreaWidth <= 0) return;
-      const dx = e.clientX - drag.startX;
+      
       const msPerPx = (drag.startWindow.end - drag.startWindow.start) / trackAreaWidth;
       const sign = isRtl ? 1 : -1;
       const deltaMs = sign * dx * msPerPx;
@@ -737,6 +745,11 @@ const CanvasTimeline = forwardRef<CanvasTimelineHandle, CanvasTimelineProps>(
 
   // ── Click → hit test + shell toggle ─────────────────────────────────────────
   const handleClick = useCallback((e: React.MouseEvent) => {
+    if (isDraggingRef.current) {
+      // The drag ended, reset flag and skip hit test
+      isDraggingRef.current = false;
+      return;
+    }
 
     const outer = outerRef.current;
     const container = scrollContainerRef.current;
