@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { useLocale } from './LocaleContext';
-import { getTutorialContent } from './infoContent';
+import { getTutorialContent, tutorialStepOrder } from './infoContent';
 import { historicalEventCategories } from './historicalEvents';
 
 interface TutorialOverlayProps {
@@ -11,13 +11,19 @@ interface TutorialOverlayProps {
 
 export default function TutorialOverlay({ onFinish, onStepChange }: TutorialOverlayProps) {
   const { locale } = useLocale();
-  const [step, setStep] = useState<1 | 2 | 3 | 4 | 5>(1);
-  const content = getTutorialContent(locale);
+  const [stepIndex, setStepIndex] = useState(0);
+  const currentStepName = tutorialStepOrder[stepIndex];
   const isRtl = locale === 'he';
 
   const bodyRef = useRef<HTMLDivElement>(null);
   const [canScroll, setCanScroll] = useState(false);
   const [isAtBottom, setIsAtBottom] = useState(true);
+  const [isMobile, setIsMobile] = useState(
+    typeof window !== 'undefined' && 
+    (window.innerWidth < 768 || window.matchMedia('(orientation: landscape) and (max-height: 500px)').matches)
+  );
+
+  const content = getTutorialContent(locale, isMobile);
 
   const checkScroll = useCallback(() => {
     if (bodyRef.current) {
@@ -29,7 +35,7 @@ export default function TutorialOverlay({ onFinish, onStepChange }: TutorialOver
   }, []);
 
   useEffect(() => {
-    onStepChange?.(step);
+    onStepChange?.(stepIndex + 1);
     // Reset scroll when step changes
     if (bodyRef.current) {
       bodyRef.current.scrollTop = 0;
@@ -37,54 +43,58 @@ export default function TutorialOverlay({ onFinish, onStepChange }: TutorialOver
     // Check scroll after a short delay to allow content to render
     const timer = setTimeout(checkScroll, 50);
     return () => clearTimeout(timer);
-  }, [step, onStepChange, checkScroll]);
+  }, [stepIndex, onStepChange, checkScroll]);
 
   useEffect(() => {
-    window.addEventListener('resize', checkScroll);
-    return () => window.removeEventListener('resize', checkScroll);
+    const handleResize = () => {
+      setIsMobile(
+        typeof window !== 'undefined' && 
+        (window.innerWidth < 768 || window.matchMedia('(orientation: landscape) and (max-height: 500px)').matches)
+      );
+      checkScroll();
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
   }, [checkScroll]);
 
+  const sidebarMargin = isMobile ? 0 : 48; // 48px is var(--sidebar-collapsed)
   const shellWidth = 212; // 192 (shell) + 20 (section header col)
   const headerHeight = 60; // approximate HeaderBar height
   const axisHeight = 60; // fixed CanvasTimeline axis strip height
   const collapsedHistoryHeight = historicalEventCategories.length * 18; // 18px is COLLAPSED_TRACK_HEIGHT
 
   const getHighlightStyle = () => {
-    // Step 1: highlight event area (the track area)
-    // Step 2: highlight track headers (the shell area)
-    // Step 3: highlight header bar
-    // Step 4: highlight verses area (entire width, but starting below the collapsed history tracks)
-    if (step === 1) {
+    if (currentStepName === 'eventArea') {
       return {
         top: `${headerHeight + axisHeight}px`,
         bottom: 0,
-        left: isRtl ? 0 : `${shellWidth}px`,
-        right: isRtl ? `${shellWidth}px` : 0,
+        left: isRtl ? 0 : `${sidebarMargin + shellWidth}px`,
+        right: isRtl ? `${sidebarMargin + shellWidth}px` : 0,
       };
-    } else if (step === 4) {
+    } else if (currentStepName === 'versesArea') {
       return {
         top: `${headerHeight + axisHeight + collapsedHistoryHeight}px`,
         bottom: 0,
-        left: 0,
-        right: 0,
+        left: isRtl ? 0 : `${sidebarMargin}px`,
+        right: isRtl ? `${sidebarMargin}px` : 0,
       };
-    } else if (step === 5) {
+    } else if (currentStepName === 'dateBar') {
       return {
         top: `${headerHeight}px`,
         bottom: 'auto',
-        left: isRtl ? 0 : `${shellWidth}px`,
-        right: isRtl ? `${shellWidth}px` : 0,
+        left: isRtl ? 0 : `${sidebarMargin + shellWidth}px`,
+        right: isRtl ? `${sidebarMargin + shellWidth}px` : 0,
         height: `${axisHeight}px`,
       };
-    } else if (step === 2) {
+    } else if (currentStepName === 'trackHeaders') {
       return {
         top: `${headerHeight}px`,
         bottom: 0,
-        left: isRtl ? 'auto' : 0,
-        right: isRtl ? 0 : 'auto',
+        left: isRtl ? 'auto' : `${sidebarMargin}px`,
+        right: isRtl ? `${sidebarMargin}px` : 'auto',
         width: `${shellWidth}px`,
       };
-    } else {
+    } else { // headerBar
       return {
         top: 0,
         bottom: 'auto',
@@ -112,46 +122,41 @@ export default function TutorialOverlay({ onFinish, onStepChange }: TutorialOver
       bottom: '24px',
     };
 
-    if (step === 1) {
-      // Step 1 (Event Area): Over the shell (bottom start)
+    if (currentStepName === 'eventArea') {
       if (isRtl) {
-        return { ...baseStyle, right: '24px' };
+        return { ...baseStyle, right: `${sidebarMargin + 24}px` };
       } else {
-        return { ...baseStyle, left: '24px' };
+        return { ...baseStyle, left: `${sidebarMargin + 24}px` };
       }
-    } else if (step === 4) {
-      // Step 4 (Verses Area): Top start (over the dimmed history area)
+    } else if (currentStepName === 'versesArea') {
       if (isRtl) {
-        return { ...baseStyle, top: `${headerHeight + 24}px`, bottom: 'auto', right: '24px' };
+        return { ...baseStyle, top: `${headerHeight + 24}px`, bottom: 'auto', right: `${sidebarMargin + 24}px` };
       } else {
-        return { ...baseStyle, top: `${headerHeight + 24}px`, bottom: 'auto', left: '24px' };
+        return { ...baseStyle, top: `${headerHeight + 24}px`, bottom: 'auto', left: `${sidebarMargin + 24}px` };
       }
-    } else if (step === 2) {
-      // Step 2 (Track Headers): Opposite bottom corner
+    } else if (currentStepName === 'trackHeaders') {
       if (isRtl) {
         return { ...baseStyle, left: '24px' };
       } else {
         return { ...baseStyle, right: '24px' };
       }
-    } else if (step === 5) {
-      // Step 5 (Date Bar): Top right, just below the date bar
+    } else if (currentStepName === 'dateBar') {
       if (isRtl) {
         return {
           ...baseStyle,
           bottom: 'auto',
           top: `${headerHeight + 24}px`,
-          right: '24px',
+          right: `${sidebarMargin + 24}px`,
         };
       } else {
         return {
           ...baseStyle,
           bottom: 'auto',
           top: `${headerHeight + 24}px`,
-          left: '24px',
+          left: `${sidebarMargin + 24}px`,
         };
       }
-    } else {
-      // Step 3 (Header): Top center
+    } else { // headerBar
       return {
         ...baseStyle,
         bottom: 'auto',
@@ -172,18 +177,15 @@ export default function TutorialOverlay({ onFinish, onStepChange }: TutorialOver
       return;
     }
 
-    if (step === 1) {
-      setStep(2);
-    } else if (step === 2) {
-      setStep(3);
-    } else if (step === 3) {
-      setStep(4);
-    } else if (step === 4) {
-      setStep(5);
+    if (stepIndex < tutorialStepOrder.length - 1) {
+      setStepIndex(stepIndex + 1);
     } else {
       onFinish();
     }
   };
+
+  const isLastStep = stepIndex === tutorialStepOrder.length - 1;
+  const currentStepContent = content.steps[currentStepName];
 
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 9999, pointerEvents: 'auto' }}>
@@ -193,7 +195,7 @@ export default function TutorialOverlay({ onFinish, onStepChange }: TutorialOver
           position: 'absolute',
           ...getHighlightStyle(),
           boxShadow: '0 0 0 9999px rgba(0, 0, 0, 0.55)',
-          borderRadius: step === 1 || step === 4 || step === 5 ? '0' : step === 2 ? '0 8px 8px 0' : '0 0 8px 8px', // just visual polish
+          borderRadius: currentStepName === 'eventArea' || currentStepName === 'versesArea' || currentStepName === 'dateBar' ? '0' : currentStepName === 'trackHeaders' ? '0 8px 8px 0' : '0 0 8px 8px', // just visual polish
           pointerEvents: 'none',
           transition: 'all 0.3s ease-in-out',
         }}
@@ -206,7 +208,7 @@ export default function TutorialOverlay({ onFinish, onStepChange }: TutorialOver
         style={getDialogStyle()}
       >
         <h3 style={{ margin: 0, fontSize: '20px', color: 'var(--color-primary)', flexShrink: 0 }}>
-          {step === 1 ? content.step1Title : step === 2 ? content.step2Title : step === 3 ? content.step3Title : step === 4 ? content.step4Title : content.step5Title}
+          {currentStepContent.title}
         </h3>
         <div 
           className="tutorial-body" 
@@ -226,7 +228,7 @@ export default function TutorialOverlay({ onFinish, onStepChange }: TutorialOver
               }
             }}
           >
-            {step === 1 ? content.step1Body : step === 2 ? content.step2Body : step === 3 ? content.step3Body : step === 4 ? content.step4Body : content.step5Body}
+            {currentStepContent.body}
           </ReactMarkdown>
         </div>
         <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '8px', flexShrink: 0 }}>
@@ -246,7 +248,7 @@ export default function TutorialOverlay({ onFinish, onStepChange }: TutorialOver
             onMouseOver={(e) => (e.currentTarget.style.backgroundColor = '#2a4a7f')}
             onMouseOut={(e) => (e.currentTarget.style.backgroundColor = 'var(--color-primary)')}
           >
-            {step === 5 && isAtBottom ? content.done : content.next}
+            {isLastStep && isAtBottom ? content.done : content.next}
           </button>
         </div>
       </div>

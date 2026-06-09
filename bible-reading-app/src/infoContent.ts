@@ -30,19 +30,27 @@ interface WelcomeContent {
   skip: BilingualText;
 }
 
+export type TutorialStepName = 'dateBar' | 'trackHeaders' | 'eventArea' | 'versesArea' | 'headerBar';
+
+export const tutorialStepOrder: TutorialStepName[] = [
+  'dateBar',
+  'trackHeaders',
+  'eventArea',
+  'versesArea',
+  'headerBar'
+];
+
+interface TutorialStepContent {
+  title: BilingualText;
+  body?: BilingualText;
+  body_desktop?: BilingualText;
+  body_mobile?: BilingualText;
+}
+
 interface TutorialContent {
   next: BilingualText;
   done: BilingualText;
-  step1Title: BilingualText;
-  step1Body: BilingualText;
-  step2Title: BilingualText;
-  step2Body: BilingualText;
-  step3Title: BilingualText;
-  step3Body: BilingualText;
-  step4Title: BilingualText;
-  step4Body: BilingualText;
-  step5Title: BilingualText;
-  step5Body: BilingualText;
+  steps: Record<TutorialStepName, TutorialStepContent>;
 }
 
 interface HelpContent {
@@ -80,30 +88,46 @@ export const welcomeContent: WelcomeContent = {
 export const tutorialContent: TutorialContent = {
   next: { en: 'Next', he: 'הבא' },
   done: { en: 'Done', he: 'סיום' },
-  step1Title: { en: 'Event Area', he: 'אזור האירועים' },
-  step1Body: {
-    en: '• **Pinch zoom and scroll** to navigate through time.\n\n• **Click on any event** for detailed information.\n\n• Singular events are shown as diamonds, while spanning events are bars.',
-    he: '• **צבוט או גלול** כדי לנווט בזמן.\n\n• **לחץ על כל אירוע** לקבלת מידע מפורט.\n\n• אירועים נקודתיים מוצגים כמעוינים, ואירועים מתמשכים כפסים.'
-  },
-  step2Title: { en: 'Track Headers', he: 'כותרות הפסים' },
-  step2Body: {
-    en: '• **Click on a header name** for information about the category.\n\n• **Click the caret (&lt; &gt;)** to show/hide the track headers.\n\n• **Click on a track circle** to show/hide the track.',
-    he: '• **לחץ על שם הכותרת** למידע על הקטגוריה.\n\n• **לחץ על הסימן (&lt; &gt;)** כדי להציג/להסתיר את כותרות השורות.\n\n• **לחץ על המעגל של כותרת שורה** כדי להציג/להסתיר את השורה.'
-  },
-  step3Title: { en: 'Header Bar', he: 'סרגל הכלים' },
-  step3Body: {
-    en: '• `zoom_in` **Zoom In** to current millennia.\n\n• `zoom_out_map` **Zoom Out** to show all 6000 years.\n\n• `today` **Calendar** shows current date without zoom change.\n\n• **HE/EN** toggle English/Hebrew.\n\n• **Clicking on app name** will open the welcome screen.',
-    he: '• `zoom_in` **התמקד** באלף הנוכחי.\n\n• `zoom_out_map` **התרחק** כדי להציג את כל 6000 השנים.\n\n• `today` **לוח שנה** מציג את התאריך הנוכחי ללא שינוי בזום.\n\n• **HE/EN** מחליף בין עברית לאנגלית.\n\n• **לחיצה על שם האפליקציה** תפתח את מסך הפתיחה.'
-  },
-  step4Title: { en: 'Verses Area', he: 'אזור הפסוקים' },
-  step4Body: {
-    en: '• **Scroll down** to see Bible verses mapped to historical years.\n\n• **Click a verse** to read it.\n\n• Verses are shown aligned to their corresponding year in history.',
-    he: '• **גלול מטה** כדי לראות פסוקי תנ״ך ממופים לשנים היסטוריות.\n\n• **לחץ על פסוק** כדי לקרוא אותו.\n\n• הפסוקים מוצגים בקו אחד עם השנה התואמת להם בהיסטוריה.'
-  },
-  step5Title: { en: 'Date Bar', he: 'סרגל התאריכים' },
-  step5Body: {
-    en: '• The **Gregorian date** is displayed on top.\n\n• The **Hebrew year** is displayed on the bottom as a number.',
-    he: '• ה**תאריך הלועזי** מוצג למעלה.\n\n• **השנה העברית** מוצגת למטה בגימטריה ובסוגריים כמספר.'
+  steps: {
+    eventArea: {
+      title: { en: 'Event Area', he: 'אזור האירועים' },
+      body_mobile: {
+        en: '• **Pinch zoom and swipe** to navigate through time.\n\n• **Tap on any event** for detailed information.\n\n• Singular events are shown as diamonds, while spanning events are bars.',
+        he: '• **צבוט והחלק** כדי לנווט בזמן.\n\n• **הקש על כל אירוע** לקבלת מידע מפורט.\n\n• אירועים נקודתיים מוצגים כמעוינים, ואירועים מתמשכים כפסים.'
+      },
+      body_desktop: {
+        en: '• **Use the mouse wheel to zoom and click+drag** to scroll through time.\n\n• **Click on any event** for detailed information.\n\n• Singular events are shown as diamonds, while spanning events are bars.',
+        he: '• **השתמש בגלגלת העכבר כדי להתקרב ובלחיצה+גרירה** כדי לגלול בזמן.\n\n• **לחץ על כל אירוע** לקבלת מידע מפורט.\n\n• אירועים נקודתיים מוצגים כמעוינים, ואירועים מתמשכים כפסים.'
+      }
+    },
+    trackHeaders: {
+      title: { en: 'Track Headers', he: 'כותרות הפסים' },
+      body: {
+        en: '• **Click on a header name** for information about the category.\n\n• **Click the caret (&lt; &gt;)** to show/hide the track headers.\n\n• **Click on a track circle** to show/hide the track.',
+        he: '• **לחץ על שם הכותרת** למידע על הקטגוריה.\n\n• **לחץ על הסימן (&lt; &gt;)** כדי להציג/להסתיר את כותרות השורות.\n\n• **לחץ על המעגל של כותרת שורה** כדי להציג/להסתיר את השורה.'
+      }
+    },
+    headerBar: {
+      title: { en: 'Header Bar', he: 'סרגל הכלים' },
+      body: {
+        en: '• `zoom_in` **Zoom In** to current millennia.\n\n• `zoom_out_map` **Zoom Out** to show all 6000 years.\n\n• `today` **Calendar** shows current date without zoom change.\n\n• **HE/EN** toggle English/Hebrew.\n\n• **Clicking on app name** will open the welcome screen.',
+        he: '• `zoom_in` **התמקד** באלף הנוכחי.\n\n• `zoom_out_map` **התרחק** כדי להציג את כל 6000 השנים.\n\n• `today` **לוח שנה** מציג את התאריך הנוכחי ללא שינוי בזום.\n\n• **HE/EN** מחליף בין עברית לאנגלית.\n\n• **לחיצה על שם האפליקציה** תפתח את מסך הפתיחה.'
+      }
+    },
+    versesArea: {
+      title: { en: 'Verses Area', he: 'אזור הפסוקים' },
+      body: {
+        en: '• **Scroll down** to see Bible verses mapped to historical years.\n\n• **Click a verse** to read it.\n\n• Verses are shown aligned to their corresponding year in history.',
+        he: '• **גלול מטה** כדי לראות פסוקי תנ״ך ממופים לשנים היסטוריות.\n\n• **לחץ על פסוק** כדי לקרוא אותו.\n\n• הפסוקים מוצגים בקו אחד עם השנה התואמת להם בהיסטוריה.'
+      }
+    },
+    dateBar: {
+      title: { en: 'Date Bar', he: 'סרגל התאריכים' },
+      body: {
+        en: '• The **Gregorian date** is displayed on top.\n\n• The **Hebrew year** is displayed on the bottom as a number.',
+        he: '• ה**תאריך הלועזי** מוצג למעלה.\n\n• **השנה העברית** מוצגת למטה בגימטריה ובסוגריים כמספר.'
+      }
+    }
   }
 };
 
@@ -289,33 +313,33 @@ export function getWelcomeContent(locale: Locale): {
   };
 }
 
-export function getTutorialContent(locale: Locale): {
+export function getTutorialContent(locale: Locale, isMobile: boolean = false): {
   next: string;
   done: string;
-  step1Title: string;
-  step1Body: string;
-  step2Title: string;
-  step2Body: string;
-  step3Title: string;
-  step3Body: string;
-  step4Title: string;
-  step4Body: string;
-  step5Title: string;
-  step5Body: string;
+  steps: Record<TutorialStepName, { title: string; body: string }>;
 } {
+  const steps: any = {};
+  for (const key of tutorialStepOrder) {
+    const stepData = tutorialContent.steps[key];
+    let bodyText = '';
+    if (stepData.body_mobile && isMobile) {
+      bodyText = stepData.body_mobile[locale] || '';
+    } else if (stepData.body_desktop && !isMobile) {
+      bodyText = stepData.body_desktop[locale] || '';
+    } else if (stepData.body) {
+      bodyText = stepData.body[locale] || '';
+    }
+
+    steps[key] = {
+      title: stepData.title[locale],
+      body: bodyText
+    };
+  }
+
   return {
     next: tutorialContent.next[locale],
     done: tutorialContent.done[locale],
-    step1Title: tutorialContent.step1Title[locale],
-    step1Body: tutorialContent.step1Body[locale],
-    step2Title: tutorialContent.step2Title[locale],
-    step2Body: tutorialContent.step2Body[locale],
-    step3Title: tutorialContent.step3Title[locale],
-    step3Body: tutorialContent.step3Body[locale],
-    step4Title: tutorialContent.step4Title[locale],
-    step4Body: tutorialContent.step4Body[locale],
-    step5Title: tutorialContent.step5Title[locale],
-    step5Body: tutorialContent.step5Body[locale],
+    steps: steps as Record<TutorialStepName, { title: string; body: string }>
   };
 }
 

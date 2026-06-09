@@ -57,9 +57,10 @@ function LanguageToggle({ locale, onToggle }: { locale: Locale; onToggle: () => 
       </button>
       <button
         className={`lang-toggle-btn ${locale === 'he' ? 'active' : ''}`}
+        style={{ fontSize: '15px', fontWeight: 'bold' }}
         onClick={() => locale !== 'he' && onToggle()}
       >
-        HE
+        עב
       </button>
     </div>
   );
