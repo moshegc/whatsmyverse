@@ -17,6 +17,11 @@ const HeaderBar = ({ onZoomToggle, isZoomedOut, onJumpToToday, onTitleClick, vis
   return (
     <header className={`header-bar${visible ? '' : ' header-hidden'}`}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+        <img 
+          src="/timeline_app.png" 
+          alt="Hebrew History Timeline" 
+          style={{ height: '32px', width: '32px', objectFit: 'contain', borderRadius: '4px' }} 
+        />
         <h1
           className="header-title"
           onClick={onTitleClick}
