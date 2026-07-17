@@ -202,6 +202,14 @@ export const historicalEventCategories: HistoricalEventCategory[] = [
     csvFile: '/data/history/bible-books.csv',
   },
   {
+    id: 'hebrew-ages',
+    name: 'Hebrew Ages',
+    nameHe: 'תקופות עבריות',
+    color: '#f39c12',
+    order: 35,
+    csvFile: '/data/history/jewish-ages.csv',
+  },
+  {
     id: 'land-of-israel',
     name: 'Rulers of the Land of Israel',
     nameHe: 'שליטי ארץ ישראל',

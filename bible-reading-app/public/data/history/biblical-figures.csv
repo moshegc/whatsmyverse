@@ -24,8 +24,9 @@ figure-isaac,Isaac,יצחק,2048,2228,Isaac – lived 180 years (Genesis 35:28),
 figure-jacob,Jacob,יעקב,2108,2255,Jacob – lived 147 years (Genesis 47:28),יעקב – חי 147 שנה (בראשית מז:כח)
 figure-joseph,Joseph,יוסף,2199,2309,Joseph – lived 110 years (Genesis 50:26),יוסף – חי 110 שנה (בראשית נ:כו)
 figure-moses,Moses,משה,7 Adar 2368,7 Adar 2488,Moses – lived 120 years (Deuteronomy 34:7),משה – חי 120 שנה (דברים לד:ז)
-figure-aaron,Aaron,אהרן,2365,1 Av 2487,Aaron – lived 123 years (Numbers 33:39),אהרן – חי 123 שנה (במדבר לג:לט)
+figure-aaron,Aaron,אהרן,2364,1 Av 2487,Aaron – lived 123 years (Numbers 33:39),אהרן – חי 123 שנה (במדבר לג:לט)
 figure-joshua,Joshua,יהושע,2406,2516,Joshua – lived 110 years (Joshua 24:29),יהושע – חי 110 שנה (יהושע כד:כט)
+figure-samuel,Prophet Samuel,שמואל הנביא,2831,2884,Samuel – lived 54 years (1 Samuel 25:1),שמואל – חי 54 שנה (שמואל א כה:א)
 figure-david,King David,דוד המלך,2854,2924,King David – lived 70 years (2 Samuel 5:4),דוד המלך – חי 70 שנה (שמואל ב ה:ד)
 figure-solomon,King Solomon,שלמה המלך,2912,2964,King Solomon – reigned 40 years (1 Kings 11:42),שלמה המלך – מלך 40 שנה (מלכים א יא:מב)
 figure-isaiah,Prophet Isaiah,הנביא ישעיהו,3140,3230,Prophet Isaiah lived during the first temple,הנביא ישעיהו חי בתקופת בית ראשון
@@ -41,13 +42,16 @@ figure-yochanan,Rav Yochanan bar Nappacha,רבי יוחנן בר נפחא,3940,4
 figure-abaye,Abaye,אביי,4038,4098,Abaye – fourth-generation Babylonian Amora; his debates with Rava are central to the Talmud,אביי – אמורא בבלי דור רביעי; ויכוחיו עם רבא מרכזיים בתלמוד
 figure-rava,Rava,רבא,4059,4112,Rava – fourth-generation Babylonian Amora; halachic decisions follow him in most disputes with Abaye,רבא – אמורא בבלי דור רביעי; הלכה כרבא בעיקר ויכוחיו עם אביי
 figure-rav-ashi,Rav Ashi,רב אשי,4112,4187,Rav Ashi – leading Amora; primary compiler of the Babylonian Talmud,רב אשי – אמורא מרכזי; עורך עיקרי של התלמוד הבבלי
-figure-rashi,Rashi,רשי,1 Tishrei 4800,1 Tishrei 4865,Rashi (Rabbi Shlomo Yitzchaki, 1040–1105) – foremost commentator on the Torah and Talmud,רשי (רבי שלמה יצחקי,,1040–1105) – פרשן עיקרי על התורה והתלמוד,,
-figure-rambam,Rambam,רמבם,1 Tishrei 4895,1 Tishrei 4964,Rambam (Maimonides, Rabbi Moshe ben Maimon, 1135–1204) – philosopher; author of Mishneh Torah and Guide for the Perplexed,רמבם (רבי משה בן מיימון,,1135–1204) – פילוסוף; חיבר משנה תורה ומורה נבוכים,,
-figure-ramban,Ramban,רמבן,1 Tishrei 4954,1 Tishrei 5030,Ramban (Nachmanides, Rabbi Moshe ben Nachman, 1194–1270) – Kabbalist; major commentator on the Torah,רמבן (רבי משה בן נחמן,,1194–1270) – מקובל; פרשן חשוב על התורה,,
-figure-herzl,Theodor Herzl,תיאודור הרצל,5620,5664,Theodor Herzl (1860–1904) – visionary founder of modern Zionism; convened the First Zionist Congress (1897),תיאודור הרצל (1860–1904) – מייסד הציונות המדינית; כינס את הקונגרס הציוני הראשון (1897)
-figure-weizmann,Chaim Weizmann,חיים ויצמן,5634,5712,Chaim Weizmann (1874–1952) – scientist and statesman; first President of the State of Israel,חיים ויצמן (1874–1952) – מדען ומדינאי; נשיא ישראל הראשון
-figure-ben-gurion,David Ben-Gurion,דוד בן-גוריון,5646,5733,David Ben-Gurion (1886–1973) – founding father; first Prime Minister of the State of Israel,דוד בן-גוריון (1886–1973) – אבי המדינה; ראש הממשלה הראשון של מדינת ישראל
-figure-golda-meir,Golda Meir,גולדה מאיר,5658,5738,Golda Meir (1898–1978) – fourth Prime Minister of Israel; only woman to serve as PM,גולדה מאיר (1898–1978) – ראש הממשלה הרביעי של ישראל; האישה היחידה שכיהנה כראש ממשלה
-figure-begin,Menachem Begin,מנחם בגין,5673,5752,Menachem Begin (1913–1992) – sixth Prime Minister of Israel; Nobel Peace Prize laureate (1978),מנחם בגין (1913–1992) – ראש הממשלה השישי; זוכה פרס נובל לשלום (1978)
-figure-rabin,Yitzhak Rabin,יצחק רבין,5682,5756,Yitzhak Rabin (1922–1995) – Prime Minister of Israel; Nobel Peace Prize laureate; assassinated in 1995,יצחק רבין (1922–1995) – ראש ממשלת ישראל; זוכה פרס נובל לשלום; נרצח ב-1995
-figure-peres,Shimon Peres,שמעון פרס,5683,5776,Shimon Peres (1923–2016) – Prime Minister and ninth President of Israel; Nobel Peace Prize laureate,שמעון פרס (1923–2016) – ראש ממשלה ונשיא ישראל התשיעי; זוכה פרס נובל לשלום
+figure-ravina,Ravina,רבינא,4112,4182,Ravina – leading Amora; primary compiler of the Babylonian Talmud,רבינא – אמורא מרכזי; עורך עיקרי של התלמוד הבבלי
+figure-rav-hai,Rav Hai Gaon,רב האי גאון,4699,4798,Rav Hai Gaon – head of the Sura academy; last of the Geonim,רב האי גאון – ראש ישיבת סורא; האחרון מבין הגאונים
+figure-shmuel-hanagid,Shmuel HaNagid,שמואל הנגיד,993 CE,1056 CE,Shmuel HaNagid (Samuel ibn Naghrillah, 993–1056) – Jewish vizier of Granada; poet and scholar,שמואל הנגיד (שמואל אבן נגרילה,,993–1056) – ויזיר יהודי בגרנדה; משורר וחכם
+figure-rashi,Rashi,רשי,4800,4865,Rashi (Rabbi Shlomo Yitzchaki, 1040–1105) – foremost commentator on the Torah and Talmud,רשי (רבי שלמה יצחקי,,1040–1105) – פרשן עיקרי על התורה והתלמוד,,
+figure-rambam,Rambam,רמבם,4895,4964,Rambam (Maimonides, Rabbi Moshe ben Maimon, 1135–1204) – philosopher; author of Mishneh Torah and Guide for the Perplexed,רמבם (רבי משה בן מיימון,,1135–1204) – פילוסוף; חיבר משנה תורה ומורה נבוכים,,
+figure-ramban,Ramban,רמבן,4954,5030,Ramban (Nachmanides, Rabbi Moshe ben Nachman, 1194–1270) – Kabbalist; major commentator on the Torah,רמבן (רבי משה בן נחמן,,1194–1270) – מקובל; פרשן חשוב על התורה,,
+figure-herzl,Theodor Herzl,תיאודור הרצל,10 Iyar 5620,20 Tamuz 5664,Theodor Herzl (1860–1904) – visionary founder of modern Zionism; convened the First Zionist Congress (1897),תיאודור הרצל (1860–1904) – מייסד הציונות המדינית; כינס את הקונגרס הציוני הראשון (1897)
+figure-weizmann,Chaim Weizmann,חיים ויצמן,18 Kislev 5635,21 Cheshvan 5713,Chaim Weizmann (1874–1952) – scientist and statesman; first President of the State of Israel,חיים ויצמן (1874–1952) – מדען ומדינאי; נשיא ישראל הראשון
+figure-ben-gurion,David Ben-Gurion,דוד בן-גוריון,10 Tishrei 5647,6 Kislev 5734,David Ben-Gurion (1886–1973) – founding father; first Prime Minister of the State of Israel,דוד בן-גוריון (1886–1973) – אבי המדינה; ראש הממשלה הראשון של מדינת ישראל
+figure-golda-meir,Golda Meir,גולדה מאיר,11 Iyar 5658,8 Kislev 5739,Golda Meir (1898–1978) – fourth Prime Minister of Israel; only woman to serve as PM,גולדה מאיר (1898–1978) – ראש הממשלה הרביעי של ישראל; האישה היחידה שכיהנה כראש ממשלה
+figure-begin,Menachem Begin,מנחם בגין,13 Av 5673,4 Adar 5752,Menachem Begin (1913–1992) – sixth Prime Minister of Israel; Nobel Peace Prize laureate (1978),מנחם בגין (1913–1992) – ראש הממשלה השישי; זוכה פרס נובל לשלום (1978)
+figure-rabin,Yitzhak Rabin,יצחק רבין,1 Adar 5682,12 Cheshvan 5756,Yitzhak Rabin (1922–1995) – Prime Minister of Israel; Nobel Peace Prize laureate; assassinated in 1995,יצחק רבין (1922–1995) – ראש ממשלת ישראל; זוכה פרס נובל לשלום; נרצח ב-1995
+figure-peres,Shimon Peres,שמעון פרס,20 Av 5683,25 Elul 5776,Shimon Peres (1923–2016) – Prime Minister and ninth President of Israel; Nobel Peace Prize laureate,שמעון פרס (1923–2016) – ראש ממשלה ונשיא ישראל התשיעי; זוכה פרס נובל לשלום
