@@ -1,0 +1,46 @@
+name: 📖 תיקון נתונים
+description: דווחו על נתונים שגויים או חסרים (פסוקים, תאריכים, אירועים היסטוריים וכו')
+title: "[Data]: "
+labels:
+  - data
+body:
+  - type: markdown
+    attributes:
+      value: |
+        תודה שאתם עוזרים לשפר את דיוק הנתונים באפליקציה!
+  - type: input
+    id: series
+    attributes:
+      label: שם הסדרה
+      description: איזו סדרה/רצועה מושפעת? (לדוגמה דמויות מקראיות, אירועים מרכזיים, תקופות ספרי התנ״ך, גלויות וגירושים, פסוק תורה מבריאת העולם, תהלים שנתיים מאז תש"ח)
+      placeholder: לדוגמה דמויות מקראיות
+    validations:
+      required: true
+  - type: input
+    id: reference
+    attributes:
+      label: פריט / פסוק / תאריך
+      placeholder: לדוגמה בראשית ג, יט, או "גירוש ספרד"
+    validations:
+      required: false
+  - type: textarea
+    id: current
+    attributes:
+      label: הטקסט/הערך הנוכחי
+      description: מה האפליקציה מציגה כרגע?
+    validations:
+      required: false
+  - type: textarea
+    id: suggested
+    attributes:
+      label: התיקון המוצע
+      description: מה זה אמור להציג במקום?
+    validations:
+      required: true
+  - type: textarea
+    id: source
+    attributes:
+      label: מקור / נימוק
+      description: כל מקור, אסמכתא או נימוק התומכים בתיקון זה.
+    validations:
+      required: false

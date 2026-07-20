@@ -1,0 +1,45 @@
+name: 🐞 Bug Report
+description: Report something that isn't working correctly in the app
+title: "[Bug]: "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a bug! Please fill out the details below.
+  - type: textarea
+    id: description
+    attributes:
+      label: What happened?
+      description: A clear and concise description of the bug.
+      placeholder: Describe what went wrong...
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: How can we reproduce this issue?
+      placeholder: |
+        1. Go to...
+        2. Click on...
+        3. See error
+    validations:
+      required: false
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected vs actual behavior
+      placeholder: |
+        Expected: ...
+        Actual: ...
+    validations:
+      required: false
+  - type: input
+    id: device
+    attributes:
+      label: Device / Browser
+      placeholder: e.g. iPhone 14, Safari / Windows 11, Chrome
+    validations:
+      required: false

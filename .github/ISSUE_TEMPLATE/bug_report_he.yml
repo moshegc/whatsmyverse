@@ -1,0 +1,45 @@
+name: 🐞 דיווח על באג
+description: דווחו על משהו שלא עובד כראוי באפליקציה
+title: "[Bug]: "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        תודה שלקחתם את הזמן לדווח על באג! אנא מלאו את הפרטים למטה.
+  - type: textarea
+    id: description
+    attributes:
+      label: מה קרה?
+      description: תיאור ברור ותמציתי של הבאג.
+      placeholder: תארו מה השתבש...
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: שלבים לשחזור
+      description: כיצד ניתן לשחזר את התקלה?
+      placeholder: |
+        1. עברו אל...
+        2. לחצו על...
+        3. ראו את השגיאה
+    validations:
+      required: false
+  - type: textarea
+    id: expected
+    attributes:
+      label: התנהגות צפויה מול בפועל
+      placeholder: |
+        צפוי: ...
+        בפועל: ...
+    validations:
+      required: false
+  - type: input
+    id: device
+    attributes:
+      label: מכשיר / דפדפן
+      placeholder: לדוגמה iPhone 14, Safari / Windows 11, Chrome
+    validations:
+      required: false

@@ -1,0 +1,46 @@
+name: 📖 Data Fix
+description: Report incorrect or missing data (verses, dates, historical events, etc.)
+title: "[Data]: "
+labels:
+  - data
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping improve the accuracy of the app's data!
+  - type: input
+    id: series
+    attributes:
+      label: Series name
+      description: Which series/track is affected? (e.g. Biblical Figures, Major Events, Bible Book Periods, Exiles & Expulsions, Torah verse since creation, Yearly Psalms since 5708)
+      placeholder: e.g. Biblical Figures
+    validations:
+      required: true
+  - type: input
+    id: reference
+    attributes:
+      label: Item / verse / date reference
+      placeholder: e.g. Genesis 3:19, or "Exile from Spain"
+    validations:
+      required: false
+  - type: textarea
+    id: current
+    attributes:
+      label: Current text/value
+      description: What does the app currently show?
+    validations:
+      required: false
+  - type: textarea
+    id: suggested
+    attributes:
+      label: Suggested correction
+      description: What should it say instead?
+    validations:
+      required: true
+  - type: textarea
+    id: source
+    attributes:
+      label: Source / reasoning
+      description: Any reference, source, or reasoning supporting this correction.
+    validations:
+      required: false
