@@ -2,6 +2,7 @@
 
 import { useLocale } from './LocaleContext';
 import { t, type Locale } from './i18n';
+import FeedbackMenu from './FeedbackMenu';
 
 interface HeaderBarProps {
   onZoomToggle: () => void;
@@ -45,6 +46,7 @@ const HeaderBar = ({ onZoomToggle, isZoomedOut, onJumpToToday, onTitleClick, vis
         >
           <span className="material-symbols-outlined">today</span>
         </button>
+        <FeedbackMenu />
         <LanguageToggle locale={locale} onToggle={toggleLocale} />
       </div>
     </header>

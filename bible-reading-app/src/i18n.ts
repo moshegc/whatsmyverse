@@ -89,6 +89,11 @@ const uiStrings: Record<string, Record<Locale, string>> = {
   welcomeGetStarted: { en: 'Get started', he: 'בואו נתחיל' },
   seriesEnabled: { en: 'Shown', he: 'מוצג' },
   seriesDisabled: { en: 'Hidden', he: 'מוסתר' },
+  feedback: { en: 'Feedback', he: 'משוב' },
+  feedbackBugReport: { en: 'Report a bug', he: 'דיווח על באג' },
+  feedbackDataFix: { en: 'Suggest a data fix', he: 'הצעת תיקון נתונים' },
+  feedbackSuggestion: { en: 'Share a suggestion', he: 'שיתוף הצעה' },
+  feedbackForm: { en: 'Form', he: 'טופס' },
 };
 
 /**

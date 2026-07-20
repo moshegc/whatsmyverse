@@ -1,6 +1,31 @@
 // src/config.ts
 
 /**
+ * The GitHub repository (owner/name) used for feedback links (issues & discussions).
+ */
+export const GITHUB_REPO = 'moshegc/whatsmyverse';
+
+/**
+ * Google Form URLs used as an account-free alternative to GitHub for feedback.
+ * Leave a URL as an empty string until the corresponding form has been created;
+ * the feedback menu hides the "Form" link for any entry that isn't filled in.
+ */
+export const GOOGLE_FORMS = {
+  bugReport: {
+    en: 'https://forms.gle/Dh1qcj2H13Rh25Sp9',
+    he: 'https://forms.gle/vGhLmQk4hX8fhwcJA',
+  },
+  dataFix: {
+    en: 'https://forms.gle/g5PvJxYaV7oQVup39',
+    he: 'https://forms.gle/gNQHpoBjKsxAj3wV9',
+  },
+  suggestion: {
+    en: 'https://forms.gle/Zg12RCDcGarkhxD58',
+    he: 'https://forms.gle/CECqnCiJCqrTFKSr5',
+  },
+};
+
+/**
  * Defines the structure for a single reading schedule.
  */
 export interface ReadingSchedule {
