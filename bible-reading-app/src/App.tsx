@@ -11,6 +11,7 @@ import { getSeriesInfo, getSectionInfo } from './infoContent';
 import { historicalEventCategories } from './historicalEvents';
 import { schedules } from './config';
 import { generateColorFromString } from './colorUtils';
+import { Analytics } from '@vercel/analytics/react';
 
 function App() {
   const { locale } = useLocale();
@@ -141,6 +142,7 @@ function App() {
           onClose={() => setInfoCard(null)}
         />
       )}
+      <Analytics />
     </div>
   );
 }
